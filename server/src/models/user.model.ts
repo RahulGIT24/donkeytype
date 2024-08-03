@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 interface User extends Document {
-  _id: string;
   name: string;
   username: string;
   email: string;
@@ -10,14 +11,16 @@ interface User extends Document {
   updatedAt: Date;
   isVerified: boolean;
   profilePic: string;
+  verifyToken: string;
+  forgotPasswordToken: string;
+  forgotPasswordTokenExpiry: Date;
+  refreshToken: string;
+  generateAccessToken: () => string;
+  generateRefreshToken: () => string;
 }
 
 const schema = new mongoose.Schema(
   {
-    _id: {
-      type: String,
-      required: [true, "Please enter an id"],
-    },
     name: {
       type: String,
       required: [true, "Please enter your name"],
@@ -40,6 +43,18 @@ const schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    verifyToken: {
+      type: String,
+    },
+    forgotPasswordToken: {
+      type: String,
+    },
+    forgotPasswordTokenExpiry: {
+      type: Date,
+    },
+    refreshToken: {
+      type: String,
+    },
     profilePic: {
       type: String,
       default:
@@ -50,5 +65,36 @@ const schema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+schema.methods.passwordCompare = function (password: string) {
+  return bcrypt.compare(password, this.password);
+};
+
+schema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      username: this.username,
+      name: this.name,
+    },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
+
+schema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+};
 
 export const User = mongoose.model<User>("User", schema);
