@@ -29,23 +29,25 @@ const generateAccessandRefreshToken = async (userId: string) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, username, password } = req.body;
   if ([name, email, username, password].some((field) => field.trim() === "")) {
-    throw new ApiError(400, "Please send all the data");
+    res.status(400).json(new ApiError(400, "Please send all the data"));
   }
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
   if (existedUser) {
-    throw new ApiError(
-      409,
-      "User with this email or username already registered"
-    );
+    res
+      .status(409)
+      .json(
+        new ApiError(409, "User with this email or username already registered")
+      );
   }
 
   if (password.length < 8) {
-    throw new ApiError(
-      400,
-      "Passwords Length should be more than 8 characters"
-    );
+    res
+      .status(400)
+      .json(
+        new ApiError(400, "Passwords Length should be more than 8 characters")
+      );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -58,11 +60,15 @@ const registerUser = asyncHandler(async (req, res) => {
   });
   await user.save();
   if (!user) {
-    throw new ApiError(500, "Something went wrong while registering the user");
+    res
+      .status(500)
+      .json(
+        new ApiError(500, "Something went wrong while registering the user")
+      );
   }
   return res
     .status(201)
     .json(new ApiResponse(200, "User registered Successfully"));
 });
 
-export {registerUser}
+export { registerUser };
