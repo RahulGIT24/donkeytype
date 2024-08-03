@@ -6,14 +6,14 @@ import { Request, Response, NextFunction } from "express";
 import { DecodedToken } from "../types/types";
 
 export const verifyJWT = asyncHandler(
-  async (req: Request, _: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "");
 
       if (!token) {
-        throw new ApiError(401, "Unauthorized Access");
+        res.status(401).json(new ApiError(401, "Unauthorized Access"));
       }
 
       const decodedToken = jwt.verify(
@@ -26,7 +26,7 @@ export const verifyJWT = asyncHandler(
       );
 
       if (!user) {
-        throw new ApiError(401, "User not found");
+        res.status(401).json(new ApiError(401, "User not found"));
       }
 
       req.user = user;
