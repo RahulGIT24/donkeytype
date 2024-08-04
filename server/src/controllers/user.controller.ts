@@ -151,11 +151,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json(new ApiError(401, "Invalid Credentials"));
   }
 
-  const accesstoken = user.generateAccessToken();
-  const refreshtoken = user.generateRefreshToken();
-
-  user.refreshToken = refreshtoken;
-  await user.save({ validateBeforeSave: true });
+  const {accessToken,refreshToken} = await generateAccessandRefreshToken(user.id)
 
   const options = {
     httpOnly: true,
@@ -164,8 +160,8 @@ const login = asyncHandler(async (req, res) => {
 
   return res
       .status(200)
-      .cookie('accessToken',accesstoken,options)
-      .cookie('refreshToken',refreshtoken,options)
+      .cookie('accessToken',accessToken,options)
+      .cookie('refreshToken',refreshToken,options)
       .json(
         new ApiResponse(
           200,
