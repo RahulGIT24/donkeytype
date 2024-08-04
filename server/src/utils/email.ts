@@ -23,7 +23,7 @@ export const mail = async ({
     if (emailType === "verify") {
       subject = "Verify Your donkeytype account";
       if (url) {
-        html = `<h1>Hi, this is a verification email from donkeytype</h1><br><b>Please click on the below link to verify your donkeytype account</b><br><a href=${url} target="_blank">Verify Account</a>`;
+        html = `<h1>Hi, this is a verification email from donkeytype</h1><br><b>Please click on the below link to verify your donkeytype account</b><br><a href=${url} target="_blank">Verify Account</a><br><i>Node that it is valid for 12 hours only</i>`;
       }
     }
     const mailOptions = {

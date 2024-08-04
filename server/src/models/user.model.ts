@@ -18,6 +18,7 @@ interface User extends Document {
   refreshToken: string;
   generateAccessToken: () => string;
   generateRefreshToken: () => string;
+  passwordCompare: (password:string) => boolean;
 }
 
 const schema = new mongoose.Schema(
