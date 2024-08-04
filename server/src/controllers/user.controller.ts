@@ -3,6 +3,8 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { mail } from "../utils/email";
 
 const generateAccessandRefreshToken = async (userId: string) => {
   try {
@@ -51,14 +53,27 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
+  const verifyTokenExpiry = new Date();
+  verifyTokenExpiry.setHours(verifyTokenExpiry.getHours() + 12);
+  const verifyToken = jwt.sign(
+    {
+      email: email,
+    },
+    process.env.JWT_SECRET as string
+  );
 
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
     username: username.toLowerCase(),
+    verifyToken,
+    verifyTokenExpiry,
   });
   await user.save();
+
+  const url = process.env.FRONTEND_URL + `verifyToken/${verifyToken}`;
+
   if (!user) {
     res
       .status(500)
@@ -66,9 +81,47 @@ const registerUser = asyncHandler(async (req, res) => {
         new ApiError(500, "Something went wrong while registering the user")
       );
   }
+
+  const mailed = await mail({email:user.email,emailType:"verify",url})
+
+  if(!mailed){
+    return res
+    .status(400)
+    .json(
+      new ApiResponse(
+        400,
+        "Can't send verification email"
+      )
+    );
+  }
   return res
     .status(201)
-    .json(new ApiResponse(200, "User registered Successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        "User registered Successfully. Please verify your email to get started"
+      )
+    );
 });
 
-export { registerUser };
+const verifyToken = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(404).json(new ApiError(404, "Please Provide the token"));
+  }
+  const user = await User.findOne({ verifyToken:token });
+  if (!user || !user.verifyTokenExpiry) {
+    return res.status(401).json(new ApiError(401, "Invalid Token"));
+  }
+  const date = new Date();
+  if (date > user?.verifyTokenExpiry) {
+    return res.status(401).json(new ApiError(401, "Token Expired"));
+  }
+  user.isVerified = true;
+  user.verifyToken = "";
+  user.verifyTokenExpiry = "";
+  await user.save({ validateBeforeSave: true });
+  return res.status(200).json(new ApiResponse(200, "User verified"));
+});
+
+export { registerUser,verifyToken };

@@ -12,6 +12,7 @@ interface User extends Document {
   isVerified: boolean;
   profilePic: string;
   verifyToken: string;
+  verifyTokenExpiry: Date | "";
   forgotPasswordToken: string;
   forgotPasswordTokenExpiry: Date;
   refreshToken: string;
@@ -45,6 +46,9 @@ const schema = new mongoose.Schema(
     },
     verifyToken: {
       type: String,
+    },
+    verifyTokenExpiry: {
+      type: Date,
     },
     forgotPasswordToken: {
       type: String,

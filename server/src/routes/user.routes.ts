@@ -1,8 +1,9 @@
 import {Router} from 'express';
-import {registerUser} from "../controllers/user.controller";
+import {registerUser, verifyToken} from "../controllers/user.controller";
 
 const router  = Router();
 
 router.route('/register').post(registerUser)
+router.route('/verify').post(verifyToken)
 
 export default router
