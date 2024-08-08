@@ -1,5 +1,4 @@
 import { User } from "../models/user.model";
-import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import bcrypt from "bcrypt";
@@ -10,7 +9,7 @@ const generateAccessandRefreshToken = async (userId: string) => {
   try {
     const user = await User.findById(userId);
     if (user == null) {
-      throw new ApiError(
+      throw new ApiResponse(
         401,
         "Something went wrong while generating access and refresh token"
       );
@@ -21,7 +20,7 @@ const generateAccessandRefreshToken = async (userId: string) => {
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
   } catch (error) {
-    throw new ApiError(
+    throw new ApiResponse(
       401,
       "Something went wrong while generating access and refresh token"
     );
@@ -31,7 +30,7 @@ const generateAccessandRefreshToken = async (userId: string) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, username, password } = req.body;
   if ([name, email, username, password].some((field) => field.trim() === "")) {
-    res.status(400).json(new ApiError(400, "Please send all the data"));
+    res.status(400).json(new ApiResponse(400, "Please send all the data"));
   }
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
@@ -40,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
     res
       .status(409)
       .json(
-        new ApiError(409, "User with this email or username already registered")
+        new ApiResponse(409, "User with this email or username already registered")
       );
   }
 
@@ -48,7 +47,7 @@ const registerUser = asyncHandler(async (req, res) => {
     res
       .status(400)
       .json(
-        new ApiError(400, "Passwords Length should be more than 8 characters")
+        new ApiResponse(400, "Passwords Length should be more than 8 characters")
       );
   }
 
@@ -78,7 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
     res
       .status(500)
       .json(
-        new ApiError(500, "Something went wrong while registering the user")
+        new ApiResponse(500, "Something went wrong while registering the user")
       );
   }
 
@@ -104,14 +103,14 @@ const login = asyncHandler(async (req, res) => {
   if (!identifier || !password) {
     return res
       .status(400)
-      .json(new ApiError(400, "Please provide all details"));
+      .json(new ApiResponse(400, "Please provide all details"));
   }
   const user = await User.findOne({
     $or: [{ username: identifier }, { email: identifier }],
   });
 
   if (!user) {
-    return res.status(404).json(new ApiError(404, "User not exist"));
+    return res.status(404).json(new ApiResponse(404, "User not exist"));
   }
 
   if ((user.isVerified === false)) {
@@ -133,7 +132,7 @@ const login = asyncHandler(async (req, res) => {
     if (!mailed) {
       return res
         .status(400)
-        .json(new ApiError(400, "Can't send verification email"));
+        .json(new ApiResponse(400, "Can't send verification email"));
     }
     return res
       .status(200)
@@ -145,10 +144,9 @@ const login = asyncHandler(async (req, res) => {
       );
   }
 
-  const isCorrect = user.passwordCompare(password);
-
+  const isCorrect = await user.passwordCompare(password);
   if (!isCorrect) {
-    return res.status(401).json(new ApiError(401, "Invalid Credentials"));
+    return res.status(401).json(new ApiResponse(401, "Invalid Credentials"));
   }
 
   const {accessToken,refreshToken} = await generateAccessandRefreshToken(user.id)
@@ -173,15 +171,15 @@ const login = asyncHandler(async (req, res) => {
 const verifyToken = asyncHandler(async (req, res) => {
   const { token } = req.body;
   if (!token) {
-    return res.status(404).json(new ApiError(404, "Please Provide the token"));
+    return res.status(404).json(new ApiResponse(404, "Please Provide the token"));
   }
   const user = await User.findOne({ verifyToken: token });
   if (!user || !user.verifyTokenExpiry) {
-    return res.status(401).json(new ApiError(401, "Invalid Token"));
+    return res.status(401).json(new ApiResponse(401, "Invalid Token"));
   }
   const date = new Date();
   if (date > user?.verifyTokenExpiry) {
-    return res.status(401).json(new ApiError(401, "Token Expired"));
+    return res.status(401).json(new ApiResponse(401, "Token Expired"));
   }
   user.isVerified = true;
   user.verifyToken = "";
@@ -190,4 +188,57 @@ const verifyToken = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "User verified"));
 });
 
-export { registerUser, verifyToken,login };
+const forgotPassword  = asyncHandler(async(req,res)=>{
+  const {email} = req.body;
+  if(!email){
+    return res.status(404).json(new ApiResponse(404, "Provide email"));
+  }
+  const user = await User.findOne({ email });
+  if(!user){
+    return res.status(401).json(new ApiResponse(401, "User not exist"));
+  }
+  const forgotPasswordTokenExpiry = new Date();
+  forgotPasswordTokenExpiry.setHours(forgotPasswordTokenExpiry.getMinutes() + 30);
+  const forgotPasswordToken = jwt.sign(
+    {
+      email: email,
+    },
+    process.env.JWT_SECRET as string
+  );
+  user.forgotPasswordToken = forgotPasswordToken
+  user.forgotPasswordTokenExpiry=forgotPasswordTokenExpiry
+  await user.save()
+  const url = process.env.FRONTEND_URL+`change-password/${forgotPasswordToken}`
+  const mailed = await mail({ email: email, url, emailType: "forgotpassword" });
+  if(mailed){
+    return res.status(200).json(new ApiResponse(200, "Password Recovery Email Send"));
+  }
+  return res.status(400).json(new ApiResponse(400, "Can't send email"));
+})
+
+
+const changePassword  = asyncHandler(async(req,res)=>{
+  const {token,password} = req.body;
+  if(!token || !password){
+    return res.status(404).json(new ApiResponse(404, "Provide token or Password"));
+  }
+  const user = await User.findOne({ forgotPasswordToken:token });
+  if(!user){
+    return res.status(401).json(new ApiResponse(401, "User not exist"));
+  }
+  const currDate = new Date()
+  if(currDate > user.forgotPasswordTokenExpiry){
+    user.forgotPasswordToken = ""
+    user.forgotPasswordTokenExpiry = ""
+    await user.save()
+    return res.status(401).json(new ApiResponse(401, "Token expired"));
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  user.password = hashedPassword
+  user.forgotPasswordToken = ""
+  user.forgotPasswordTokenExpiry = ""
+  await user.save()
+  return res.status(200).json(new ApiResponse(200, "Password Updated"));
+})
+
+export { registerUser, verifyToken,login,forgotPassword,changePassword };
