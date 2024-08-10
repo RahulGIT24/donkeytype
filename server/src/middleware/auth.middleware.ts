@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler";
 import { User } from "../models/user.model";
-import { ApiError } from "../utils/ApiError";
+import { ApiResponse } from "../utils/ApiResponse";
 import { Request, Response, NextFunction } from "express";
 import { DecodedToken } from "../types/types";
 
@@ -13,7 +13,7 @@ export const verifyJWT = asyncHandler(
         req.header("Authorization")?.replace("Bearer ", "");
 
       if (!token) {
-        res.status(401).json(new ApiError(401, "Unauthorized Access"));
+        res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
       }
 
       const decodedToken = jwt.verify(
@@ -26,13 +26,13 @@ export const verifyJWT = asyncHandler(
       );
 
       if (!user) {
-        res.status(401).json(new ApiError(401, "User not found"));
+        res.status(401).json(new ApiResponse(401, "User not found"));
       }
 
       req.user = user;
       next();
     } catch (error) {
-      throw new ApiError(401, "Invalid access token");
+      res.status(401).json(new ApiResponse(401, "Invalid access token"));
     }
   }
 );
