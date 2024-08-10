@@ -16,9 +16,11 @@ interface User extends Document {
   forgotPasswordToken: string;
   forgotPasswordTokenExpiry: Date | "";
   refreshToken: string;
+  testStarted: number;
+  testCompleted: number;
   generateAccessToken: () => string;
   generateRefreshToken: () => string;
-  passwordCompare: (password:string) => boolean;
+  passwordCompare: (password: string) => boolean;
 }
 
 const schema = new mongoose.Schema(
@@ -54,6 +56,14 @@ const schema = new mongoose.Schema(
     forgotPasswordToken: {
       type: String,
     },
+    testStarted: {
+      type: Number,
+      default: 0,
+    },
+    testCompleted: {
+      type: Number,
+      default: 0,
+    },
     forgotPasswordTokenExpiry: {
       type: Date,
     },
@@ -73,7 +83,7 @@ const schema = new mongoose.Schema(
 
 schema.methods.passwordCompare = async function (password: string) {
   const res = await bcrypt.compare(password, this.password);
-  return res
+  return res;
 };
 
 schema.methods.generateAccessToken = function () {

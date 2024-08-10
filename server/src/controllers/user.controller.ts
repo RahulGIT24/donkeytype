@@ -163,7 +163,7 @@ const login = asyncHandler(async (req, res) => {
       .json(
         new ApiResponse(
           200,
-          "Welcome Back"
+          `Welcome Back ${accessToken}`
         )
       );
 });
