@@ -1,3 +1,9 @@
+import {
+  FiftyWordsBest,
+  HunderedWordsBest,
+  TenWordsBest,
+  TwentyFiveWordsBest,
+} from "../models/alltimebest.model";
 import { History } from "../models/history.model";
 import { User } from "../models/user.model";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -39,12 +45,12 @@ const completeTest = asyncHandler(async (req, res) => {
   }
   const { wpm, raw, accuracy, consistency, chars, mode } = req.body;
   const history = new History({
-        wpm,
-        raw,
-        accuracy,
-        consistency,
-        chars,
-        mode,
+    wpm,
+    raw,
+    accuracy,
+    consistency,
+    chars,
+    mode,
     user: userId,
   });
   const savedHistory = await history.save();
@@ -53,6 +59,30 @@ const completeTest = asyncHandler(async (req, res) => {
   }
   userExist.testCompleted = userExist.testCompleted + 1;
   await userExist.save({ validateBeforeSave: false });
+  let modelName: any;
+  if (mode == "Words 10") {
+    modelName = TenWordsBest;
+  } else if (mode == "Words 25") {
+    modelName = TwentyFiveWordsBest;
+  } else if (mode == "Words 50") {
+    modelName = FiftyWordsBest;
+  } else if (mode == "Words 100") {
+    modelName = HunderedWordsBest;
+  }
+  const bestExist = await modelName.findOne({ user: userId });
+  if (!bestExist) {
+    const newBest = new TenWordsBest({
+      history: savedHistory._id,
+      user: userId,
+    });
+    await newBest.save();
+    return res.status(200).json(new ApiResponse(201, "Test saved"));
+  }
+  const historyCheck = await History.findById(bestExist.history);
+  if ((historyCheck?.wpm as number) < wpm) {
+    bestExist.history = savedHistory._id;
+    await bestExist.save();
+  }
   return res.status(200).json(new ApiResponse(201, "Test saved"));
 });
 

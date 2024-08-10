@@ -44,4 +44,4 @@ const schema = new mongoose.Schema<history>(
     }
 )
 
-export const History = mongoose.model<history>("history",schema)
+export const History = mongoose.model<history>("History",schema)
