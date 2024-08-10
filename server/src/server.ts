@@ -14,6 +14,7 @@ app.get("/", (req, res) => {
 
 // Routes
 import userRouter from "./routes/user.routes";
+import typeRouter from "./routes/type.routes";
 import connectDB from "./db";
 
 connectDB().then(() => {
@@ -25,3 +26,4 @@ connectDB().then(() => {
 })
 
 app.use("/donkeyapi/v1/users", userRouter);
+app.use("/donkeyapi/v1/type", typeRouter);
