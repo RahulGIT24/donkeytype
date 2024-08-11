@@ -2,6 +2,16 @@ import { ObjectId } from "mongodb";
 import { History } from "../models/history.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
+import { PipelineStage } from "mongoose";
+
+interface DocumentType {
+  user: ObjectId;
+  accuracy: number;
+  consistency: number;
+  raw: number;
+  wpm: number;
+  mode: string; 
+}
 
 const getHistory = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -9,12 +19,14 @@ const getHistory = asyncHandler(async (req, res) => {
   const userObjectId = new ObjectId(userId);
   const { limit } = req.query;
   const limitNumber = parseInt(limit as string, 10);
+
   if (isNaN(limitNumber) || limitNumber <= 0) {
     return res
       .status(400)
       .json(new ApiResponse(400, "Invalid limit parameter"));
   }
-  const pipeline = [
+
+  const pipeline: PipelineStage[] = [
     {
       $match: {
         user: userObjectId,
@@ -22,14 +34,97 @@ const getHistory = asyncHandler(async (req, res) => {
     },
     { $count: "total" },
   ];
-  const result = await History.aggregate(pipeline);
-  const total = result[0].total;
+
+  const result = await History.aggregate<{ total: number }>(pipeline);
+  const total = result[0]?.total || 0;
+
   const history = await History.find({ user: userId })
     .limit(limitNumber)
     .select("-_id -user -__v");
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { history, totalResults: total,totalResultFetched:history.length }));
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      history,
+      totalResults: total,
+      totalResultFetched: history.length,
+    })
+  );
 });
 
-export { getHistory };
+const getAverageStats = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const userId = user._id;
+  const userObjectId = new ObjectId(userId);
+
+  const avgpipeline: PipelineStage[] = [
+    {
+      $match: {
+        user: userObjectId,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        averageAccuracy: { $avg: "$accuracy" },
+        averageWpm: { $avg: "$wpm" },
+        averageConsistency: { $avg: "$consistency" },
+        averageRawpm: { $avg: "$raw" },
+      },
+    },
+    {
+      $project: {
+        averageAccuracy: { $round: ["$averageAccuracy", 2] },
+        averageWpm: { $round: ["$averageWpm", 2] },
+        averageConsistency: { $round: ["$averageConsistency", 2] },
+        averageRawpm: { $round: ["$averageRawpm", 2] },
+      },
+    },
+  ];
+
+  const highestwpmpipeline: PipelineStage[] = [
+    {
+      $match: { user: userObjectId },
+    },
+    {
+      $sort: { wpm: -1 },
+    },
+    {
+      $limit: 1,
+    },
+  ];
+
+  const highestpipeline: PipelineStage[] = [
+    {
+      $match: { user: userObjectId },
+    },
+    {
+      $group: {
+        _id: null,
+        highestAccuracy: { $max: "$accuracy" },
+        highestConsistency: { $max: "$consistency" },
+        highestRaw: { $max: "$raw" },
+      },
+    },
+  ];
+
+  const avg = await History.aggregate<DocumentType>(avgpipeline);
+  const wpm = await History.aggregate<DocumentType>(highestwpmpipeline);
+  const highest = await History.aggregate<DocumentType>(highestpipeline);
+
+  if (!avg.length || !wpm.length || !highest.length) {
+    return res.status(404).json(new ApiResponse(404, "No data found"));
+  }
+
+  const result = {
+    averages: avg[0],
+    highestWPM: {
+      wpm: wpm[0].wpm,
+      mode: wpm[0].mode,
+    },
+    max: highest[0],
+  };
+
+  return res.status(200).json(new ApiResponse(200, result));
+});
+
+export { getHistory, getAverageStats };
