@@ -106,7 +106,7 @@ schema.methods.generateRefreshToken = function () {
     {
       _id: this._id,
     },
-    process.env.JWT_SECRET as string,
+    process.env.REFRESH_TOKEN_SECRET as string,
     {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
