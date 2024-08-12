@@ -2,8 +2,9 @@ import { User } from "../models/user.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 import { mail } from "../utils/email";
+import { DecodedToken } from "../types/types";
 
 const generateAccessandRefreshToken = async (userId: string) => {
   try {
@@ -15,7 +16,7 @@ const generateAccessandRefreshToken = async (userId: string) => {
       );
     }
     const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
@@ -39,7 +40,10 @@ const registerUser = asyncHandler(async (req, res) => {
     res
       .status(409)
       .json(
-        new ApiResponse(409, "User with this email or username already registered")
+        new ApiResponse(
+          409,
+          "User with this email or username already registered"
+        )
       );
   }
 
@@ -47,7 +51,10 @@ const registerUser = asyncHandler(async (req, res) => {
     res
       .status(400)
       .json(
-        new ApiResponse(400, "Passwords Length should be more than 8 characters")
+        new ApiResponse(
+          400,
+          "Passwords Length should be more than 8 characters"
+        )
       );
   }
 
@@ -113,7 +120,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(404).json(new ApiResponse(404, "User not exist"));
   }
 
-  if ((user.isVerified === false)) {
+  if (user.isVerified === false) {
     const verifyTokenExpiry = new Date();
     verifyTokenExpiry.setHours(verifyTokenExpiry.getHours() + 12);
     const verifyToken = jwt.sign(
@@ -149,7 +156,9 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json(new ApiResponse(401, "Invalid Credentials"));
   }
 
-  const {accessToken,refreshToken} = await generateAccessandRefreshToken(user.id)
+  const { accessToken, refreshToken } = await generateAccessandRefreshToken(
+    user.id
+  );
 
   const options = {
     httpOnly: true,
@@ -157,21 +166,18 @@ const login = asyncHandler(async (req, res) => {
   };
 
   return res
-      .status(200)
-      .cookie('accessToken',accessToken,options)
-      .cookie('refreshToken',refreshToken,options)
-      .json(
-        new ApiResponse(
-          200,
-          `Welcome Back ${accessToken}`
-        )
-      );
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, `Welcome Back ${accessToken}`));
 });
 
 const verifyToken = asyncHandler(async (req, res) => {
   const { token } = req.body;
   if (!token) {
-    return res.status(404).json(new ApiResponse(404, "Please Provide the token"));
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Please Provide the token"));
   }
   const user = await User.findOne({ verifyToken: token });
   if (!user || !user.verifyTokenExpiry) {
@@ -188,57 +194,133 @@ const verifyToken = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "User verified"));
 });
 
-const forgotPassword  = asyncHandler(async(req,res)=>{
-  const {email} = req.body;
-  if(!email){
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
     return res.status(404).json(new ApiResponse(404, "Provide email"));
   }
   const user = await User.findOne({ email });
-  if(!user){
+  if (!user) {
     return res.status(401).json(new ApiResponse(401, "User not exist"));
   }
   const forgotPasswordTokenExpiry = new Date();
-  forgotPasswordTokenExpiry.setHours(forgotPasswordTokenExpiry.getMinutes() + 30);
+  forgotPasswordTokenExpiry.setHours(
+    forgotPasswordTokenExpiry.getMinutes() + 30
+  );
   const forgotPasswordToken = jwt.sign(
     {
       email: email,
     },
     process.env.JWT_SECRET as string
   );
-  user.forgotPasswordToken = forgotPasswordToken
-  user.forgotPasswordTokenExpiry=forgotPasswordTokenExpiry
-  await user.save()
-  const url = process.env.FRONTEND_URL+`change-password/${forgotPasswordToken}`
+  user.forgotPasswordToken = forgotPasswordToken;
+  user.forgotPasswordTokenExpiry = forgotPasswordTokenExpiry;
+  await user.save();
+  const url =
+    process.env.FRONTEND_URL + `change-password/${forgotPasswordToken}`;
   const mailed = await mail({ email: email, url, emailType: "forgotpassword" });
-  if(mailed){
-    return res.status(200).json(new ApiResponse(200, "Password Recovery Email Send"));
+  if (mailed) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Password Recovery Email Send"));
   }
   return res.status(400).json(new ApiResponse(400, "Can't send email"));
-})
+});
 
-
-const changePassword  = asyncHandler(async(req,res)=>{
-  const {token,password} = req.body;
-  if(!token || !password){
-    return res.status(404).json(new ApiResponse(404, "Provide token or Password"));
+const changePassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Provide token or Password"));
   }
-  const user = await User.findOne({ forgotPasswordToken:token });
-  if(!user){
+  const user = await User.findOne({ forgotPasswordToken: token });
+  if (!user) {
     return res.status(401).json(new ApiResponse(401, "User not exist"));
   }
-  const currDate = new Date()
-  if(currDate > user.forgotPasswordTokenExpiry){
-    user.forgotPasswordToken = ""
-    user.forgotPasswordTokenExpiry = ""
-    await user.save()
+  const currDate = new Date();
+  if (currDate > user.forgotPasswordTokenExpiry) {
+    user.forgotPasswordToken = "";
+    user.forgotPasswordTokenExpiry = "";
+    await user.save();
     return res.status(401).json(new ApiResponse(401, "Token expired"));
   }
   const hashedPassword = await bcrypt.hash(password, 10);
-  user.password = hashedPassword
-  user.forgotPasswordToken = ""
-  user.forgotPasswordTokenExpiry = ""
-  await user.save()
+  user.password = hashedPassword;
+  user.forgotPasswordToken = "";
+  user.forgotPasswordTokenExpiry = "";
+  await user.save();
   return res.status(200).json(new ApiResponse(200, "Password Updated"));
+});
+
+const refresh = asyncHandler(async (req, res) => {
+  const incomingRefreshToken = req.body.refreshToken || req.cookies.refreshToken;
+
+  if (!incomingRefreshToken) {
+    res.status(404).json(new ApiResponse(404, "Refresh Token Not Found"));
+  }
+
+  const decodedToken = jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET as Secret
+  ) as DecodedToken;
+
+  const user = await User.findById(decodedToken?._id);
+
+  if (!user) {
+    res.status(401).json(new ApiResponse(401, "Invalid User Token"));
+  }
+
+  if(incomingRefreshToken != user?.refreshToken){
+    res.status(401).json(new ApiResponse(401, "Refresh Token Expired"));
+  }
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  const { accessToken, refreshToken } = await generateAccessandRefreshToken(user?.id);
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, "Access token refreshed"));
+
+});
+
+const logoutUser = asyncHandler(async(req, res) => {
+  await User.findByIdAndUpdate(
+      req.user._id,
+      {
+          $unset: {
+              refreshToken: 1
+          }
+      },
+      {
+          new: true
+      }
+  )
+
+  const options = {
+      httpOnly: true,
+      secure: true
+  }
+
+  return res
+  .status(200)
+  .clearCookie("accessToken", options)
+  .clearCookie("refreshToken", options)
+  .json(new ApiResponse(200, "User logged Out"))
 })
 
-export { registerUser, verifyToken,login,forgotPassword,changePassword };
+export {
+  registerUser,
+  verifyToken,
+  login,
+  forgotPassword,
+  changePassword,
+  refresh,
+  logoutUser
+};
