@@ -9,7 +9,7 @@ export default function Verification() {
 
   const handleClick = async () => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_SERVER_API}/users/verify`, { token });
+      const res = await axios.post(`${import.meta.env.VITE_SERVER_API}/donkeyapi/v1/users/verify`, { token });
       if(res.status<400){
         const {data} =res
         console.log('request successfull', data)
