@@ -2,10 +2,15 @@ import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
 
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+
 const app = express();
 config();
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 const port = process.env.PORT || 5000;
 
 app.get("/", (req, res) => {
