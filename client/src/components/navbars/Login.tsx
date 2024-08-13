@@ -36,14 +36,16 @@ export default function Login() {
             password: formData.password,
           },
           {
-            withCredentials: true, // Include credentials (cookies) in the request
+            withCredentials: true, 
           }
         );
+        console.log(res)
         navigate("/")
         toast.success(res.data.data);
       } catch (error: any) {
         const data = error.response.data;
         toast.error(data.data);
+        console.log(error)
       } finally {
         setDisabled(false);
       }

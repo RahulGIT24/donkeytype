@@ -13,6 +13,7 @@ export default function Verification() {
         `${import.meta.env.VITE_SERVER_API}/users/verify`,
         { token }
       );
+      console.log(res)
       setMessage(res.data.data);
       setVerified(true);
     } catch (error: any) {
@@ -29,9 +30,9 @@ export default function Verification() {
 
   return (
     <>
-      <h1 className="m-4 text-4xl hover:text-yellow-400 duration-200 cursor-none">
+      <Link to={'/'}><h1 className="m-4 text-4xl hover:text-yellow-400 duration-200 cursor-pointer">
         donkeytype
-      </h1>
+      </h1></Link>
       <div className="fixed w-screen h-screen flex justify-center items-center">
         <p className="text-3xl text-yellow-400">
         {message}

@@ -8,7 +8,8 @@ import { Provider } from "react-redux";
 import store from "./redux/store";
 import NotFound from "./pages/ErrorPage";
 import Verification from "./pages/auth/Verification";
-
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ChangePassword from "./pages/auth/ChangePassword";
 function App() {
   const router = createBrowserRouter([
     {
@@ -24,13 +25,22 @@ function App() {
           path: "login",
           element: <RegisterationPage />,
         },
+        {
+          path: "forgotPassword",
+          element:<ForgotPassword/>, 
+        },
+        
         
       ],
     },
     {
       path: "verifyToken/:token",
       element: <Verification />,
-    }
+    },
+    {
+      path: "change-password/:token",
+      element:<ChangePassword/>, 
+    },
   ]);
   return (
     <>
