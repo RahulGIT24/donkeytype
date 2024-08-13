@@ -1,10 +1,13 @@
 import {Router} from 'express';
-import {login, registerUser, verifyToken,forgotPassword,changePassword} from "../controllers/user.controller";
+import {login, registerUser, verifyToken,forgotPassword,changePassword, refresh, logoutUser} from "../controllers/user.controller";
+import { verifyJWT } from '../middleware/auth.middleware';
 const router  = Router();
 
 router.route('/register').post(registerUser)
 router.route('/verify').post(verifyToken)
 router.route('/login').post(login)
 router.route('/forgot-password').post(forgotPassword).put(changePassword)
+router.route('/refresh-token').get(verifyJWT,refresh)
+router.route('/logout-user').get(verifyJWT,logoutUser)
 
 export default router
