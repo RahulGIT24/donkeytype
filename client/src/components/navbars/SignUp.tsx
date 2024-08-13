@@ -1,15 +1,18 @@
-import axios from 'axios';
-import React, { useState } from 'react';
-import { toast } from 'sonner';
+import axios from "axios";
+import React, { useState } from "react";
+import { ThreeDots } from "react-loader-spinner";
+import { toast } from "sonner";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    email: '',
-    password: '',
-    verifyPassword: '',
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    verifyPassword: "",
   });
+
+  const [disabled, setDisabled] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -18,44 +21,49 @@ export default function SignUp() {
     });
   };
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    
+    if(formData.password.length < 8){
+      toast.error("Passwords length should me more than 8 characters");
+      return;
+    }
+
     if (formData.password !== formData.verifyPassword) {
-      toast.error('Passwords do not match!');
+      toast.error("Passwords do not match!");
       return;
     }
 
     try {
+      setDisabled(true);
       const res = await axios.post(
-        `${import.meta.env.VITE_SERVER_API}/donkeyapi/v1/users/register`, 
+        `${import.meta.env.VITE_SERVER_API}/users/register`,
         {
           name: formData.name,
           email: formData.email,
-          password: formData.password, 
+          password: formData.password,
           username: formData.username,
         }
       );
-      const {data} = res
-      console.log(data)
-
-
-      toast.success('Form submitted successfully!');
-    } catch (error:any) {
-      const data = error.response.data
-      console.log(data);
+      toast.success(res.data.data);
+    } catch (error: any) {
+      const data = error.response.data;
       toast.error(data.data);
-      console.log('Registration error:', error);
+    } finally {
+      setDisabled(false);
     }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen ">
       <form className="mt-6 space-y-4 max-w-sm w-full" onSubmit={handleSubmit}>
-        <h1 className='text-xl text-white'><b>Register</b></h1>
-        
+        <h1 className="text-xl text-white">
+          <b>Register</b>
+        </h1>
+
         <div>
-          <label htmlFor="username" className="sr-only">Username</label>
+          <label htmlFor="username" className="sr-only">
+            Username
+          </label>
           <input
             id="username"
             name="username"
@@ -69,7 +77,9 @@ export default function SignUp() {
         </div>
 
         <div>
-          <label htmlFor="name" className="sr-only">Name</label>
+          <label htmlFor="name" className="sr-only">
+            Name
+          </label>
           <input
             id="name"
             name="name"
@@ -83,7 +93,9 @@ export default function SignUp() {
         </div>
 
         <div>
-          <label htmlFor="email" className="sr-only">Email</label>
+          <label htmlFor="email" className="sr-only">
+            Email
+          </label>
           <input
             id="email"
             name="email"
@@ -97,7 +109,9 @@ export default function SignUp() {
         </div>
 
         <div>
-          <label htmlFor="password" className="sr-only">Password</label>
+          <label htmlFor="password" className="sr-only">
+            Password
+          </label>
           <input
             id="password"
             name="password"
@@ -111,7 +125,9 @@ export default function SignUp() {
         </div>
 
         <div>
-          <label htmlFor="verifyPassword" className="sr-only">Verify Password</label>
+          <label htmlFor="verifyPassword" className="sr-only">
+            Verify Password
+          </label>
           <input
             id="verifyPassword"
             name="verifyPassword"
@@ -127,9 +143,22 @@ export default function SignUp() {
         <div>
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-yellow-500 text-white font-medium rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+            className="w-full py-2 px-4 bg-yellow-500 text-white font-medium rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 h-12 flex justify-center items-center"
+            disabled={disabled}
           >
-            Register
+            {
+              disabled ?
+                <ThreeDots
+                  visible={true}
+                  height="50"
+                  width="50"
+                  color="black"
+                  radius="9"
+                  ariaLabel="three-dots-loading"
+                />
+              :
+            "Register"
+            }
           </button>
         </div>
       </form>

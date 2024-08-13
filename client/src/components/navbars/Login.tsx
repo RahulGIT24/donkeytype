@@ -1,7 +1,8 @@
 import axios from "axios";
-import React, { useState } from "react";
+import { useState } from "react";
+import { ThreeDots } from "react-loader-spinner";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -9,6 +10,9 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
+
+  const [disabled, setDisabled] = useState(false);
 
   const handleChange = (e: any) => {
     setFormData({
@@ -24,20 +28,24 @@ export default function Login() {
       toast.error("Please fill in all fields");
     } else {
       try {
+        setDisabled(true);
         const res = await axios.post(
-          `${import.meta.env.VITE_SERVER_API}/donkeyapi/v1/users/login`,
+          `${import.meta.env.VITE_SERVER_API}/users/login`,
           {
             identifier: formData.email,
             password: formData.password,
+          },
+          {
+            withCredentials: true, // Include credentials (cookies) in the request
           }
         );
-        const { data } = res;
-        console.log(data)
+        navigate("/")
+        toast.success(res.data.data);
       } catch (error: any) {
         const data = error.response.data;
-        console.log(data);
         toast.error(data.data);
-        console.error("Login error:", error);
+      } finally {
+        setDisabled(false);
       }
     }
   };
@@ -54,7 +62,6 @@ export default function Login() {
               Email
             </label>
             <input
-              id="email"
               name="email"
               type="email"
               required
@@ -69,7 +76,6 @@ export default function Login() {
               Password
             </label>
             <input
-              id="password"
               name="password"
               type="password"
               required
@@ -82,9 +88,21 @@ export default function Login() {
           <div>
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-yellow-500 text-white font-medium rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              className="w-full py-2 px-4 bg-yellow-500 text-white font-medium rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 h-12 flex justify-center items-center"
+              disabled={disabled}
             >
-              Sign In
+              {disabled ? (
+                <ThreeDots
+                  visible={true}
+                  height="50"
+                  width="50"
+                  color="black"
+                  radius="9"
+                  ariaLabel="three-dots-loading"
+                />
+              ) : (
+                " Sign In"
+              )}
             </button>
           </div>
         </form>
