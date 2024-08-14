@@ -29,7 +29,7 @@ export const mail = async ({
     if (emailType === "forgotpassword") {
       subject = "Change password of Donkeytype";
       if (url) {
-        html = `<h1>Hi, this is an email from donkeytype to change your password</h1><br><b>Please click on the below link to change password of your donkeytype account</b><br><a href=${url} target="_blank">Verify Account</a><br><i>Node that it is valid for 30 minutes only</i>`;
+        html = `<h1>Hi, this is an email from donkeytype to change your password</h1><br><b>Please click on the below link to change password of your donkeytype account</b><br><a href=${url} target="_blank">Change Password</a><br><i>Node that it is valid for 30 minutes only</i>`;
       }
     }
     const mailOptions = {

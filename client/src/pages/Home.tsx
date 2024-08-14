@@ -1,5 +1,4 @@
-import React from "react";
-import MainNav from "../components/navbars/mainNav";
+import MainNav from "../components/navbars/MainNav";
 import { Outlet } from "react-router-dom";
 
 export default function Home() {

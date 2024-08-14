@@ -13,10 +13,6 @@ app.use(express.json());
 app.use(cors(corsOptions));
 const port = process.env.PORT || 5000;
 
-app.get("/", (req, res) => {
-  res.send("Hello from Donkeytype");
-});
-
 // Routes
 import userRouter from "./routes/user.routes";
 import typeRouter from "./routes/type.routes";

@@ -1,15 +1,16 @@
-import React from "react";
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
 
 import axios from "axios";
 import { toast } from "sonner";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import MainNav from "../../components/navbars/MainNav";
 export default function ChangePassword() {
   const [password, setPassword] = useState("");
   const [cpassword, setCPassword] = useState("");
   const [disabled, setDisabled] = useState(false);
   const { token } = useParams();
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -28,29 +29,17 @@ export default function ChangePassword() {
           password,
         }
       );
-      console.log(res);
-      if (res.status < 400) {
-        toast.success(res.data.data + "\n Please log in again");
-        setDisabled(false);
-      } else {
-        toast.error(res.data.data);
-        setDisabled(false);
-      }
+      toast.success(res.data.data)
+      navigate('/login')
     } catch (error: any) {
       toast.error(error.response.data.data);
-      console.error(error);
     } finally {
       setDisabled(false);
     }
   };
   return (
     <>
-      <Link to={"/"}>
-        <h1 className="m-4 text-4xl hover:text-yellow-400 duration-200 cursor-pointer">
-          donkeytype
-        </h1>
-      </Link>
-
+      <MainNav/>
       <div className="flex justify-center items-center flex-col gap-2 fixed w-screen h-screen">
         <form className="mt-6 space-y-4 w-1/2" onSubmit={handleSubmit}>
           <h1 className="text-xl text-white">
@@ -58,28 +47,28 @@ export default function ChangePassword() {
           </h1>
           <div>
             <label htmlFor="password" className="sr-only">
-              password
+              Password
             </label>
             <input
               name="password"
-              type="text"
+              type="password"
               required
               className="w-full px-3 py-2 border border-gray-700 bg-gray-700 placeholder-gray-500 text-white rounded focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
-              placeholder="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div>
             <label htmlFor="cpassword" className="sr-only">
-              confirm password
+              Confirm Password
             </label>
             <input
               name="cpassword"
-              type="text"
+              type="password"
               required
               className="w-full px-3 py-2 border border-gray-700 bg-gray-700 placeholder-gray-500 text-white rounded focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
-              placeholder="confrim password"
+              placeholder="Confrim Password"
               value={cpassword}
               onChange={(e) => setCPassword(e.target.value)}
             />

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState: any = {
-  time: 10,
+  time: "10",
 };
 
 const typeSlice: any = createSlice({

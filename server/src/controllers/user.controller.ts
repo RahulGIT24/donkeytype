@@ -217,7 +217,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   user.forgotPasswordTokenExpiry = forgotPasswordTokenExpiry;
   await user.save();
   const url =
-    process.env.FRONTEND_URL + `change-password/${forgotPasswordToken}`;
+    process.env.FRONTEND_URL + `/change-password/${forgotPasswordToken}`;
   const mailed = await mail({ email: email, url, emailType: "forgotpassword" });
   if (mailed) {
     return res
@@ -236,7 +236,7 @@ const changePassword = asyncHandler(async (req, res) => {
   }
   const user = await User.findOne({ forgotPasswordToken: token });
   if (!user) {
-    return res.status(401).json(new ApiResponse(401, "User not exist"));
+    return res.status(401).json(new ApiResponse(401,"Session Expired"));
   }
   const currDate = new Date();
   if (currDate > user.forgotPasswordTokenExpiry) {

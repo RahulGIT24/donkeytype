@@ -1,5 +1,4 @@
-import React from "react";
-import TypingNav from "../components/navbars/typingNav";
+import TypingNav from "../components/navbars/TypingNav";
 import TypingComponent from "../components/TypingComponent";
 
 export default function TypeLayout() {
