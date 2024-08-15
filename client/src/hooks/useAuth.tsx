@@ -1,4 +1,3 @@
-import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -12,8 +11,7 @@ function useAuth() {
     try {
       const res = await axios(
         `${import.meta.env.VITE_SERVER_API}/users/refresh-token`
-      );
-      console.log(res);
+      )
       if (res) {
         setSuccess(res.data.success);
       }
