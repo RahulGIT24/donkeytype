@@ -1,11 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCrown, faGear, faInfo, faKeyboard, faUser } from "@fortawesome/free-solid-svg-icons";
-
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCrown,
+  faGear,
+  faInfo,
+  faKeyboard,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function MainNav() {
-  
- 
   return (
     <>
       <nav className="flex fixed top-0">
@@ -18,24 +21,34 @@ export default function MainNav() {
                     <h1 className="text-2xl">donkeytype</h1>
                   </Link>
                 </li>
-                <li title="Start Test" className="px-4">
-                  <Link to="/"><FontAwesomeIcon icon={faKeyboard} className="h-5"/></Link>
+                <li title="Start Test">
+                  <Link to="/">
+                    <FontAwesomeIcon icon={faKeyboard} className="h-5 px-4" />
+                  </Link>
                 </li>
-                <li title="Leaderboard" className="px-4">
-                  <Link to="/leaderboard"><FontAwesomeIcon icon={faCrown} className="h-5"/></Link>
+                <li title="Leaderboard">
+                  <Link to="/leaderboard">
+                    <FontAwesomeIcon icon={faCrown} className="h-5 px-4" />
+                  </Link>
                 </li>
-                <li title="Info" className="px-4">
-                  <Link to="/info"><FontAwesomeIcon icon={faInfo} className="h-5"/></Link>
+                <li title="Info">
+                  <Link to="/info">
+                    <FontAwesomeIcon icon={faInfo} className="h-5 px-4" />
+                  </Link>
                 </li>
-                <li title="Settings" className="px-4">
-                  <Link to="/settings"><FontAwesomeIcon icon={faGear} className="h-5"/></Link>
+                <li title="Settings">
+                  <Link to="/settings">
+                    <FontAwesomeIcon icon={faGear} className="h-5 px-4" />
+                  </Link>
                 </li>
               </ul>
             </div>
           </li>
           <li>
             <Link to="/login">
-              <div title="Login/Register"><FontAwesomeIcon icon={faUser} className="h-5"/></div>
+              <div title="Login/Register">
+                <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
+              </div>
             </Link>
           </li>
         </ul>

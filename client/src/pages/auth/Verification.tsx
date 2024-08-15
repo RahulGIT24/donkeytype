@@ -2,19 +2,20 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import MainNav from "../../components/navbars/MainNav";
 
 export default function Verification() {
   const { token } = useParams<{ token: string }>();
   const [message, setMessage] = useState("");
-  const [verified,setVerified] = useState(false);
+  const [verified, setVerified] = useState(false);
   const verfiyToken = async () => {
     try {
-      console.log('token',token)
+      console.log("token", token);
       const res = await axios.post(
         `${import.meta.env.VITE_SERVER_API}/users/verify`,
         { token }
       );
-      console.log(res)
+      console.log(res);
       setMessage(res.data.data);
       setVerified(true);
     } catch (error: any) {
@@ -31,17 +32,15 @@ export default function Verification() {
 
   return (
     <>
-      <Link to={'/'}><h1 className="m-4 text-4xl hover:text-yellow-400 duration-200 cursor-pointer">
-        donkeytype
-      </h1></Link>
+      <MainNav /> 
       <div className="fixed w-screen h-screen flex justify-center items-center">
-        <p className="text-3xl text-yellow-400">
-        {message}
-        </p>
-        <br/>
-        {
-          verified && <p className="text-md"><Link to={"/login"}>Go Back to Login</Link></p>
-        }
+        <p className="text-3xl text-yellow-400">{message}</p>
+        <br />
+        {verified && (
+          <p className="text-md">
+            <Link to={"/login"}>Go Back to Login</Link>
+          </p>
+        )}
       </div>
     </>
   );

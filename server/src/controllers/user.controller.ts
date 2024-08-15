@@ -268,11 +268,11 @@ const refresh = asyncHandler(async (req, res) => {
   const user = await User.findById(decodedToken?._id);
 
   if (!user) {
-    res.status(401).json(new ApiResponse(401, "Invalid User Token"));
+    res.status(401).json(new ApiResponse(401, "Token Expired"));
   }
 
   if(incomingRefreshToken != user?.refreshToken){
-    res.status(401).json(new ApiResponse(401, "Refresh Token Expired"));
+    res.status(404).json(new ApiResponse(404, "Invalid Refresh Token"));
   }
 
   const options = {
@@ -315,6 +315,10 @@ const logoutUser = asyncHandler(async(req, res) => {
   .json(new ApiResponse(200, "User logged Out"))
 })
 
+const getUser = asyncHandler(async(req,res)=>{
+  return res.status(200).send(new ApiResponse(200,req.user))
+})
+
 export {
   registerUser,
   verifyToken,
@@ -322,5 +326,6 @@ export {
   forgotPassword,
   changePassword,
   refresh,
-  logoutUser
+  logoutUser,
+  getUser
 };

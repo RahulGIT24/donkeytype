@@ -1,9 +1,8 @@
-import React from "react";
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
+import MainNav from "../../components/navbars/MainNav";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [disabled, setDisabled] = useState(false);
@@ -32,8 +31,8 @@ e.preventDefault()
   };
   return (
     <>
-    
-      <div className="flex justify-center items-center flex-col gap-2">
+    <MainNav/>
+      <div className="flex justify-center items-center flex-col gap-2 h-screen ">
         <form className="mt-6 space-y-4 w-1/2" onSubmit={handleSubmit}>
           <h1 className="text-xl text-white">
             <b>Forgot Password</b>
