@@ -39,7 +39,7 @@ export default function Login() {
             withCredentials: true, 
           }
         );
-      
+
         navigate("/")
         toast.success(res.data.data);
       } catch (error: any) {

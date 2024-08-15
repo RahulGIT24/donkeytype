@@ -12,7 +12,7 @@ import { useState } from "react";
 import UserProfileCard from "../UserProfileCard";
 
 export default function MainNav() {
-  const [showProfile,setShowProfile] = useState(false)
+  const [showProfile, setShowProfile] = useState(false);
   const isAuthenticated = useSelector(
     (state: any) => state.user.isAuthenticated
   );
@@ -53,21 +53,21 @@ export default function MainNav() {
             </div>
           </li>
           <li>
-            {isAuthenticated ? (
+            {!isAuthenticated ? (
               <Link to="/login">
                 <div title="Login/Register">
                   <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
                 </div>
               </Link>
             ) : (
-              <button onClick={()=>setShowProfile(true)}>
-                <div title="Login/Register">
+              <button onClick={() => setShowProfile(!showProfile)}>
+                <div title="Profile Card">
                   <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
                 </div>
               </button>
             )}
           </li>
-          {showProfile&&<UserProfileCard/>}
+          {showProfile && <UserProfileCard setShowProfile={setShowProfile} />}
         </ul>
       </nav>
     </>
