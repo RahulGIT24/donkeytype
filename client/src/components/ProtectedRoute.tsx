@@ -20,7 +20,7 @@ const ProtectedRoute = () => {
     };
 
     checkAuth();
-  }, []);
+  }, [dispatch]); 
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
