@@ -7,8 +7,16 @@ import {
   faKeyboard,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import UserProfileCard from "../UserProfileCard";
 
 export default function MainNav() {
+  const [showProfile,setShowProfile] = useState(true)
+  const isAuthenticated = useSelector(
+    (state: any) => state.user.isAuthenticated
+  );
+
   return (
     <>
       <nav className="flex fixed top-0">
@@ -45,12 +53,21 @@ export default function MainNav() {
             </div>
           </li>
           <li>
-            <Link to="/login">
-              <div title="Login/Register">
-                <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
-              </div>
-            </Link>
+            {!isAuthenticated ? (
+              <Link to="/login">
+                <div title="Login/Register">
+                  <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
+                </div>
+              </Link>
+            ) : (
+              <button onClick={()=>setShowProfile(true)}>
+                <div title="Login/Register">
+                  <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
+                </div>
+              </button>
+            )}
           </li>
+          {showProfile&&<UserProfileCard/>}
         </ul>
       </nav>
     </>

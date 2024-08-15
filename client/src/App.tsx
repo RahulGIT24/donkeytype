@@ -9,7 +9,7 @@ import ChangePassword from "./pages/auth/ChangePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  // const [authenticated,setAuthenticated] = useState(false);
+
 
   return (
     <Router>

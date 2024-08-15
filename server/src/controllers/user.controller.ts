@@ -266,7 +266,7 @@ const refresh = asyncHandler(async (req, res) => {
   ) as DecodedToken;
 
   const user = await User.findById(decodedToken?._id);
-
+console.log(user)
   if (!user) {
     res.status(401).json(new ApiResponse(401, "Token Expired"));
   }

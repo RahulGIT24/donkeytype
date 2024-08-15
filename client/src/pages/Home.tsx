@@ -1,25 +1,7 @@
 import MainNav from "../components/navbars/MainNav";
-import { Outlet } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
-import { toast } from "sonner";
-import { useEffect, useRef } from "react";
+import TypeLayout from "./TypeLayout";
 
 export default function Home() {
-  const navigate = useNavigate();
-
-  const success = useAuth()
-  
-  useEffect(() => {
-    console.log('render ')
-    if (!success) {
-      toast("Token Expired");
-      return navigate("/login");
-    } else {
-      return navigate("/");
-    }
-  }, []);
-
   return (
     <>
     <MainNav/>

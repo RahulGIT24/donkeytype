@@ -5,6 +5,7 @@ export async function refresh() {
     await axios(`${import.meta.env.VITE_SERVER_API}/users/refresh-token`,{withCredentials:true});
     return true;
   } catch (error) {
+    console.log(error)
     return false;
   }
 }
