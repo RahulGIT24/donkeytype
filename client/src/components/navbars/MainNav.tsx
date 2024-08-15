@@ -12,7 +12,7 @@ import { useState } from "react";
 import UserProfileCard from "../UserProfileCard";
 
 export default function MainNav() {
-  const [showProfile,setShowProfile] = useState(true)
+  const [showProfile,setShowProfile] = useState(false)
   const isAuthenticated = useSelector(
     (state: any) => state.user.isAuthenticated
   );
@@ -53,7 +53,7 @@ export default function MainNav() {
             </div>
           </li>
           <li>
-            {!isAuthenticated ? (
+            {isAuthenticated ? (
               <Link to="/login">
                 <div title="Login/Register">
                   <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
