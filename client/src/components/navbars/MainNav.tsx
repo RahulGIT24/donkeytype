@@ -1,8 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCrown, faGear, faInfo, faKeyboard, faUser } from "@fortawesome/free-solid-svg-icons";
 
+
 export default function MainNav() {
+  
+ 
   return (
     <>
       <nav className="flex fixed top-0">

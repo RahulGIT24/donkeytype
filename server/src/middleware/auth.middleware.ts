@@ -11,9 +11,9 @@ export const verifyJWT = asyncHandler(
       const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "");
-
+     
       if (!token) {
-        res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
+        return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
       }
 
       const decodedToken = jwt.verify(
@@ -26,13 +26,13 @@ export const verifyJWT = asyncHandler(
       );
 
       if (!user) {
-        res.status(401).json(new ApiResponse(401, "User not found"));
+        return res.status(401).json(new ApiResponse(401, "User not found"));
       }
 
       req.user = user;
       next();
     } catch (error) {
-      res.status(401).json(new ApiResponse(401, "Invalid access token"));
+      return res.status(401).json(new ApiResponse(401, "Invalid access token"));
     }
   }
 );
