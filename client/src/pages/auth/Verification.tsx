@@ -9,6 +9,7 @@ export default function Verification() {
   const [verified,setVerified] = useState(false);
   const verfiyToken = async () => {
     try {
+      console.log('token',token)
       const res = await axios.post(
         `${import.meta.env.VITE_SERVER_API}/users/verify`,
         { token }

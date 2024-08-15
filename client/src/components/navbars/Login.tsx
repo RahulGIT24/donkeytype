@@ -39,7 +39,7 @@ export default function Login() {
             withCredentials: true, 
           }
         );
-        console.log(res)
+      
         navigate("/")
         toast.success(res.data.data);
       } catch (error: any) {
@@ -65,7 +65,7 @@ export default function Login() {
             </label>
             <input
               name="email"
-              type="email"
+              type="text"
               required
               className="w-full px-3 py-2 border border-gray-700 bg-gray-700 placeholder-gray-500 text-white rounded focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
               placeholder="Email"
