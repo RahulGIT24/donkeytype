@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 
 export default function UserProfileCard() {
 const user = useSelector((state:any)=> state.user.user)
+console.log(user)
   return (
 
     <>
@@ -14,7 +15,7 @@ const user = useSelector((state:any)=> state.user.user)
             className="w-40 h-40 bg-white rounded-full"
           />
     <hr className="w-11/12 border-yellow-400 mt-3"/>
-    <p className="">{user.userName}</p>
+    <p className="text-2xl">{user.username}</p>
         </div>
       </div>
     </>
