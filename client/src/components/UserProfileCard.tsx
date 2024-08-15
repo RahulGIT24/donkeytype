@@ -16,6 +16,7 @@ console.log(user)
           />
     <hr className="w-11/12 border-yellow-400 mt-3"/>
     <p className="text-2xl">{user.username}</p>
+    <p></p>
         </div>
       </div>
     </>
