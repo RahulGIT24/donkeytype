@@ -11,15 +11,15 @@ export const verifyJWT = asyncHandler(
       const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "");
-
-      if (!token) {
-        return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
-      }
-
-      const decodedToken = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      ) as DecodedToken;
+        if (!token) {
+          return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
+        }
+        
+        const decodedToken = jwt.verify(
+          token,
+          process.env.JWT_SECRET as string
+        ) as DecodedToken;
+        
 
       const user = await User.findById(decodedToken._id).select(
         "_id  name username testStarted testCompleted profilePic createdAt"

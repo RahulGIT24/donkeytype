@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { IUser } from "../../types/user";
+import { getUser } from "../../utils/getUser";
 
 const initialUser: IUser = {
   _id:"",
@@ -11,10 +12,12 @@ const initialUser: IUser = {
   createdAt:"",
 }
 
+const {status} = await getUser()
 const initialState = {
   user:initialUser,
-  isAuthenticated:null
-};
+  isAuthenticated:status===200
+  }
+
 
 const userSlice: any = createSlice({
   name: "user",
@@ -24,10 +27,12 @@ const userSlice: any = createSlice({
       state.user = action.payload
     },
     setAuth:(state,action)=>{
+      
       state.isAuthenticated = action.payload
+     
     },
     revertInitial:(state)=>{
-      state.isAuthenticated=null;
+      state.isAuthenticated=false;
       state.user=initialUser
     }
   }
