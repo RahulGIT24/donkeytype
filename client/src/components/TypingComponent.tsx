@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Children } from "react";
 import { useSelector } from "react-redux";
 
 export default function TypingComponent() {
@@ -11,8 +11,11 @@ export default function TypingComponent() {
 
   async function getwords(){ 
     try {
-      const response  = await axios(import.meta.env.VITE_SERVER_API+`/type/get-words?words=${setting.wordNumber}`)
-      console.log(response)
+      const response  = await axios(import.meta.env.VITE_SERVER_API+`/type/get-words?words=${setting.wordNumber}`,{
+        withCredentials:true
+      })
+      console.log(response.data.data)
+      setWord(response.data.data)
       
     } catch (error) {
         console.log(error)
@@ -29,12 +32,15 @@ export default function TypingComponent() {
     });
   }
   useEffect(() => {
+    setTypeString([])
+    getwords()
     printWords();
     
-  }, []);
+  }, [setting]);
 
   useEffect(()=> {
-    getwords()
+    
+    
   },[setting])
  
 
