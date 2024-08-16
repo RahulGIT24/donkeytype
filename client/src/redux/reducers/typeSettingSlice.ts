@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState: any = {
-  time: "10",
+  wordNumber: "10",
 };
 
 const typeSlice: any = createSlice({
@@ -10,8 +10,8 @@ const typeSlice: any = createSlice({
   reducers: {
     setSetting: (state, action) => {
       switch (action.payload.type) {
-        case "time":
-          state.time = action.payload.value;
+        case "number":
+          state.wordNumber = action.payload.value;
           break;
       }
     },

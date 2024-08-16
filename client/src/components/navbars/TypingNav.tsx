@@ -5,10 +5,10 @@ export default function TypingNav() {
   const setting = useSelector((state: any) => state.setting);
   const dispatch = useDispatch();
 
-  const times = ["10", "30", "50"];
+  const times = ["10", "25", "50", "100"];
 
   const setTime = (e: any) => {
-    dispatch(setSetting({ type: "time", value: e.target.innerText }));
+    dispatch(setSetting({ type: "number", value: e.target.innerText }));
   };
 
   return (
@@ -19,7 +19,7 @@ export default function TypingNav() {
             <li
               key={time}
               className={`hover:text-zinc-100 hover:cursor-pointer duration-200 ${
-                setting.time === time ? "text-yellow-500" : ""
+                setting.wordNumber === time ? "text-yellow-500" : ""
               }`}
               onClick={setTime}
             >
