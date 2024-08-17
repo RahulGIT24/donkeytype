@@ -81,6 +81,8 @@ export default function TypingComponent() {
       }
       removeClass(currentWord,'current')
       addClass(currentWord?.nextSibling,'current')
+      console.log(currentWord)
+      addClass(currentWord?.nextSibling?.firstChild,'current')
       if(currentLetter){
         removeClass(currentLetter,'current')
       }
