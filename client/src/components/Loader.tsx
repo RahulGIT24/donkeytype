@@ -6,6 +6,6 @@ const Loader = ({completed}:{completed:number}) => {
       <ProgressBar completed={completed} maxCompleted={100} customLabel="Loading...." className="w-[40%]" bgColor="rgb(234 179 8 / var(--tw-text-opacity))" labelColor="black" labelSize="1rem"/>
     </div>
   )
-}
+} 
 
 export default Loader

@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState: any = {
+  type:null,
   wordNumber: "10",
 };
 
+
 const typeSlice: any = createSlice({
-  name: "user",
+  name: "setting",
   initialState,
   reducers: {
     setSetting: (state, action) => {
