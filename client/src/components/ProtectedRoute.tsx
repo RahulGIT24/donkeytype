@@ -37,7 +37,8 @@ const ProtectedRoute = () => {
         if (await refresh()) {
           await checkAuth();
         } else {
-          if (await logout()) {
+          if (isAuthenticated) {
+            await logout()
             dispatch(revertInitial);
           }
         }

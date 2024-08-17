@@ -1,13 +1,9 @@
-import axios from "axios";
+import apiCall from "./apiCall";
 
 export const getUser = async () => {
   try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_SERVER_API}/users/get-user`,
-      { withCredentials: true }
-    );
-
-    return {status:res.status,data:res.data.data};
+    const {data,status} = await apiCall({url:"/users/get-user",method:"GET"})
+    return {status:status,data:data};
   } catch (e) {
     console.log(e)
     return {status:401,data:e}

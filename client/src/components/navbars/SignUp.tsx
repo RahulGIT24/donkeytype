@@ -1,7 +1,7 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
 import { toast } from "sonner";
+import apiCall from "../../utils/apiCall";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -23,7 +23,7 @@ export default function SignUp() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if(formData.password.length < 8){
+    if (formData.password.length < 8) {
       toast.error("Passwords length should me more than 8 characters");
       return;
     }
@@ -33,24 +33,24 @@ export default function SignUp() {
       return;
     }
 
-    try {
-      setDisabled(true);
-      const res = await axios.post(
-        `${import.meta.env.VITE_SERVER_API}/users/register`,
-        {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          username: formData.username,
-        }
-      );
-      toast.success(res.data.data);
-    } catch (error: any) {
-      const data = error.response.data;
-      toast.error(data.data);
-    } finally {
-      setDisabled(false);
+    setDisabled(true);
+    const { data, status } = await apiCall({
+      url: `/users/register`,
+      reqData: {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+      },
+      method: "POST",
+      withCredentials: false,
+    });
+    if (status >= 400) {
+      toast.error(data);
+    } else {
+      toast.success(data);
     }
+    setDisabled(false);
   };
 
   return (
@@ -146,19 +146,18 @@ export default function SignUp() {
             className="w-full py-2 px-4 bg-yellow-500 text-white font-medium rounded hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 h-12 flex justify-center items-center"
             disabled={disabled}
           >
-            {
-              disabled ?
-                <ThreeDots
-                  visible={true}
-                  height="50"
-                  width="50"
-                  color="black"
-                  radius="9"
-                  ariaLabel="three-dots-loading"
-                />
-              :
-            "Register"
-            }
+            {disabled ? (
+              <ThreeDots
+                visible={true}
+                height="50"
+                width="50"
+                color="black"
+                radius="9"
+                ariaLabel="three-dots-loading"
+              />
+            ) : (
+              "Register"
+            )}
           </button>
         </div>
       </form>
