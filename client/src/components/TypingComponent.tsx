@@ -51,7 +51,7 @@ export default function TypingComponent() {
   function handleKeyPress(e: any) {
     const key = e.key;
     const currentLetter = document.querySelector(".letter.current");
-    const currentWord = document.querySelector('.word.current')
+    const currentWord = document.querySelector(".word.current");
     const expected = currentLetter?.innerHTML;
     console.log({ key, expected });
     const isLetter = key.length === 1 && key !== " ";
@@ -71,20 +71,20 @@ export default function TypingComponent() {
     if (isSpace) {
       console.log("space");
       if (expected !== " ") {
-        const lettersToInvalidate = [...document.querySelectorAll(
-          ".word.current .letter:not(.correct)"
-        )];
+        const lettersToInvalidate = [
+          ...document.querySelectorAll(".word.current .letter:not(.correct)"),
+        ];
         console.log("lettersin sace ", lettersToInvalidate);
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
         });
       }
-      removeClass(currentWord,'current')
-      addClass(currentWord?.nextSibling,'current')
-      console.log(currentWord)
-      addClass(currentWord?.nextSibling?.firstChild,'current')
-      if(currentLetter){
-        removeClass(currentLetter,'current')
+      removeClass(currentWord, "current");
+      addClass(currentWord?.nextSibling, "current");
+      console.log(currentWord);
+      addClass(currentWord?.nextSibling?.firstChild, "current");
+      if (currentLetter) {
+        removeClass(currentLetter, "current");
       }
     }
     removeClass(document?.querySelector(".letter"), "current");

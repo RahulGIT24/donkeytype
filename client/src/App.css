@@ -19,6 +19,9 @@ body {
   .wrong{ 
     color: rgb(254, 78, 78);
   }
+  .word.current { 
+    color:rgb(186, 255, 148)
+  }
 
   
   
