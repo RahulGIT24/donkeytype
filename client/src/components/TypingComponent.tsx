@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
@@ -10,24 +10,19 @@ export default function TypingComponent() {
   const [showTime, setShowTime] = useState(setting.time);
   const [wordLoader, setWordLoader] = useState<boolean>(true);
 
+  const [lettersTyped, setLettersTyped] = useState<number>(0);
+  const [wordsTyped, setWordsTyped] = useState<number>(0);
+  const [correctLettersTyped, setCorrectLettersTyped] = useState<number>(0);
+  const [wrongLettersTyped, setWrongLettersTyped] = useState<number>(0);
+  const [missedLetters, setMissedLetters] = useState<number>(0);
+  const testStarted = useRef(false); 
+
   function formatWord(word: any) {
     let w = word.split("");
     return w;
   }
-  
-  useEffect(() => {
-    setShowTime(setting.time);
-  }, [setting.time]);
 
- /*  const setTime = () => {           //not working 
-    setInterval(() => {
-      setShowTime(showTime - 1);
-      if(showTime<=0) return
-    }, 1050);
-  }; */
-  //setTime();                      //not working
-
-  async function getwords(number: number) {
+  async function getWords(number: number) {
     setWordLoader(true);
     const { data } = await apiCall({
       method: "GET",
@@ -35,6 +30,17 @@ export default function TypingComponent() {
     });
     setWordLoader(false);
     return data;
+  }
+
+  async function startTest() {
+    if (!testStarted.current) {
+      testStarted.current = true; 
+      await apiCall({
+        method: "PATCH",
+        url: `/type/start-test`,
+      });
+      setLettersTyped((prev) => prev + 1);
+    }
   }
 
   async function printWords(w: any) {
@@ -47,12 +53,11 @@ export default function TypingComponent() {
 
   useEffect(() => {
     setTypeString([]);
-    getwords(setting.wordNumber)
+    getWords(setting.wordNumber)
       .then((r) => printWords(r))
       .then(() => {
         setTimeout(() => {
           addClass(document?.querySelector(".word"), "current");
-
           addClass(document?.querySelector(".letter"), "current");
         }, 800);
       });
@@ -60,21 +65,30 @@ export default function TypingComponent() {
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
-
     return () => {
       document.removeEventListener("keyup", handleKeyPress);
     };
   }, []);
 
-  function handleKeyPress(e: any) {
+  async function handleKeyPress(e: any) {
     const key = e.key;
     const currentLetter = document.querySelector(".letter.current");
     const currentWord = document.querySelector(".word.current");
     const expected = currentLetter?.innerHTML;
-    //console.log({ expected, key });
     const isLetter = key.length === 1 && key !== " ";
     const isSpace = key === " ";
-    const isbackSpace = key === "Backspace";
+    const isBackspace = key === "Backspace";
+
+    if (!testStarted.current) {
+      if(isSpace || isBackspace){
+        return;
+      }
+    }
+
+    if (lettersTyped === 0 && !isSpace && !isBackspace) {
+      await startTest();
+    }
+
     const isFirstLetter = currentLetter === currentWord?.firstChild;
     //setTime();                                         //not working
     console.log(currentWord?.previousSibling) 
@@ -91,9 +105,9 @@ export default function TypingComponent() {
         currentWord?.appendChild(incorrectLetter);
       }
     }
-    if (isbackSpace) {
+
+    if (isBackspace) {
       if (currentLetter && isFirstLetter &&currentWord.previousSibling!==undefined &&currentWord.previousSibling!==null) {
-        console.log("backspace");
         removeClass(currentWord, "current");
         addClass(currentWord.previousSibling, "current");
         removeClass(currentLetter, "current");
@@ -115,7 +129,9 @@ export default function TypingComponent() {
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
-
+        /*  const lettersToInvalidate = [
+          ...document.querySelectorAll(".word.current .letter:not(.correct)"),
+        ]; */
         console.log("lettersin sace ", lettersToInvalidate);
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
@@ -123,7 +139,6 @@ export default function TypingComponent() {
       }
       removeClass(currentWord, "current");
       addClass(currentWord?.nextSibling, "current");
-      console.log(currentWord);
       addClass(currentWord?.nextSibling?.firstChild, "current");
       if (currentLetter) {
         removeClass(currentLetter, "current");
@@ -133,39 +148,41 @@ export default function TypingComponent() {
   }
 
   function addClass(element: any, name: any) {
-    element.className += " " + name;
+    if (element) element.className += " " + name;
   }
 
   function removeClass(element: any, name: any) {
-    element.className = element.className.replace(name, "");
+    if (element) element.className = element.className.replace(name, "");
   }
 
   return (
     <>
       <div
-        className={`flex h-96 max-w-[70%] flex-wrap overflow-auto text-4xl `}
-        id="typing-area "
+        className={`flex min-h-40 w-[85%] flex-wrap overflow-auto text-4xl`}
+        id="typing-area"
       >
         <h1 className="fixed text-yellow-400 text-7xl left-[15%] top-[20%]">
           {showTime}
         </h1>
         {wordLoader && (
-          <Oval
-            visible={true}
-            height="80"
-            width="80"
-            color="rgb(234 179 8 / var(--tw-text-opacity))"
-            ariaLabel="oval-loading"
-            secondaryColor="transparent"
-            wrapperStyle={{}}
-            wrapperClass=""
-          />
+          <div className="flex justify-center items-center w-full">
+            <Oval
+              visible={true}
+              height="80"
+              width="80"
+              color="rgb(234 179 8 / var(--tw-text-opacity))"
+              ariaLabel="oval-loading"
+              secondaryColor="transparent"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
         )}
         {!wordLoader && typeString.length === 0 && <div></div>}
         {!wordLoader &&
           typeString?.map((element: any, index) => {
             return (
-              <div className="word mx-2" key={index}>
+              <div className="word mx-2 my-2 text-3xl" key={index}>
                 {element.map((e: any, index: number) => {
                   return (
                     <span className="letter" key={index}>

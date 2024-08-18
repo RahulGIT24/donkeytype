@@ -21,7 +21,7 @@ const getWords = asyncHandler(async (req, res) => {
     `https://random-word-api.herokuapp.com/word?number=${words}`
   );
   const result = response.data.join(" ");
-  res.status(200).json(new ApiResponse(200, result));
+  return res.status(200).json(new ApiResponse(200, result));
 });
 
 const startTest = asyncHandler(async (req, res) => {
