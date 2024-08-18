@@ -75,6 +75,7 @@ export default function TypingComponent() {
     const isLetter = key.length === 1 && key !== " ";
     const isSpace = key === " ";
     const isBackspace = key === "Backspace";
+    const nextWord = currentWord?.nextSibling;
 
     if (!testStarted.current) {
       if(isSpace || isBackspace){
@@ -88,21 +89,41 @@ export default function TypingComponent() {
 
     const isFirstLetter = currentLetter === currentWord?.firstChild;
     if (isLetter) {
+      setLettersTyped((prev) => prev + 1);
       if (currentLetter) {
-        addClass(currentLetter, key === expected ? "correct" : "wrong");
+        const isCorrect = key === expected;
+        if (isCorrect) {
+          setCorrectLettersTyped((prev) => prev + 1);
+        } else {
+          setWrongLettersTyped((prev) => prev + 1);
+        }
+        addClass(currentLetter, isCorrect ? "correct" : "wrong");
         removeClass(currentLetter, "current");
         const nextLetter = currentLetter.nextSibling;
-        if (nextLetter) addClass(nextLetter, "current");
+        if (!nextLetter) {
+          setWordsTyped((prev) => prev + 1);
+          if(!nextWord){
+            // compute stats
+            // api call to save stats
+            return;
+          } 
+        } else {
+          addClass(nextLetter, "current");
+        }
       } else {
+        setWrongLettersTyped((prev) => prev + 1);
         const incorrectLetter = document.createElement("span");
         incorrectLetter.innerHTML = key;
         incorrectLetter.className = "letter wrong extra";
         currentWord?.appendChild(incorrectLetter);
       }
     }
+    
 
     if (isBackspace) {
+      setLettersTyped((prev)=>prev-1)
       if (currentLetter && isFirstLetter) {
+        console.log('first')
         removeClass(currentWord, "current");
         addClass(currentWord.previousSibling, "current");
         removeClass(currentLetter, "current");
@@ -111,18 +132,12 @@ export default function TypingComponent() {
         removeClass(currentWord.previousSibling?.lastChild, "correct");
       }
       if (currentLetter && !isFirstLetter) {
+        console.log('first2')
+        console.log(currentLetter.previousSibling)
         removeClass(currentLetter, "current");
         addClass(currentLetter.previousSibling, "current");
         removeClass(currentLetter.previousSibling, "wrong");
         removeClass(currentLetter.previousSibling, "correct");
-      }
-    }
-
-    if (currentWord && currentWord.getBoundingClientRect().top > 240) {
-      const words = document.getElementById("typing-area");
-      if (words) {
-        const margin = parseInt(words.style.marginTop || "8px");
-        words.style.marginTop = margin - 35 + "px";
       }
     }
 
@@ -173,7 +188,7 @@ export default function TypingComponent() {
             />
           </div>
         )}
-        {!wordLoader && typeString.length === 0 && <div></div>}
+        {/* {!wordLoader && typeString.length === 0 && <div className="flex justify-center items-center w-full text-yellow-400">Words Not Found</div>} */}
         {!wordLoader &&
           typeString?.map((element: any, index) => {
             return (
