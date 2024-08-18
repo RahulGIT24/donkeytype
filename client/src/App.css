@@ -21,20 +21,26 @@ body {
   }
   .word.current { 
     color:rgb(186, 255, 148);
+    text-decoration: underline;
+    text-underline-offset: 2;
     animation : current-word-blink 1s ease-in-out infinite;
+  }
+
+  .extra{ 
+    color: rgb(142, 53, 53);
   }
 
 
 
   @keyframes current-word-blink{
     0%{
-      color:rgb(75, 197, 0);
+      color:rgb(234 179 8);
     }
     50%{
       color:white;
     }
     100%{
-      color:rgb(75, 197, 0);
+      color:rgb(234 179 8);
     }
   }
 

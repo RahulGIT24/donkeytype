@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState: any = {
   type:null,
   wordNumber: "10",
+  time: 10
 };
 
 
@@ -14,6 +15,10 @@ const typeSlice: any = createSlice({
       switch (action.payload.type) {
         case "number":
           state.wordNumber = action.payload.value;
+          break;
+
+          case "time" : 
+          state.time = action.payload.value;
           break;
       }
     },

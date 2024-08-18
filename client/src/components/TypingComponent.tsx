@@ -4,13 +4,28 @@ import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
 
 export default function TypingComponent() {
-  const [typeString, setTypeString] = useState<JSX.Element[]>([]);
-  const [wordLoader, setWordLoader] = useState<boolean>(true);
   const setting = useSelector((state: any) => state.setting);
+  const [typeString, setTypeString] = useState<JSX.Element[]>([]);
+ 
+  const [showTime, setShowTime] = useState(setting.time);
+  const [wordLoader, setWordLoader] = useState<boolean>(true);
+
   function formatWord(word: any) {
     let w = word.split("");
     return w;
   }
+  
+  useEffect(() => {
+    setShowTime(setting.time);
+  }, [setting.time]);
+
+ /*  const setTime = () => {           //not working 
+    setInterval(() => {
+      setShowTime(showTime - 1);
+      if(showTime<=0) return
+    }, 1050);
+  }; */
+  //setTime();                      //not working
 
   async function getwords(number: number) {
     setWordLoader(true);
@@ -41,7 +56,7 @@ export default function TypingComponent() {
           addClass(document?.querySelector(".letter"), "current");
         }, 800);
       });
-  }, [setting]);
+  }, [setting.wordNumber]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
@@ -61,6 +76,8 @@ export default function TypingComponent() {
     const isSpace = key === " ";
     const isbackSpace = key === "Backspace";
     const isFirstLetter = currentLetter === currentWord?.firstChild;
+    //setTime();                                         //not working
+    console.log(currentWord?.previousSibling) 
     if (isLetter) {
       if (currentLetter) {
         addClass(currentLetter, key === expected ? "correct" : "wrong");
@@ -70,12 +87,12 @@ export default function TypingComponent() {
       } else {
         const incorrectLetter = document.createElement("span");
         incorrectLetter.innerHTML = key;
-        incorrectLetter.className = "letter wrong extra";
+        incorrectLetter.className = "letter  extra";
         currentWord?.appendChild(incorrectLetter);
       }
     }
     if (isbackSpace) {
-      if (currentLetter && isFirstLetter) {
+      if (currentLetter && isFirstLetter &&currentWord.previousSibling!==undefined &&currentWord.previousSibling!==null) {
         console.log("backspace");
         removeClass(currentWord, "current");
         addClass(currentWord.previousSibling, "current");
@@ -86,16 +103,10 @@ export default function TypingComponent() {
       }
       if (currentLetter && !isFirstLetter) {
         removeClass(currentLetter, "current");
-        addClass(currentLetter.previousSibling, "current");
-        removeClass(currentLetter.previousSibling, "wrong");
-        removeClass(currentLetter.previousSibling, "correct");
-      }
-    }
-    if (currentWord && currentWord.getBoundingClientRect().top > 240) {
-      const words = document.getElementById("typing-area");
-      if (words) {
-        const margin = parseInt(words.style.marginTop || "8px");
-        words.style.marginTop = margin - 35 + "px";
+        addClass(currentLetter?.previousSibling, "current");
+        removeClass(currentLetter?.previousSibling, "wrong");
+        removeClass(currentLetter?.previousSibling, "wrong");
+        removeClass(currentLetter?.previousSibling, "correct");
       }
     }
 
@@ -104,9 +115,7 @@ export default function TypingComponent() {
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
-        /*  const lettersToInvalidate = [
-          ...document.querySelectorAll(".word.current .letter:not(.correct)"),
-        ]; */
+
         console.log("lettersin sace ", lettersToInvalidate);
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
@@ -124,7 +133,6 @@ export default function TypingComponent() {
   }
 
   function addClass(element: any, name: any) {
-    
     element.className += " " + name;
   }
 
@@ -138,6 +146,9 @@ export default function TypingComponent() {
         className={`flex h-96 max-w-[70%] flex-wrap overflow-auto text-4xl `}
         id="typing-area "
       >
+        <h1 className="fixed text-yellow-400 text-7xl left-[15%] top-[20%]">
+          {showTime}
+        </h1>
         {wordLoader && (
           <Oval
             visible={true}
