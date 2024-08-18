@@ -110,7 +110,7 @@ export default function TypingComponent() {
       await startTest();
     }
 
-    const isFirstLetter = currentLetter === currentWord?.firstChild;
+    // const isFirstLetter = currentLetter === currentWord?.firstChild;
     if (isLetter) {
       setLettersTyped((prev) => prev + 1);
       if (currentLetter) {
