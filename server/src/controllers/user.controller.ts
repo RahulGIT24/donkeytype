@@ -31,13 +31,13 @@ const generateAccessandRefreshToken = async (userId: string) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, username, password } = req.body;
   if ([name, email, username, password].some((field) => field.trim() === "")) {
-    res.status(400).json(new ApiResponse(400, "Please send all the data"));
+    return res.status(400).json(new ApiResponse(400, "Please send all the data"));
   }
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
   if (existedUser) {
-    res
+    return res
       .status(409)
       .json(
         new ApiResponse(
@@ -48,7 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   if (password.length < 8) {
-    res
+    return res
       .status(400)
       .json(
         new ApiResponse(
@@ -81,7 +81,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const url = process.env.FRONTEND_URL + `verifyToken/${verifyToken}`;
 
   if (!user) {
-    res
+    return res
       .status(500)
       .json(
         new ApiResponse(500, "Something went wrong while registering the user")
@@ -255,10 +255,9 @@ const changePassword = asyncHandler(async (req, res) => {
 
 const refresh = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.body.refreshToken || req.cookies.refreshToken;
-  console.log(incomingRefreshToken)
 
   if (!incomingRefreshToken) {
-    res.status(404).json(new ApiResponse(404, "Refresh Token Not Found"));
+    return res.status(404).json(new ApiResponse(404, "Refresh Token Not Found"));
   }
 
   const decodedToken = jwt.verify(
@@ -271,8 +270,6 @@ const refresh = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(401).json(new ApiResponse(401, "Token Expired"));
   }
-
-  console.log(user.refreshToken)
 
   if(incomingRefreshToken != user?.refreshToken){
     return res.status(404).json(new ApiResponse(404, "Invalid Refresh Token"));

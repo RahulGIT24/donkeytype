@@ -1,9 +1,9 @@
-import axios from "axios";
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
 
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import apiCall from "../../utils/apiCall";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -27,28 +27,21 @@ export default function Login() {
     if (!formData.email || !formData.password) {
       toast.error("Please fill in all fields");
     } else {
-      try {
-        setDisabled(true);
-        const res = await axios.post(
-          `${import.meta.env.VITE_SERVER_API}/users/login`,
-          {
-            identifier: formData.email,
-            password: formData.password,
-          },
-          {
-            withCredentials: true, 
-          }
-        );
-
-        navigate("/")
-        toast.success(res.data.data);
-      } catch (error: any) {
-        const data = error.response.data;
-        toast.error(data.data);
-        console.log(error)
-      } finally {
-        setDisabled(false);
+      setDisabled(true);
+      const { data, status } = await apiCall({
+        url: `/users/login`,
+        method: "POST",
+        reqData: {
+          identifier: formData.email,
+          password: formData.password,
+        },
+      });
+      if (status >= 400) {
+        toast.error(data);
+      } else {
+        navigate("/");
       }
+      setDisabled(false);
     }
   };
 

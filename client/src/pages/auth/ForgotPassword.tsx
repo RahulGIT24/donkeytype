@@ -1,37 +1,32 @@
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
-import axios from "axios";
 import { toast } from "sonner";
 import MainNav from "../../components/navbars/MainNav";
+import apiCall from "../../utils/apiCall";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [disabled, setDisabled] = useState(false);
-  const handleSubmit = async (e:any) => {
-e.preventDefault()
-    try {
-      setDisabled(true);
-      const res = await axios.post(
-        `${import.meta.env.VITE_SERVER_API}/users/forgot-password`,
-        {
-          email,
-        }
-      );
-      console.log(res)
-      if (res.status < 400) {
-
-        toast.success(res.data.data);
-        setDisabled(false);
-      }else{
-        toast.error(res.data.data);
-      }
-    } catch (error) {
-      toast.error("Some error occured");
-      console.error(error);
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    setDisabled(true);
+    const { data, status } = await apiCall({
+      url: "/users/forgot-password",
+      reqData: {
+        email,
+      },
+      method: "POST",
+      withCredentials:false
+    });
+    if (status >= 400) {
+      toast.error(data);
+    } else {
+      toast.success(data);
     }
+    setDisabled(false);
   };
   return (
     <>
-    <MainNav/>
+      <MainNav />
       <div className="flex justify-center items-center flex-col gap-2 h-screen ">
         <form className="mt-6 space-y-4 w-1/2" onSubmit={handleSubmit}>
           <h1 className="text-xl text-white">

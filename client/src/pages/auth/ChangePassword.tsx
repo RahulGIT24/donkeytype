@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
-
-import axios from "axios";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import MainNav from "../../components/navbars/MainNav";
+import apiCall from "../../utils/apiCall";
 export default function ChangePassword() {
   const [password, setPassword] = useState("");
   const [cpassword, setCPassword] = useState("");
   const [disabled, setDisabled] = useState(false);
   const { token } = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -20,26 +19,26 @@ export default function ChangePassword() {
       );
       return;
     }
-    try {
-      setDisabled(true);
-      const res = await axios.put(
-        `${import.meta.env.VITE_SERVER_API}/users/forgot-password`,
-        {
-          token,
-          password,
-        }
-      );
-      toast.success(res.data.data)
-      navigate('/login')
-    } catch (error: any) {
-      toast.error(error.response.data.data);
-    } finally {
-      setDisabled(false);
+    setDisabled(true);
+    const { data, status } = await apiCall({
+      url: "/users/forgot-password",
+      reqData: {
+        token,
+        password,
+      },
+      method: "PUT",
+      withCredentials:false
+    });
+    if (status >= 400) {
+      toast.error(data);
+    } else {
+      toast.success(data);
+      navigate("/login");
     }
   };
   return (
     <>
-      <MainNav/>
+      <MainNav />
       <div className="flex justify-center items-center flex-col gap-2 fixed w-screen h-screen">
         <form className="mt-6 space-y-4 w-1/2" onSubmit={handleSubmit}>
           <h1 className="text-xl text-white">
