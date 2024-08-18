@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import getwords from "../utils/getwords";
-import { legacy_createStore } from "@reduxjs/toolkit";
+import { current } from "@reduxjs/toolkit";
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
   const setting = useSelector((state: any) => state.setting);
@@ -56,7 +56,8 @@ export default function TypingComponent() {
     console.log({ key, expected });
     const isLetter = key.length === 1 && key !== " ";
     const isSpace = key === " ";
-
+const isbackSpace= key==="Backspace";
+const isFirstLetter = currentLetter ===currentWord?.firstChild;
     if (isLetter) {
       if (currentLetter) {
         addClass(currentLetter, key === expected ? "correct" : "wrong");
@@ -65,8 +66,41 @@ export default function TypingComponent() {
         console.log("next sibling", currentLetter.nextSibling);
         const nextLetter = currentLetter.nextSibling;
         if (nextLetter) addClass(nextLetter, "current");
+      }else{
+        const incorrectLetter = document.createElement('span');
+        incorrectLetter.innerHTML = key; 
+        incorrectLetter.className = 'letter wrong extra';
+        currentWord?.appendChild(incorrectLetter)
+      }
+
+    }
+    if(isbackSpace){
+      if(currentLetter && isFirstLetter){
+        console.log('backspace')
+        removeClass(currentWord,'current')
+        addClass(currentWord.previousSibling, 'current')
+        removeClass(currentLetter, 'current')
+        addClass(currentWord.previousSibling?.lastChild, 'current')
+        removeClass(currentWord.previousSibling?.lastChild, 'wrong');
+        removeClass(currentWord.previousSibling?.lastChild, 'correct');
+
+      }
+      if(currentLetter && !isFirstLetter){
+        removeClass(currentLetter, 'current')
+        addClass(currentLetter.previousSibling,'current')
+        removeClass(currentLetter.previousSibling, 'wrong');
+        removeClass(currentLetter.previousSibling, 'correct');
+      }
+
+    }
+    if (currentWord && currentWord.getBoundingClientRect().top > 240) {
+      const words = document.getElementById('typing-area');
+      if (words) {
+        const margin = parseInt(words.style.marginTop || '8px')
+        words.style.marginTop = margin-35 +'px';
       }
     }
+    
 
     if (isSpace) {
       console.log("space");
@@ -91,7 +125,7 @@ export default function TypingComponent() {
   }
 
   function addClass(element: any, name: any) {
-    // console.log(document?.querySelector(".letter"));
+    
     element.className += " " + name;
   }
 
