@@ -19,6 +19,24 @@ body {
   .wrong{ 
     color: rgb(254, 78, 78);
   }
+  .word.current { 
+    color:rgb(186, 255, 148);
+    animation : current-word-blink 1s ease-in-out infinite;
+  }
+
+
+
+  @keyframes current-word-blink{
+    0%{
+      color:rgb(75, 197, 0);
+    }
+    50%{
+      color:white;
+    }
+    100%{
+      color:rgb(75, 197, 0);
+    }
+  }
 
   
   

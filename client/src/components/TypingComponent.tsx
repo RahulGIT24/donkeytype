@@ -14,16 +14,20 @@ export default function TypingComponent() {
 
   async function getwords(number: number) {
     setWordLoader(true);
-    const {data} = await apiCall({ method: "GET", url: `/type/get-words?words=${number}`});
+    const { data } = await apiCall({
+      method: "GET",
+      url: `/type/get-words?words=${number}`,
+    });
     setWordLoader(false);
-    return data
+    return data;
   }
 
-  function printWords(w: any) {
+  async function printWords(w: any) {
     const st = w.split(" ");
     st.forEach((element: any) => {
       setTypeString((prev: any) => [...prev, formatWord(element)]);
     });
+    return st;
   }
 
   useEffect(() => {
@@ -31,8 +35,11 @@ export default function TypingComponent() {
     getwords(setting.wordNumber)
       .then((r) => printWords(r))
       .then(() => {
-        addClass(document?.querySelector(".word"), "current");
-        addClass(document?.querySelector(".letter"), "current");
+        setTimeout(() => {
+          addClass(document?.querySelector(".word"), "current");
+
+          addClass(document?.querySelector(".letter"), "current");
+        }, 800);
       });
   }, [setting]);
 
@@ -49,15 +56,46 @@ export default function TypingComponent() {
     const currentLetter = document.querySelector(".letter.current");
     const currentWord = document.querySelector(".word.current");
     const expected = currentLetter?.innerHTML;
+    //console.log({ expected, key });
     const isLetter = key.length === 1 && key !== " ";
     const isSpace = key === " ";
-
+    const isbackSpace = key === "Backspace";
+    const isFirstLetter = currentLetter === currentWord?.firstChild;
     if (isLetter) {
       if (currentLetter) {
         addClass(currentLetter, key === expected ? "correct" : "wrong");
         removeClass(currentLetter, "current");
         const nextLetter = currentLetter.nextSibling;
         if (nextLetter) addClass(nextLetter, "current");
+      } else {
+        const incorrectLetter = document.createElement("span");
+        incorrectLetter.innerHTML = key;
+        incorrectLetter.className = "letter wrong extra";
+        currentWord?.appendChild(incorrectLetter);
+      }
+    }
+    if (isbackSpace) {
+      if (currentLetter && isFirstLetter) {
+        console.log("backspace");
+        removeClass(currentWord, "current");
+        addClass(currentWord.previousSibling, "current");
+        removeClass(currentLetter, "current");
+        addClass(currentWord.previousSibling?.lastChild, "current");
+        removeClass(currentWord.previousSibling?.lastChild, "wrong");
+        removeClass(currentWord.previousSibling?.lastChild, "correct");
+      }
+      if (currentLetter && !isFirstLetter) {
+        removeClass(currentLetter, "current");
+        addClass(currentLetter.previousSibling, "current");
+        removeClass(currentLetter.previousSibling, "wrong");
+        removeClass(currentLetter.previousSibling, "correct");
+      }
+    }
+    if (currentWord && currentWord.getBoundingClientRect().top > 240) {
+      const words = document.getElementById("typing-area");
+      if (words) {
+        const margin = parseInt(words.style.marginTop || "8px");
+        words.style.marginTop = margin - 35 + "px";
       }
     }
 
@@ -66,6 +104,10 @@ export default function TypingComponent() {
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
+        /*  const lettersToInvalidate = [
+          ...document.querySelectorAll(".word.current .letter:not(.correct)"),
+        ]; */
+        console.log("lettersin sace ", lettersToInvalidate);
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
         });
@@ -82,6 +124,7 @@ export default function TypingComponent() {
   }
 
   function addClass(element: any, name: any) {
+    
     element.className += " " + name;
   }
 
