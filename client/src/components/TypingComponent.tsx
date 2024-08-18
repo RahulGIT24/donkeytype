@@ -4,17 +4,18 @@ import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
 
 export default function TypingComponent() {
-  const setting = useSelector((state: any) => state.setting);
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
- 
-  const [showTime, setShowTime] = useState(setting.time);
   const [wordLoader, setWordLoader] = useState<boolean>(true);
-
+  const setting = useSelector((state: any) => state.setting);
   const [lettersTyped, setLettersTyped] = useState<number>(0);
   const [wordsTyped, setWordsTyped] = useState<number>(0);
   const [correctLettersTyped, setCorrectLettersTyped] = useState<number>(0);
   const [wrongLettersTyped, setWrongLettersTyped] = useState<number>(0);
   const [missedLetters, setMissedLetters] = useState<number>(0);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [endTime, setEndTime] = useState<Date |  null>(null);
+  const [durationseconds, setDurationSeconds] = useState<number | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const testStarted = useRef(false); 
 
   function formatWord(word: any) {
@@ -61,7 +62,7 @@ export default function TypingComponent() {
           addClass(document?.querySelector(".letter"), "current");
         }, 800);
       });
-  }, [setting.wordNumber]);
+  }, [setting]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
@@ -69,6 +70,23 @@ export default function TypingComponent() {
       document.removeEventListener("keyup", handleKeyPress);
     };
   }, []);
+
+  useEffect(() => {
+    if (testStarted.current) {
+      // started
+      const start = new Date();
+      setStartTime(start);
+    } else if (startTime) {
+      // ended
+      const end = new Date();
+      setEndTime(end);
+      if (startTime && end) {
+        const durationInSeconds = (end.getTime() - startTime.getTime()) / 1000;
+        setDurationSeconds(durationInSeconds);
+        setDurationMinutes(durationInSeconds/60)
+      }
+    }
+  }, [testStarted.current]);
 
   async function handleKeyPress(e: any) {
     const key = e.key;
@@ -79,6 +97,8 @@ export default function TypingComponent() {
     const isSpace = key === " ";
     const isBackspace = key === "Backspace";
     const nextWord = currentWord?.nextSibling;
+
+    if(isBackspace) return;
 
     if (!testStarted.current) {
       if(isSpace || isBackspace){
@@ -91,8 +111,6 @@ export default function TypingComponent() {
     }
 
     const isFirstLetter = currentLetter === currentWord?.firstChild;
-    //setTime();                                         //not working
-    console.log(currentWord?.previousSibling) 
     if (isLetter) {
       setLettersTyped((prev) => prev + 1);
       if (currentLetter) {
@@ -108,6 +126,7 @@ export default function TypingComponent() {
         if (!nextLetter) {
           setWordsTyped((prev) => prev + 1);
           if(!nextWord){
+            testStarted.current = false;
             // compute stats
             // api call to save stats
             return;
@@ -119,35 +138,8 @@ export default function TypingComponent() {
         setWrongLettersTyped((prev) => prev + 1);
         const incorrectLetter = document.createElement("span");
         incorrectLetter.innerHTML = key;
-        incorrectLetter.className = "letter  extra";
+        incorrectLetter.className = "letter wrong extra";
         currentWord?.appendChild(incorrectLetter);
-      }
-    }
-    
-
-    if (isBackspace) {
-      if (currentLetter && isFirstLetter &&currentWord.previousSibling!==undefined &&currentWord.previousSibling!==null) {
-      setLettersTyped((prev)=>prev-1)
-      if (currentLetter && isFirstLetter) {
-        console.log('first')
-        removeClass(currentWord, "current");
-        addClass(currentWord.previousSibling, "current");
-        removeClass(currentLetter, "current");
-        addClass(currentWord.previousSibling?.lastChild, "current");
-        removeClass(currentWord.previousSibling?.lastChild, "wrong");
-        removeClass(currentWord.previousSibling?.lastChild, "correct");
-      }
-      if (currentLetter && !isFirstLetter) {
-        console.log('first2')
-        console.log(currentLetter.previousSibling)
-        removeClass(currentLetter, "current");
-        addClass(currentLetter?.previousSibling, "current");
-        removeClass(currentLetter?.previousSibling, "wrong");
-        removeClass(currentLetter?.previousSibling, "wrong");
-        removeClass(currentLetter?.previousSibling, "correct");
-        addClass(currentLetter.previousSibling, "current");
-        removeClass(currentLetter.previousSibling, "wrong");
-        removeClass(currentLetter.previousSibling, "correct");
       }
     }
 
@@ -156,10 +148,6 @@ export default function TypingComponent() {
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
-        /*  const lettersToInvalidate = [
-          ...document.querySelectorAll(".word.current .letter:not(.correct)"),
-        ]; */
-        console.log("lettersin sace ", lettersToInvalidate);
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
         });
@@ -188,9 +176,6 @@ export default function TypingComponent() {
         className={`flex min-h-40 w-[85%] flex-wrap overflow-auto text-4xl`}
         id="typing-area"
       >
-        <h1 className="fixed text-yellow-400 text-7xl left-[15%] top-[20%]">
-          {showTime}
-        </h1>
         {wordLoader && (
           <div className="flex justify-center items-center w-full">
             <Oval
