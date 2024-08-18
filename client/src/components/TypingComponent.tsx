@@ -116,6 +116,11 @@ export default function TypingComponent() {
         removeClass(currentWord.previousSibling?.lastChild, "correct");
       }
       if (currentLetter && !isFirstLetter) {
+        if(currentLetter.classList.contains('current')){
+          
+        }else{ 
+          console.log(false)
+        }
         removeClass(currentLetter, "current");
         addClass(currentLetter?.previousSibling, "current");
         removeClass(currentLetter?.previousSibling, "wrong");
