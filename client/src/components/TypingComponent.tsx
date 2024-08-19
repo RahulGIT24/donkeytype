@@ -136,15 +136,17 @@ export default function TypingComponent() {
         }
       } else {
         setWrongLettersTyped((prev) => prev + 1);
-        const incorrectLetter = document.createElement("span");
+        /* const incorrectLetter = document.createElement("span");
         incorrectLetter.innerHTML = key;
         incorrectLetter.className = "letter wrong extra";
-        currentWord?.appendChild(incorrectLetter);
+        currentWord?.appendChild(incorrectLetter); */
       }
     }
 
     if (isSpace) {
+      console.log('space')
       if (expected !== " ") {
+        
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
@@ -152,13 +154,23 @@ export default function TypingComponent() {
           addClass(letter, "wrong");
         });
       }
+
+
       removeClass(currentWord, "current");
       addClass(currentWord?.nextSibling, "current");
       addClass(currentWord?.nextSibling?.firstChild, "current");
       if (currentLetter) {
         removeClass(currentLetter, "current");
       }
+
+      //checking  if the next elemetn is defined or not  ???
+      if(currentWord?.nextSibling ===undefined){
+      console.log('yes')
+      }
     }
+
+    //checking if the next letter is undefined or not an if the enxt word is undefined or not 
+    if(currentLetter?.parentElement?.nextSibling ===undefined &&currentLetter?.nextSibling === undefined) console.log("this one too")
     removeClass(document?.querySelector(".letter"), "current");
   }
 
