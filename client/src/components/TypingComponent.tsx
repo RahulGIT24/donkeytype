@@ -13,6 +13,7 @@ export default function TypingComponent() {
   const correctLettersTypedRef = useRef<number>(0);
   const wrongLettersTypedRef = useRef<number>(0);
   const missedLettersRef = useRef<number>(0);
+  const extraWordRef = useRef<number>(0)
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [durationSeconds, setDurationSeconds] = useState<number>(0);
@@ -52,16 +53,13 @@ export default function TypingComponent() {
             removeClass(currentWord, "current");
             addClass(document.getElementById("typing-area"), "blur-sm");
             document.removeEventListener("keyup", handleKeyPress);
-            const totalLetters =
-              correctLettersTypedRef.current +
-              wrongLettersTypedRef.current +
-              missedLettersRef.current;
+            const totalLetters =lettersTypedRef.current
             const wpm =
               durationSeconds > 0
                 ? correctLettersTypedRef.current / 5 / (durationSeconds / 60)
-                : 0;
+                : 0;                                                            //wrong formula
             let stats = {
-              wpm: wpm,
+              wpm: wpm,                                       
               raw:
                 durationSeconds > 0
                   ? lettersTypedRef.current / 5 / (durationSeconds / 60)
@@ -70,9 +68,9 @@ export default function TypingComponent() {
                 totalLetters > 0
                   ? (correctLettersTypedRef.current / totalLetters) * 100
                   : 0,
-              chars: `${correctLettersTypedRef.current}/${wrongLettersTypedRef.current}/${missedLettersRef.current}`,
+              chars: `${correctLettersTypedRef.current}/${wrongLettersTypedRef.current}/${extraWordRef.current}/${missedLettersRef.current}`, //extra words being calculated wrong
               mode: `Words ${setting.wordNumber}`,
-            };
+            };                                                //missed letter must be removed or done something else with
             console.log(stats);
             //sending stats
             /* const res = axios.post(import.meta.env.VITE_SERVER_API+'/type/complete-test',{
@@ -149,6 +147,7 @@ export default function TypingComponent() {
 
     if (isLetter) {
       lettersTypedRef.current += 1;
+      wordsTypedRef.current += 1;
       if (currentLetter) {
         const isCorrect = key === expected;
         if (isCorrect) {
@@ -160,7 +159,8 @@ export default function TypingComponent() {
         removeClass(currentLetter, "current");
         const nextLetter = currentLetter.nextSibling;
         if (!nextLetter) {
-          wordsTypedRef.current += 1;
+          if(nextWord)
+          extraWordRef.current += 1;
           if (!nextWord) {
             gameOver(currentWord)
           }
