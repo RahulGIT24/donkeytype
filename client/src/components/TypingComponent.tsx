@@ -97,7 +97,7 @@ export default function TypingComponent() {
     const isSpace = key === " ";
     const isBackspace = key === "Backspace";
     const nextWord = currentWord?.nextSibling;
-
+    const isFirstLetter = currentLetter === currentWord?.firstChild;
     if(isBackspace) return;
 
     if (!testStarted.current) {
@@ -138,13 +138,8 @@ export default function TypingComponent() {
         setWrongLettersTyped((prev) => prev + 1);
         /* const incorrectLetter = document.createElement("span");
         incorrectLetter.innerHTML = key;
-<<<<<<< HEAD
         incorrectLetter.className = "letter wrong extra";
-        currentWord?.appendChild(incorrectLetter); */
-=======
-        incorrectLetter.className = "letter  extra";
-        currentWord?.appendChild(incorrectLetter);
-      }
+        currentWord?.appendChild(incorrectLetter); */}
     }
 
     if (isBackspace) {
@@ -159,7 +154,7 @@ export default function TypingComponent() {
       if (currentLetter && !isFirstLetter) {
         if(currentLetter.classList.contains('current')){
           
-        }else{ 
+        }else{
           console.log(false)
         }
         removeClass(currentLetter, "current");
@@ -167,7 +162,6 @@ export default function TypingComponent() {
         removeClass(currentLetter?.previousSibling, "wrong");
         removeClass(currentLetter?.previousSibling, "wrong");
         removeClass(currentLetter?.previousSibling, "correct");
->>>>>>> frontend
       }
     }
 
