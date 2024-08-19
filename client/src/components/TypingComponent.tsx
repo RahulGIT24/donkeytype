@@ -318,9 +318,48 @@ export default function TypingComponent() {
     }
   }, []);
 
-  async function gameOver() {
-    console.log("game over ");
-    alert("game over ");
+  async function gameOver(currentWord:any) {
+    testStarted.current = false;
+    removeClass(currentWord, "current");
+    addClass(document.getElementById("typing-area"), "blur-sm");
+    document.removeEventListener("keyup", handleKeyPress);
+    const totalLetters = lettersTypedRef.current;
+    const timeInMinutes = durationSeconds / 60;
+
+    const wpm =
+    durationSeconds > 0
+      ? (correctLettersTypedRef.current / 5) / (durationSeconds / 60)
+      : 0;
+
+    const raw =
+      timeInMinutes > 0
+        ? Math.round((totalLetters / timeInMinutes) * 10) / 10
+        : 0;
+
+    const accuracy =
+      totalLetters > 0
+        ? Math.round(
+            (correctLettersTypedRef.current / totalLetters) * 10000
+          ) / 100
+        : 0;
+
+    const consistency = 56.4;
+
+    const chars = `${correctLettersTypedRef.current}/${wrongLettersTypedRef.current}/${missedLettersRef.current}`;
+
+    let stats = {
+      wpm: wpm,
+      raw: raw,
+      accuracy: accuracy,
+      consistency: consistency,
+      chars: chars,
+      mode: `Words ${setting.wordNumber}`,
+    };
+
+    console.log(stats);
+    console.log(stats);
+    console.log(totalWordRef);
+    return;
   }
 
   async function printWords(w: any) {
@@ -403,69 +442,7 @@ export default function TypingComponent() {
         if (!nextLetter) {
           wordsTypedRef.current += 1;
           if (!nextWord) {
-            testStarted.current = false;
-            removeClass(currentWord, "current");
-            addClass(document.getElementById("typing-area"), "blur-sm");
-            document.removeEventListener("keyup", handleKeyPress);
-            /* const totalLetters =
-              correctLettersTypedRef.current +
-              wrongLettersTypedRef.current +
-              missedLettersRef.current; */
-            /* const totalLetters =totalWordRef.current
-            const wpm =
-              durationSeconds > 0
-                ? correctLettersTypedRef.current / 5 / (durationSeconds / 60)
-                : 0;
-            let stats = {
-              wpm: wpm,
-              raw:
-                durationSeconds > 0
-                  ? lettersTypedRef.current / 5 / (durationSeconds / 60)
-                  : 0,
-              accuracy:
-                totalLetters > 0
-                  ? (correctLettersTypedRef.current / totalLetters) * 100
-                  : 0,
-              chars: `${correctLettersTypedRef.current}/${wrongLettersTypedRef.current}/${missedLettersRef.current}`,
-              mode: `Words ${setting.wordNumber}`,
-            }; */
-            const totalLetters = lettersTypedRef.current;
-            const timeInMinutes = durationSeconds / 60;
-
-            const wpm =
-              timeInMinutes > 0
-                ? Math.round((wordsTypedRef.current / timeInMinutes) * 10) / 10
-                : 0;
-
-            const raw =
-              timeInMinutes > 0
-                ? Math.round((totalLetters / timeInMinutes) * 10) / 10
-                : 0;
-
-            const accuracy =
-              totalLetters > 0
-                ? Math.round(
-                    (correctLettersTypedRef.current / totalLetters) * 10000
-                  ) / 100
-                : 0;
-
-            const consistency = 56.4;
-
-            const chars = `${correctLettersTypedRef.current}/${wrongLettersTypedRef.current}/${missedLettersRef.current}`;
-
-            let stats = {
-              wpm: wpm,
-              raw: raw,
-              accuracy: accuracy,
-              consistency: consistency,
-              chars: chars,
-              mode: `Words ${setting.wordNumber}`,
-            };
-
-            console.log(stats);
-            console.log(stats);
-            console.log(totalWordRef);
-            return;
+            gameOver(currentWord)
           }
         } else {
           addClass(nextLetter, "current");
@@ -510,6 +487,9 @@ export default function TypingComponent() {
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
         });
+      }
+      if( !nextWord){
+        gameOver(currentWord)
       }
 
       removeClass(currentWord, "current");
