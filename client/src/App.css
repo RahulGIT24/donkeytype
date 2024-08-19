@@ -44,5 +44,6 @@ body {
     }
   }
 
-  
-  
+  .remove-blur{
+    filter: none;
+  }

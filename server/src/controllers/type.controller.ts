@@ -21,7 +21,19 @@ const getWords = asyncHandler(async (req, res) => {
     `https://random-word-api.herokuapp.com/word?number=${words}`
   );
   const result = response.data.join(" ");
-  return res.status(200).json(new ApiResponse(200, result));
+  let words_ = result.split(" ");
+  let totalLetters = 0;
+
+  for (let index = 0; index < words_.length; index++) {
+      totalLetters += words_[index].length;
+  }
+
+let averageWordLength = totalLetters / words_.length;
+  const resutlObj = {
+    text:result,
+    avgwordlength:Math.round(averageWordLength)
+  }
+  return res.status(200).json(new ApiResponse(200, resutlObj));
 });
 
 const startTest = asyncHandler(async (req, res) => {
