@@ -138,8 +138,36 @@ export default function TypingComponent() {
         setWrongLettersTyped((prev) => prev + 1);
         /* const incorrectLetter = document.createElement("span");
         incorrectLetter.innerHTML = key;
+<<<<<<< HEAD
         incorrectLetter.className = "letter wrong extra";
         currentWord?.appendChild(incorrectLetter); */
+=======
+        incorrectLetter.className = "letter  extra";
+        currentWord?.appendChild(incorrectLetter);
+      }
+    }
+
+    if (isBackspace) {
+      if (currentLetter && isFirstLetter &&currentWord.previousSibling!==undefined &&currentWord.previousSibling!==null) {
+        removeClass(currentWord, "current");
+        addClass(currentWord.previousSibling, "current");
+        removeClass(currentLetter, "current");
+        addClass(currentWord.previousSibling?.lastChild, "current");
+        removeClass(currentWord.previousSibling?.lastChild, "wrong");
+        removeClass(currentWord.previousSibling?.lastChild, "correct");
+      }
+      if (currentLetter && !isFirstLetter) {
+        if(currentLetter.classList.contains('current')){
+          
+        }else{ 
+          console.log(false)
+        }
+        removeClass(currentLetter, "current");
+        addClass(currentLetter?.previousSibling, "current");
+        removeClass(currentLetter?.previousSibling, "wrong");
+        removeClass(currentLetter?.previousSibling, "wrong");
+        removeClass(currentLetter?.previousSibling, "correct");
+>>>>>>> frontend
       }
     }
 
