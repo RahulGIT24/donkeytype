@@ -1,22 +1,26 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
+import axios from "axios";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
   const [wordLoader, setWordLoader] = useState<boolean>(true);
   const setting = useSelector((state: any) => state.setting);
-  const [lettersTyped, setLettersTyped] = useState<number>(0);
-  const [wordsTyped, setWordsTyped] = useState<number>(0);
-  const [correctLettersTyped, setCorrectLettersTyped] = useState<number>(0);
-  const [wrongLettersTyped, setWrongLettersTyped] = useState<number>(0);
-  const [missedLetters, setMissedLetters] = useState<number>(0);
+  const lettersTypedRef = useRef<number>(0);
+  const wordsTypedRef = useRef<number>(0);
+  const correctLettersTypedRef = useRef<number>(0);
+  const wrongLettersTypedRef = useRef<number>(0);
+  const missedLettersRef = useRef<number>(0);
+  const extraWordRef = useRef<number>(0)
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const [endTime, setEndTime] = useState<Date |  null>(null);
-  const [durationseconds, setDurationSeconds] = useState<number | null>(null);
-  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
-  const testStarted = useRef(false); 
+  const [endTime, setEndTime] = useState<Date | null>(null);
+  const [durationSeconds, setDurationSeconds] = useState<number>(0);
+  const [durationMinutes, setDurationMinutes] = useState<number>(0);
+  const totalWordRef = useRef<number>(0);
+  const testStarted = useRef(false);
+  const def = "The sun sets, casting golden hues across the tranquil lake";
 
   function formatWord(word: any) {
     let w = word.split("");
@@ -30,18 +34,50 @@ export default function TypingComponent() {
       url: `/type/get-words?words=${number}`,
     });
     setWordLoader(false);
-    return data;
+    return data || def;
   }
 
-  async function startTest() {
+  const startTest = useCallback(async () => {
     if (!testStarted.current) {
-      testStarted.current = true; 
+      testStarted.current = true;
       await apiCall({
         method: "PATCH",
         url: `/type/start-test`,
       });
-      setLettersTyped((prev) => prev + 1);
+      lettersTypedRef.current += 1;
     }
+  }, []);
+
+  async function gameOver(currentWord:any) {
+    testStarted.current = false;
+            removeClass(currentWord, "current");
+            addClass(document.getElementById("typing-area"), "blur-sm");
+            document.removeEventListener("keyup", handleKeyPress);
+            const totalLetters =lettersTypedRef.current
+            const wpm =
+              durationSeconds > 0
+                ? correctLettersTypedRef.current / 5 / (durationSeconds / 60)
+                : 0;                                                            //wrong formula
+            let stats = {
+              wpm: wpm,                                       
+              raw:
+                durationSeconds > 0
+                  ? lettersTypedRef.current / 5 / (durationSeconds / 60)
+                  : 0,
+              accuracy:
+                totalLetters > 0
+                  ? (correctLettersTypedRef.current / totalLetters) * 100
+                  : 0,
+              chars: `${correctLettersTypedRef.current}/${wrongLettersTypedRef.current}/${extraWordRef.current}/${missedLettersRef.current}`, //extra words being calculated wrong
+              mode: `Words ${setting.wordNumber}`,
+            };                                                //missed letter must be removed or done something else with
+            console.log(stats);
+            //sending stats
+            /* const res = axios.post(import.meta.env.VITE_SERVER_API+'/type/complete-test',{
+              withCredentials:true,
+              stats
+            }) */
+            return;
   }
 
   async function printWords(w: any) {
@@ -73,17 +109,15 @@ export default function TypingComponent() {
 
   useEffect(() => {
     if (testStarted.current) {
-      // started
       const start = new Date();
       setStartTime(start);
     } else if (startTime) {
-      // ended
       const end = new Date();
       setEndTime(end);
       if (startTime && end) {
         const durationInSeconds = (end.getTime() - startTime.getTime()) / 1000;
         setDurationSeconds(durationInSeconds);
-        setDurationMinutes(durationInSeconds/60)
+        setDurationMinutes(durationInSeconds / 60);
       }
     }
   }, [testStarted.current]);
@@ -97,49 +131,71 @@ export default function TypingComponent() {
     const isSpace = key === " ";
     const isBackspace = key === "Backspace";
     const nextWord = currentWord?.nextSibling;
+    const isFirstLetter = currentLetter === currentWord?.firstChild;
 
-    if(isBackspace) return;
+    if (isBackspace) return;
 
     if (!testStarted.current) {
-      if(isSpace || isBackspace){
+      if (isSpace || isBackspace) {
         return;
       }
     }
 
-    if (lettersTyped === 0 && !isSpace && !isBackspace) {
+    if (lettersTypedRef.current === 0 && !isSpace && !isBackspace) {
       await startTest();
     }
 
-    // const isFirstLetter = currentLetter === currentWord?.firstChild;
     if (isLetter) {
-      setLettersTyped((prev) => prev + 1);
+      lettersTypedRef.current += 1;
+      wordsTypedRef.current += 1;
       if (currentLetter) {
         const isCorrect = key === expected;
         if (isCorrect) {
-          setCorrectLettersTyped((prev) => prev + 1);
+          correctLettersTypedRef.current += 1;
         } else {
-          setWrongLettersTyped((prev) => prev + 1);
+          wrongLettersTypedRef.current += 1;
         }
         addClass(currentLetter, isCorrect ? "correct" : "wrong");
         removeClass(currentLetter, "current");
         const nextLetter = currentLetter.nextSibling;
         if (!nextLetter) {
-          setWordsTyped((prev) => prev + 1);
-          if(!nextWord){
-            testStarted.current = false;
-            // compute stats
-            // api call to save stats
-            return;
-          } 
+          if(nextWord)
+          extraWordRef.current += 1;
+          if (!nextWord) {
+            gameOver(currentWord)
+          }
         } else {
           addClass(nextLetter, "current");
         }
       } else {
-        setWrongLettersTyped((prev) => prev + 1);
-        const incorrectLetter = document.createElement("span");
-        incorrectLetter.innerHTML = key;
-        incorrectLetter.className = "letter wrong extra";
-        currentWord?.appendChild(incorrectLetter);
+        wrongLettersTypedRef.current += 1;
+      }
+    }
+
+    if (isBackspace) {
+      if (
+        currentLetter &&
+        isFirstLetter &&
+        currentWord.previousSibling !== undefined &&
+        currentWord.previousSibling !== null
+      ) {
+        removeClass(currentWord, "current");
+        addClass(currentWord.previousSibling, "current");
+        removeClass(currentLetter, "current");
+        addClass(currentWord.previousSibling?.lastChild, "current");
+        removeClass(currentWord.previousSibling?.lastChild, "wrong");
+        removeClass(currentWord.previousSibling?.lastChild, "correct");
+      }
+      if (currentLetter && !isFirstLetter) {
+        if (currentLetter.classList.contains("current")) {
+        } else {
+          console.log(false);
+        }
+        removeClass(currentLetter, "current");
+        addClass(currentLetter?.previousSibling, "current");
+        removeClass(currentLetter?.previousSibling, "wrong");
+        removeClass(currentLetter?.previousSibling, "wrong");
+        removeClass(currentLetter?.previousSibling, "correct");
       }
     }
 
@@ -152,6 +208,10 @@ export default function TypingComponent() {
           addClass(letter, "wrong");
         });
       }
+      if(!nextWord){
+        gameOver(currentWord)
+      }
+
       removeClass(currentWord, "current");
       addClass(currentWord?.nextSibling, "current");
       addClass(currentWord?.nextSibling?.firstChild, "current");
@@ -159,6 +219,7 @@ export default function TypingComponent() {
         removeClass(currentLetter, "current");
       }
     }
+
     removeClass(document?.querySelector(".letter"), "current");
   }
 
@@ -190,7 +251,6 @@ export default function TypingComponent() {
             />
           </div>
         )}
-        {/* {!wordLoader && typeString.length === 0 && <div className="flex justify-center items-center w-full text-yellow-400">Words Not Found</div>} */}
         {!wordLoader &&
           typeString?.map((element: any, index) => {
             return (
