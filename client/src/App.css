@@ -21,8 +21,7 @@ body {
   }
   .word.current { 
     color:rgb(186, 255, 148);
-    text-decoration: underline;
-    text-underline-offset: 2;
+    text-decoration: underline green;
     animation : current-word-blink 1s ease-in-out infinite;
   }
 
