@@ -12,6 +12,21 @@ import axios from "axios";
 
 const getWords = asyncHandler(async (req, res) => {
   const { words } = req.query;
+  let mode:null | string = null
+  switch (Number(words)) {
+    case 10:
+      mode = "Words 10"
+      break;
+    case 25:
+      mode = "Words 25"
+      break;
+    case 50:
+      mode = "Words 50"
+      break;
+    case 100:
+      mode = "Words 100"
+      break;
+  }
   if (!words) {
     res
       .status(404)
@@ -31,7 +46,8 @@ const getWords = asyncHandler(async (req, res) => {
 let averageWordLength = totalLetters / words_.length;
   const resutlObj = {
     text:result,
-    avgwordlength:Math.round(averageWordLength)
+    avgwordlength:Math.round(averageWordLength),
+    mode
   }
   return res.status(200).json(new ApiResponse(200, resutlObj));
 });

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
-import { current } from "@reduxjs/toolkit";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
