@@ -65,14 +65,7 @@ export default function TypingComponent() {
     removeClass(document.getElementById("typing-area"), "remove-blur");
     addClass(document.getElementById("typing-area"), "blur-sm");
     document.removeEventListener("keyup", handleKeyPress);
-    console.log({
-      wpm,
-      raw,
-      accuracy,
-      consistency,
-      chars,
-      mode,
-    });
+   
     await apiCall({
       method: "POST",
       url: `/type/complete-test`,
@@ -119,9 +112,7 @@ export default function TypingComponent() {
   ]);
 
   //test
-  useEffect(() => {
-    console.log(extraLetters);
-  }, [extraLetters]);
+
 
   async function printWords(w: any) {
     const st = w.split(" ");
@@ -160,7 +151,6 @@ export default function TypingComponent() {
     const isBackspace = key === "Backspace";
     const nextWord = currentWord?.nextSibling;
     let nextLetter;
-    //console.log(key)
     if (isBackspace) return;
 
     if (!testStarted.current) {
@@ -206,7 +196,8 @@ export default function TypingComponent() {
     }
 
     if (isSpace) {
-      //missed letter logic goes here      
+      //missed letter logic goes here    
+      //console.log([currentWord?.children])
       setTotalLettersTyped((prev) => prev + 1);
       if (expected !== " ") {
         setWrongLettersTyped((prev) => prev + 1);
@@ -215,11 +206,15 @@ export default function TypingComponent() {
         ];
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
+          setMissedLetters((prev)=>prev+=1)
         });
+        
       }
-      if (!nextWord) {
+      if (nextWord===null) {
         testFinished.current = true;
+        setEndTestTime(new Date());
         removeClass(currentWord, "current");
+        removeClass(currentLetter, "current");
         return;
       }
       setTotalLettersTyped((prev) => prev + 1);

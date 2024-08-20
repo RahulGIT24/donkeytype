@@ -24,7 +24,9 @@ body {
     text-decoration: underline green;
     animation : current-word-blink 1s ease-in-out infinite;
   }
-
+  .letter.current{
+    text-decoration: underline green 5px;
+  }
   .extra{ 
     color: rgb(142, 53, 53);
   }
@@ -33,13 +35,13 @@ body {
 
   @keyframes current-word-blink{
     0%{
-      color:rgb(234 179 8);
+      color:rgb(42, 234, 8);
     }
     50%{
       color:white;
     }
     100%{
-      color:rgb(234 179 8);
+      color:rgb(42, 234, 8);
     }
   }
 
