@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
+import ResultComponent from "./ResultComponent";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -17,6 +18,9 @@ export default function TypingComponent() {
   const [extraLetters, setExtraLetters] = useState(0);
   const [startTestTime, setStartTestTime] = useState<Date | null>(null);
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
+  const [showResult, setShowResult] = useState(false)
+
+  const [resStats,setResStats] = useState({})
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [mode, setMode] = useState("");
@@ -65,7 +69,8 @@ export default function TypingComponent() {
     removeClass(document.getElementById("typing-area"), "remove-blur");
     addClass(document.getElementById("typing-area"), "blur-sm");
     document.removeEventListener("keyup", handleKeyPress);
-    await apiCall({
+   
+    const res = await apiCall({
       method: "POST",
       url: `/type/complete-test`,
       reqData: {
@@ -77,6 +82,17 @@ export default function TypingComponent() {
         mode,
       },
     });
+    if(res.status<400){
+      setShowResult(true);
+      setResStats({
+       wpm:Math.round(wpm),
+        raw:Math.round(raw),
+        accuracy,
+        consistency,
+        chars,
+        mode,
+      })
+    }
     return;
   }
 
@@ -109,6 +125,9 @@ export default function TypingComponent() {
     endTestTime,
     startTestTime,
   ]);
+
+  //test
+
 
   async function printWords(w: any) {
     const st = w.split(" ");
@@ -146,7 +165,7 @@ export default function TypingComponent() {
     const isSpace = key === " ";
     const isBackspace = key === "Backspace";
     const nextWord = currentWord?.nextSibling;
-
+    let nextLetter;
     if (isBackspace) return;
 
     if (!testStarted.current) {
@@ -173,12 +192,10 @@ export default function TypingComponent() {
         }
         addClass(currentLetter, isCorrect ? "correct" : "wrong");
         removeClass(currentLetter, "current");
-        const nextLetter = currentLetter.nextSibling;
+        nextLetter = currentLetter.nextSibling;
         if (!nextLetter) {
           setTotalWordsTyped((prev) => prev + 1);
-          if (nextWord) {
-            // setExtraLetters((prev)=>prev+1) // wrong
-          } else if (!nextWord) {
+          if (!nextWord) {
             //
             testFinished.current = true;
             setEndTestTime(new Date());
@@ -188,10 +205,14 @@ export default function TypingComponent() {
         } else {
           addClass(nextLetter, "current");
         }
+      } else if (!nextLetter && nextWord) {
+        setExtraLetters((prev) => prev + 1);
       }
     }
 
     if (isSpace) {
+      //missed letter logic goes here    
+      //console.log([currentWord?.children])
       setTotalLettersTyped((prev) => prev + 1);
       if (expected !== " ") {
         setWrongLettersTyped((prev) => prev + 1);
@@ -200,11 +221,15 @@ export default function TypingComponent() {
         ];
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
+          setMissedLetters((prev)=>prev+=1)
         });
+        
       }
-      if (!nextWord) {
+      if (nextWord===null) {
         testFinished.current = true;
+        setEndTestTime(new Date());
         removeClass(currentWord, "current");
+        removeClass(currentLetter, "current");
         return;
       }
       setTotalLettersTyped((prev) => prev + 1);
@@ -229,7 +254,7 @@ export default function TypingComponent() {
 
   return (
     <>
-      <div
+      {!showResult?(<div
         className={`flex min-h-40 w-[85%] flex-wrap overflow-auto text-4xl`}
         id="typing-area"
       >
@@ -261,7 +286,8 @@ export default function TypingComponent() {
               </div>
             );
           })}
-      </div>
+      </div>):(<ResultComponent stats= {resStats}/>)}
+     {/*  {showResult&&<ResultComponent stats= {resStats}/>} */}
     </>
   );
 }

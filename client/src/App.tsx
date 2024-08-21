@@ -8,6 +8,8 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useSelector } from "react-redux";
+import UserDetails from "./pages/UserDetails";
+import ResultComponent from "./components/ResultComponent";
 
 function App() {
   const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated);
@@ -26,6 +28,9 @@ function App() {
         <Route path="/change-password/:token" element={isAuthenticated ? <Navigate to="/" replace /> : <ChangePassword />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
+          <Route path="/account" element={<UserDetails/>} />
+          <Route path="/result" element={<ResultComponent/> //just for testing
+          } />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
