@@ -33,6 +33,10 @@ const schema = new mongoose.Schema<history>(
             type:String,
             required:[true,"Provide mode of typing"]
         },
+        chars:{
+            type:String,
+            required:[true,"Provide mode of typing"]
+        },
         date:{
             type:Date,
             default:Date.now()

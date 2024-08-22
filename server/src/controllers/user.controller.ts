@@ -169,7 +169,7 @@ const login = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, `Welcome Back`));
+    .json(new ApiResponse(200, `Welcome Back ${accessToken}`));
 });
 
 const verifyToken = asyncHandler(async (req, res) => {

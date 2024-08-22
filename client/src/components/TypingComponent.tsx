@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
-import ResultComponent from "./ResultComponent";
+import {  useNavigate } from "react-router-dom";
+// import ResultComponent from "./ResultComponent";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -18,9 +19,6 @@ export default function TypingComponent() {
   const [extraLetters, setExtraLetters] = useState(0);
   const [startTestTime, setStartTestTime] = useState<Date | null>(null);
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
-  const [showResult, setShowResult] = useState(false)
-
-  const [resStats,setResStats] = useState({})
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [mode, setMode] = useState("");
@@ -53,6 +51,8 @@ export default function TypingComponent() {
     });
   }, []);
 
+  const navigate = useNavigate()
+
   async function testOverUpdateStats({
     wpm,
     raw,
@@ -83,15 +83,7 @@ export default function TypingComponent() {
       },
     });
     if(res.status<400){
-      setShowResult(true);
-      setResStats({
-       wpm:Math.round(wpm),
-        raw:Math.round(raw),
-        accuracy,
-        consistency,
-        chars,
-        mode,
-      })
+      navigate(`/result/${res.data}`, { replace: true });
     }
     return;
   }
@@ -254,7 +246,7 @@ export default function TypingComponent() {
 
   return (
     <>
-      {!showResult?(<div
+      <div
         className={`flex min-h-40 w-[85%] flex-wrap overflow-auto text-4xl`}
         id="typing-area"
       >
@@ -286,8 +278,7 @@ export default function TypingComponent() {
               </div>
             );
           })}
-      </div>):(<ResultComponent stats= {resStats}/>)}
-     {/*  {showResult&&<ResultComponent stats= {resStats}/>} */}
+      </div>
     </>
   );
 }

@@ -82,6 +82,7 @@ const completeTest = asyncHandler(async (req, res) => {
     user: userId,
   });
   const savedHistory = await history.save();
+  const savedHistoryId = savedHistory.id
   if (!savedHistory) {
     return res.status(400).json(new ApiResponse(400, "Can't save history"));
   }
@@ -111,7 +112,7 @@ const completeTest = asyncHandler(async (req, res) => {
     bestExist.history = savedHistory._id;
     await bestExist.save();
   }
-  return res.status(200).json(new ApiResponse(201, "Test saved"));
+  return res.status(200).json(new ApiResponse(201, savedHistoryId));
 });
 
 export { startTest, getWords, completeTest };

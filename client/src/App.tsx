@@ -9,7 +9,7 @@ import ChangePassword from "./pages/auth/ChangePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useSelector } from "react-redux";
 import UserDetails from "./pages/UserDetails";
-import ResultComponent from "./components/ResultComponent";
+import Result from "./pages/Result";
 
 function App() {
   const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated);
@@ -29,7 +29,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/account" element={<UserDetails/>} />
-          <Route path="/result" element={<ResultComponent/> //just for testing
+          <Route path="/result/:id" element={<Result/>
           } />
         </Route>
         <Route path="*" element={<NotFound />} />

@@ -127,4 +127,32 @@ const getAverageStats = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, result));
 });
 
-export { getHistory, getAverageStats };
+const getResultStats = asyncHandler(async(req,res)=>{
+  const {id} = req.body
+  const user = req.user;
+  if(!user || !user.id){
+    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
+  }
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).json(new ApiResponse(404, "Test Not found"));
+  }
+  const history = await History.findById(new ObjectId(id))
+  if(!history){
+    return res.status(404).json(new ApiResponse(404, "Test Not found"));
+  }
+  const userId= user.id
+  if(history.user!=userId){
+    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
+  }
+  const stats = {
+    wpm:Math.round(history.wpm),
+    raw:Math.round(history.raw),
+    accuracy:Math.round(history.accuracy),
+    consistency:Math.round(history.consistency),
+    mode:history.mode,
+    chars:history.chars
+  }
+  return res.status(200).json(new ApiResponse(200, stats));
+})
+
+export { getHistory, getAverageStats,getResultStats };

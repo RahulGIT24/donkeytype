@@ -1,4 +1,3 @@
-import React from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -51,7 +50,6 @@ const data = {
       },
   ],
 };
-console.log(data)
 
   return (
     <>
@@ -82,8 +80,8 @@ console.log(data)
               <p>consistency</p>
               <p className="text-yellow-400">{stats.consistency}</p>
             </div>
-            <div className="flex flex-col  ">
-              <p>raw</p>
+            <div className="flex flex-col" title="correct, incorrect, extra, missed">
+              <p>characters</p>
               <p className="text-yellow-400">{stats.chars}</p>
             </div>
           </div>
