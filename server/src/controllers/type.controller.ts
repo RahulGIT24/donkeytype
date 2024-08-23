@@ -11,18 +11,17 @@ import { asyncHandler } from "../utils/asyncHandler";
 import fs from "fs";
 import path from "path";
 
-const filePath = path.join(__dirname,'data' ,"words.json");
-let wordsFromJSON:any = [];
+const filePath = path.join(__dirname, "data", "words.json");
+let wordsFromJSON: any = [];
 fs.readFile(filePath, "utf8", (err, data) => {
   if (err) {
     console.error("Error reading file:", err);
     return;
   }
-  wordsFromJSON = JSON.parse(data);
+  wordsFromJSON = JSON.parse(data).split(" ");
 });
 
 const getWords = asyncHandler(async (req, res) => {
-
   const { words } = req.query;
   let mode: null | string = null;
   switch (Number(words)) {
@@ -110,7 +109,10 @@ const completeTest = asyncHandler(async (req, res) => {
   } else if (mode == "Words 100") {
     modelName = HunderedWordsBest;
   }
-  const bestExist = await modelName.findOne({ user: userId });
+
+  //problem is here
+
+  /*  const bestExist = await modelName.findOne({ user: userId });
   if (!bestExist) {
     const newBest = new TenWordsBest({
       history: savedHistory._id,
@@ -118,6 +120,17 @@ const completeTest = asyncHandler(async (req, res) => {
     });
     await newBest.save();
     return res.status(200).json(new ApiResponse(201, "Test saved"));
+  } */
+
+  const bestExist = await modelName.findOne({ user: userId });
+  if (!bestExist) {
+    const newBest = new modelName({   //changed here
+      history: savedHistory._id,
+      user: userId,
+    });
+    await newBest.save();
+    //return res.status(200).json(new ApiResponse(201, "Test saved"));
+    //changed here 
   }
   const historyCheck = await History.findById(bestExist.history);
   if ((historyCheck?.wpm as number) < wpm) {
