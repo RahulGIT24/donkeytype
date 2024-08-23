@@ -8,47 +8,59 @@ import { History } from "../models/history.model";
 import { User } from "../models/user.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import axios from "axios";
+import fs from "fs";
+import path from "path";
+
+const filePath = path.join(__dirname,'data' ,"words.json");
+let wordsFromJSON:any = [];
+fs.readFile(filePath, "utf8", (err, data) => {
+  if (err) {
+    console.error("Error reading file:", err);
+    return;
+  }
+  wordsFromJSON = JSON.parse(data);
+});
 
 const getWords = asyncHandler(async (req, res) => {
+
   const { words } = req.query;
-  let mode:null | string = null
+  let mode: null | string = null;
   switch (Number(words)) {
     case 10:
-      mode = "Words 10"
+      mode = "Words 10";
       break;
     case 25:
-      mode = "Words 25"
+      mode = "Words 25";
       break;
     case 50:
-      mode = "Words 50"
+      mode = "Words 50";
       break;
     case 100:
-      mode = "Words 100"
+      mode = "Words 100";
       break;
   }
+
   if (!words) {
     res
       .status(404)
       .json(new ApiResponse(404, "Please Provide number of words"));
   }
-  const response = await axios.get(
-    `https://random-word-api.herokuapp.com/word?number=${words}`
-  );
-  const result = response.data.join(" ");
-  let words_ = result.split(" ");
+  const shuffled = wordsFromJSON.sort(() => 0.5 - Math.random());
+  const selectedWords = shuffled.slice(0, Number(words));
+  const wordsString = selectedWords.join(" ");
+
   let totalLetters = 0;
 
-  for (let index = 0; index < words_.length; index++) {
-      totalLetters += words_[index].length;
+  for (let index = 0; index < wordsString.length; index++) {
+    totalLetters += wordsString[index].length;
   }
 
-let averageWordLength = totalLetters / words_.length;
+  let averageWordLength = totalLetters / wordsString.length;
   const resutlObj = {
-    text:result,
-    avgwordlength:Math.round(averageWordLength),
-    mode
-  }
+    text: wordsString,
+    avgwordlength: Math.round(averageWordLength),
+    mode,
+  };
   return res.status(200).json(new ApiResponse(200, resutlObj));
 });
 
@@ -82,7 +94,7 @@ const completeTest = asyncHandler(async (req, res) => {
     user: userId,
   });
   const savedHistory = await history.save();
-  const savedHistoryId = savedHistory.id
+  const savedHistoryId = savedHistory.id;
   if (!savedHistory) {
     return res.status(400).json(new ApiResponse(400, "Can't save history"));
   }
