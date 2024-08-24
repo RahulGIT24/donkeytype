@@ -19,57 +19,52 @@ export default function MainNav() {
 
   return (
     <>
-      <nav className="flex fixed top-0">
-        <ul className="flex text-zinc-400 justify-between w-screen p-4 z-20">
+     <nav className="flex fixed top-0 w-full z-20">
+  <ul className="flex text-zinc-400 justify-between w-screen p-4">
+    <li>
+      <div>
+        <ul className="flex flex-row gap-4 items-center">
           <li>
-            <div>
-              <ul className="flex flex-row gap-4 px-5=10 items-center">
-                <li>
-                  <Link to="/">
-                    <h1 className="text-2xl">donkeytype</h1>
-                  </Link>
-                </li>
-                <li title="Start Test">
-                  <Link to="/">
-                    <FontAwesomeIcon icon={faKeyboard} className="h-5 px-4" />
-                  </Link>
-                </li>
-                <li title="Leaderboard">
-                  <Link to="/leaderboard">
-                    <FontAwesomeIcon icon={faCrown} className="h-5 px-4" />
-                  </Link>
-                </li>
-                <li title="Info">
-                  <Link to="/info">
-                    <FontAwesomeIcon icon={faInfo} className="h-5 px-4" />
-                  </Link>
-                </li>
-                <li title="Settings">
-                  <Link to="/settings">
-                    <FontAwesomeIcon icon={faGear} className="h-5 px-4" />
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <Link to="/">
+              <h1 className="text-2xl">donkeytype</h1>
+            </Link>
           </li>
-          <li>
-            {!isAuthenticated ? (
-              <Link to="/login">
-                <div title="Login/Register">
-                  <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
-                </div>
-              </Link>
-            ) : (
-              <button onClick={() => setShowProfile(!showProfile)}>
-                <div title="Profile Card">
-                  <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
-                </div>
-              </button>
-            )}
+          <li title="Start Test">
+            <Link to="/">
+              <FontAwesomeIcon icon={faKeyboard} className="h-5 px-4" />
+            </Link>
           </li>
-          {showProfile && <UserProfileCard setShowProfile={setShowProfile} />}
+          <li title="Leaderboard">
+            <Link to="/leaderboard">
+              <FontAwesomeIcon icon={faCrown} className="h-5 px-4" />
+            </Link>
+          </li>
+          <li title="Info">
+            <Link to="/info">
+              <FontAwesomeIcon icon={faInfo} className="h-5 px-4" />
+            </Link>
+          </li>
+          <li title="Settings">
+            <Link to="/settings">
+              <FontAwesomeIcon icon={faGear} className="h-5 px-4" />
+            </Link>
+          </li>
         </ul>
-      </nav>
+      </div>
+    </li>
+    <li className="relative group">
+      <Link to="/account">
+        <div title="Profile Card">
+          <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
+        </div>
+      </Link>
+      <div className="absolute right-0 -top-6 mt-2  scale-0 group-hover:scale-100 origin-top duration-75  ">
+        <UserProfileCard />
+      </div>
+    </li>
+  </ul>
+</nav>
+
     </>
   );
 }
