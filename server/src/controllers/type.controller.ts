@@ -18,7 +18,7 @@ fs.readFile(filePath, "utf8", (err, data) => {
     console.error("Error reading file:", err);
     return;
   }
-  wordsFromJSON = JSON.parse(data).split(" ");
+  wordsFromJSON = JSON.parse(data);
 });
 
 const getWords = asyncHandler(async (req, res) => {
@@ -61,7 +61,6 @@ const getWords = asyncHandler(async (req, res) => {
     avgwordlength: Math.round(averageWordLength),
     mode,
   };
-  console.log(resutlObj);
   return res.status(200).json(new ApiResponse(200, resutlObj));
 });
 
@@ -114,11 +113,12 @@ const completeTest = asyncHandler(async (req, res) => {
 
   const bestExist = await modelName.findOne({ user: userId });
   if (!bestExist) {
-    const newBest = new modelName({ 
+    const newBest = new modelName({   
       history: savedHistory._id,
       user: userId,
     });
     await newBest.save();
+    return res.status(200).json(new ApiResponse(201, "Test saved"));
   }
   const historyCheck = await History.findById(bestExist.history);
   if ((historyCheck?.wpm as number) < wpm) {
