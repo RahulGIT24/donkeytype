@@ -54,14 +54,12 @@ const getWords = asyncHandler(async (req, res) => {
 
   let totalLetters = 0;
 
-  for (let index = 0; index < wordsString.length; index++) {
-    totalLetters += wordsString[index].length;
+  for (let word of selectedWords) {
+    totalLetters += word.length;
   }
 
-  //let averageWordLength = totalLetters / wordString.length;  //ye dono same hi value hold karenge 
-  let averageWordLength = totalLetters / selectedWords.length;   
-  console.log(totalLetters,wordsString )
-  console.log(averageWordLength)
+  let averageWordLength = totalLetters / selectedWords.length;
+
   const resutlObj = {
     text: wordsString,
     avgwordlength: Math.round(averageWordLength),
@@ -117,27 +115,14 @@ const completeTest = asyncHandler(async (req, res) => {
     modelName = HunderedWordsBest;
   }
 
-  //problem is here
-
-  /*  const bestExist = await modelName.findOne({ user: userId });
+  const bestExist = await modelName.findOne({ user: userId });
   if (!bestExist) {
-    const newBest = new TenWordsBest({
+    const newBest = new modelName({   
       history: savedHistory._id,
       user: userId,
     });
     await newBest.save();
     return res.status(200).json(new ApiResponse(201, "Test saved"));
-  } */
-
-  const bestExist = await modelName.findOne({ user: userId });
-  if (!bestExist) {
-    const newBest = new modelName({   //changed here
-      history: savedHistory._id,
-      user: userId,
-    });
-    await newBest.save();
-    //return res.status(200).json(new ApiResponse(201, "Test saved"));
-    //changed here 
   }
   const historyCheck = await History.findById(bestExist.history);
   if ((historyCheck?.wpm as number) < wpm) {
