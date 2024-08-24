@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 export default function UserCard({ user }: any) {
   return (
     <>
-      <div className="flex bg-zinc-800 p-4 w-[500px] rounded-md m-2 group border border-transparent hover:border-yellow-500 duration-300 ">
+      <div className="flex bg-zinc-800 p-4 rounded-md m-2 group border border-transparent hover:border-yellow-500 duration-300 min-w-[500px] ">
         <img
           src={user.profilePic}
           alt="loading"
