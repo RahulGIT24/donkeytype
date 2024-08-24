@@ -3,6 +3,10 @@ import { useSelector } from "react-redux";
 //import UserCard from "../components/user/UserCard";
 import MainNav from "../components/navbars/MainNav";
 import apiCall from "../utils/apiCall";
+import TableHoc from "../components/TableHOC";
+import { useNavigate } from "react-router-dom";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function UserDetails() {
   const user = useSelector((state: any) => state.user.user);
   return (
@@ -14,7 +18,8 @@ export default function UserDetails() {
           <TestDetails />
         </div>
         <UserStats />
-        <LeaderBoard/>
+        <History />
+        {/* <LeaderBoard /> */}
       </div>
     </>
   );
@@ -23,7 +28,7 @@ export default function UserDetails() {
 function UserCard({ user }: any) {
   return (
     <>
-      <div className="flex bg-zinc-800 p-4 rounded-md m-2 group border border-transparent hover:border-yellow-500 duration-300 min-w-[500px] ">
+      <div className="flex bg-zinc-800 p-4 rounded-md mx-2 group border border-transparent hover:border-yellow-500 duration-300 w-full h-[25vh]">
         <img
           src={user.profilePic}
           alt="loading"
@@ -40,7 +45,7 @@ function UserCard({ user }: any) {
 
 //test detail
 const TestDetails = () => {
-  const [res,setRes]= useState<any>(null)
+  const [res, setRes] = useState<any>(null);
   useEffect(() => {
     (async () => {
       const { data } = await apiCall({
@@ -50,12 +55,12 @@ const TestDetails = () => {
       setRes(data);
     })();
   }, []);
-  console.log(res)
+  console.log(res);
   return (
     <>
-      <div className="flex bg-zinc-800 min-w-[500px]">
+      <div className="flex bg-zinc-800 w-full h-[25vh]">
         <div className="flex p-4 h-52 flex-wrap text-2xl gap-64 justify-center items-center">
-          <p className="p-4">Tests started :{res?.totalResults  |5}</p>
+          <p className="p-4">Tests started :{res?.totalResults | 5}</p>
           <p className="p-4">Tests completed :5</p>
         </div>
       </div>
@@ -75,7 +80,6 @@ const UserStats = () => {
       setRes(data);
     })();
   }, []);
-  
 
   return (
     <>
@@ -112,12 +116,90 @@ const UserStats = () => {
   );
 };
 
-const LeaderBoard = () => {
+const History = () => {
+  const [limit, setLimit] = useState(5);
+  const [data, setData] = useState([]);
+  const navigate = useNavigate()
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: "wpm",
+        accessor: "wpm",
+      },
+      {
+        Header: "raw",
+        accessor: "raw",
+      },
+      {
+        Header: "accuracy",
+        accessor: "accuracy",
+      },
+      {
+        Header: "chars",
+        accessor: "chars",
+      },
+      {
+        Header: "mode",
+        accessor: "mode",
+      },
+      {
+        Header: "date",
+        accessor: "createdAt",
+      },
+      {
+        Header: "view",
+        Cell: ({ row }:{row:any}) => (
+          <>
+            <FontAwesomeIcon icon={faEye} className="cursor-pointer" onClick={()=>{
+              navigate(`/result/${row.original._id}`)
+            }}/>
+          </>
+        ),
+      },
+    ],
+    [limit]
+  );
+  const [disabled,setDisabled] = useState(false);
+  const getHistory = async () => {
+    const res = await apiCall({
+      method: "GET",
+      url: `/stats/get-history?limit=${limit}`,
+    });
+    if(res.data.totalResultFetched >= res.data.totalResults){
+      setDisabled(true);
+    }
+    setData(res.data.history);
+    console.log(res.data);
+  };
+  const loadMore = () => {
+    setLimit(limit + 5);
+  };
+  useEffect(() => {
+    getHistory();
+  }, [limit]);
   return (
     <>
-      <div className=" bg-zinc-800">
-        <h1 className="text-2xl flex justify-center">Leaderboard</h1>
+      <div className="bg-zinc-800 pt-3">
+        <h1 className="text-2xl flex justify-center">History</h1>
+        {data.length > 0 && <TableHoc columns={columns} data={data} />}
+        <button
+          className="text-2xl flex justify-center bg-zinc-800 mt-4 pb-1 cursor-pointer items-center w-full hover:bg-zinc-200 hover:text-zinc-800 transition ease-in-out duration-150"
+          onClick={loadMore}
+          disabled={disabled}
+        >
+          Load More
+        </button>
       </div>
     </>
   );
 };
+
+// const LeaderBoard = () => {
+//   return (
+//     <>
+//       <div className=" bg-zinc-800">
+//         <h1 className="text-2xl flex justify-center">Leaderboard</h1>
+//       </div>
+//     </>
+//   );
+// };

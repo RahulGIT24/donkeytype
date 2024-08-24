@@ -40,7 +40,7 @@ const getHistory = asyncHandler(async (req, res) => {
 
   const history = await History.find({ user: userId })
     .limit(limitNumber)
-    .select("-_id -user -__v");
+    .select("-user -__v");
 
   return res.status(200).json(
     new ApiResponse(200, {

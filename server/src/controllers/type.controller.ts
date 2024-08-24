@@ -85,10 +85,10 @@ const completeTest = asyncHandler(async (req, res) => {
   }
   const { wpm, raw, accuracy, consistency, chars, mode } = req.body;
   const history = new History({
-    wpm,
-    raw,
-    accuracy,
-    consistency,
+    wpm:Math.round(wpm),
+    raw:Math.round(raw),
+    accuracy:Math.round(accuracy),
+    consistency:Math.round(consistency),
     chars,
     mode,
     user: userId,
@@ -118,7 +118,7 @@ const completeTest = asyncHandler(async (req, res) => {
       user: userId,
     });
     await newBest.save();
-    return res.status(200).json(new ApiResponse(201, "Test saved"));
+    return res.status(200).json(new ApiResponse(201, savedHistoryId));
   }
   const historyCheck = await History.findById(bestExist.history);
   if ((historyCheck?.wpm as number) < wpm) {
