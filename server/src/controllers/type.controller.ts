@@ -18,7 +18,7 @@ fs.readFile(filePath, "utf8", (err, data) => {
     console.error("Error reading file:", err);
     return;
   }
-  wordsFromJSON = JSON.parse(data).split(" ");
+  wordsFromJSON = JSON.parse(data);
 });
 
 const getWords = asyncHandler(async (req, res) => {
@@ -44,7 +44,11 @@ const getWords = asyncHandler(async (req, res) => {
       .status(404)
       .json(new ApiResponse(404, "Please Provide number of words"));
   }
-  const shuffled = wordsFromJSON.sort(() => 0.5 - Math.random());
+  /* const shuffled = wordsFromJSON.sort(() => 0.5 - Math.random());
+  const selectedWords = shuffled.slice(0, Number(words));   
+  const wordsString = selectedWords.join(" "); */
+  const wordsArray  = wordsFromJSON.split(' ');
+  const shuffled = wordsArray.sort(() => 0.5 - Math.random());
   const selectedWords = shuffled.slice(0, Number(words));
   const wordsString = selectedWords.join(" ");
 
@@ -54,7 +58,10 @@ const getWords = asyncHandler(async (req, res) => {
     totalLetters += wordsString[index].length;
   }
 
-  let averageWordLength = totalLetters / wordsString.length;
+  //let averageWordLength = totalLetters / wordString.length;  //ye dono same hi value hold karenge 
+  let averageWordLength = totalLetters / selectedWords.length;   
+  console.log(totalLetters,wordsString )
+  console.log(averageWordLength)
   const resutlObj = {
     text: wordsString,
     avgwordlength: Math.round(averageWordLength),
