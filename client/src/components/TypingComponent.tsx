@@ -69,7 +69,6 @@ export default function TypingComponent() {
     removeClass(document.getElementById("typing-area"), "remove-blur");
     addClass(document.getElementById("typing-area"), "blur-sm");
     document.removeEventListener("keyup", handleKeyPress);
-   
     const res = await apiCall({
       method: "POST",
       url: `/type/complete-test`,
@@ -82,7 +81,8 @@ export default function TypingComponent() {
         mode,
       },
     });
-    if(res.status<400){
+    //console.log(res)
+    if(res.status===200){
       navigate(`/result/${res.data}`, { replace: true });
     }
     return;
