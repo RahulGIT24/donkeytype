@@ -81,7 +81,6 @@ export default function TypingComponent() {
         mode,
       },
     });
-    //console.log(res)
     if(res.status===200){
       navigate(`/result/${res.data}`, { replace: true });
     }
