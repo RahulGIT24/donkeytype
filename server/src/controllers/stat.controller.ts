@@ -81,6 +81,40 @@ const getAverageStats = asyncHandler(async (req, res) => {
     },
   ];
 
+  const avgLast10Pipeline: PipelineStage[] = [
+    {
+      $match: {
+        user: userObjectId,
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $group: {
+        _id: null,
+        averageAccuracy: { $avg: "$accuracy" },
+        averageWpm: { $avg: "$wpm" },
+        averageConsistency: { $avg: "$consistency" },
+        averageRawpm: { $avg: "$raw" },
+      },
+    },
+    {
+      $project: {
+        averageAccuracy: { $round: ["$averageAccuracy", 2] },
+        averageWpm: { $round: ["$averageWpm", 2] },
+        averageConsistency: { $round: ["$averageConsistency", 2] },
+        averageRawpm: { $round: ["$averageRawpm", 2] },
+      },
+    },
+  ];
+  
+
   const highestwpmpipeline: PipelineStage[] = [
     {
       $match: { user: userObjectId },
@@ -110,6 +144,7 @@ const getAverageStats = asyncHandler(async (req, res) => {
   const avg = await History.aggregate<DocumentType>(avgpipeline);
   const wpm = await History.aggregate<DocumentType>(highestwpmpipeline);
   const highest = await History.aggregate<DocumentType>(highestpipeline);
+  const lasTenAverages = await History.aggregate<DocumentType>(avgLast10Pipeline);
 
   if (!avg.length || !wpm.length || !highest.length) {
     return res.status(404).json(new ApiResponse(404, "No data found"));
@@ -122,6 +157,7 @@ const getAverageStats = asyncHandler(async (req, res) => {
       mode: wpm[0].mode,
     },
     max: highest[0],
+    lastTenAverages:lasTenAverages[0]
   };
 
   return res.status(200).json(new ApiResponse(200, result));
