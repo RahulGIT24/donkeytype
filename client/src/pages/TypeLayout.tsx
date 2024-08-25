@@ -1,5 +1,5 @@
 import TypingNav from "../components/navbars/TypingNav";
-import TypingComponent from "../components/TypingComponent";
+import TypingComponent from "../components/TypingComponent.js";
 
 export default function TypeLayout() {
   return (

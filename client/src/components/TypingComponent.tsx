@@ -53,6 +53,10 @@ export default function TypingComponent() {
 
   const navigate = useNavigate();
 
+
+  useEffect(()=>{
+    console.log(missedLetters)
+  },[missedLetters])
   async function testOverUpdateStats({
     wpm,
     raw,
@@ -112,7 +116,7 @@ export default function TypingComponent() {
         raw: rawWPM,
         accuracy: Number(accuracy),
         consistency: 12,
-        chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+        chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters-wrongLettersTyped}`,
       });
     }
   }, [
@@ -212,7 +216,9 @@ export default function TypingComponent() {
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
+        //console.log(lettersToInvalidate)
         lettersToInvalidate.forEach((letter) => {
+
           addClass(letter, "wrong");
           setMissedLetters((prev) => (prev += 1));
         });
