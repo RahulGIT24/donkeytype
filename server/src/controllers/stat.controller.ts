@@ -38,7 +38,7 @@ const getHistory = asyncHandler(async (req, res) => {
   const result = await History.aggregate<{ total: number }>(pipeline);
   const total = result[0]?.total || 0;
 
-  const history = await History.find({ user: userId })
+  const history = await History.find({ user: userId }).sort({createdAt:-1})
     .limit(limitNumber)
     .select("-user -__v");
 

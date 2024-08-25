@@ -32,7 +32,7 @@ export default function TypingComponent() {
     setWordLoader(true);
     const { data } = await apiCall({
       method: "GET",
-      url: `/type/get-words?words=${number}`,
+      url: `/type/get-words?words=${number}&type=${setting.typeOfText.length != 0 ? setting.typeOfText.join(","):null}`,
     });
     setWordLoader(false);
     setAvgWordLength(data.avgwordlength);
@@ -69,14 +69,6 @@ export default function TypingComponent() {
     removeClass(document.getElementById("typing-area"), "remove-blur");
     addClass(document.getElementById("typing-area"), "blur-sm");
     document.removeEventListener("keyup", handleKeyPress);
-    console.log({
-      wpm,
-      raw,
-      accuracy,
-      consistency,
-      chars,
-      mode,
-    });
     const res = await apiCall({
       method: "POST",
       url: `/type/complete-test`,
