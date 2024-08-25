@@ -118,8 +118,6 @@ export default function TypingComponent() {
     startTestTime,
   ]);
 
-  //test
-
 
   async function printWords(w: any) {
     const st = w.split(" ");
