@@ -58,7 +58,7 @@ export default function MainNav() {
           <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
         </div>
       </Link>
-      <div className="absolute right-0 -top-6 mt-2  scale-0 group-hover:scale-100 origin-top duration-75  ">
+      <div className="absolute right-0 -top-6 mt-2  scale-0 group-hover:scale-100 origin-top   ">
         <UserProfileCard />
       </div>
     </li>
