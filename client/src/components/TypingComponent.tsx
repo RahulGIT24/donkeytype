@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // import ResultComponent from "./ResultComponent";
 
 export default function TypingComponent() {
@@ -51,7 +51,7 @@ export default function TypingComponent() {
     });
   }, []);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   async function testOverUpdateStats({
     wpm,
@@ -69,6 +69,14 @@ export default function TypingComponent() {
     removeClass(document.getElementById("typing-area"), "remove-blur");
     addClass(document.getElementById("typing-area"), "blur-sm");
     document.removeEventListener("keyup", handleKeyPress);
+    console.log({
+      wpm,
+      raw,
+      accuracy,
+      consistency,
+      chars,
+      mode,
+    });
     const res = await apiCall({
       method: "POST",
       url: `/type/complete-test`,
@@ -81,8 +89,8 @@ export default function TypingComponent() {
         mode,
       },
     });
-    console.log(res)
-    if(res.status===200){
+    console.log(res);
+    if (res.status === 200) {
       navigate(`/result/${res.data}`, { replace: true });
     }
     return;
@@ -117,7 +125,6 @@ export default function TypingComponent() {
     endTestTime,
     startTestTime,
   ]);
-
 
   async function printWords(w: any) {
     const st = w.split(" ");
@@ -175,10 +182,8 @@ export default function TypingComponent() {
         const isCorrect = key === expected;
         if (isCorrect) {
           setCorrectLettersTyped((prev) => prev + 1);
-          // correctLettersTypedRef.current += 1;
         } else {
           setWrongLettersTyped((prev) => prev + 1);
-          // wrongLettersTypedRef.current += 1;
         }
         addClass(currentLetter, isCorrect ? "correct" : "wrong");
         removeClass(currentLetter, "current");
@@ -201,21 +206,18 @@ export default function TypingComponent() {
     }
 
     if (isSpace) {
-      //missed letter logic goes here    
-      //console.log([currentWord?.children])
       setTotalLettersTyped((prev) => prev + 1);
       if (expected !== " ") {
-        setWrongLettersTyped((prev) => prev + 1);
+       
         const lettersToInvalidate = [
           ...document.querySelectorAll(".word.current .letter:not(.correct)"),
         ];
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
-          setMissedLetters((prev)=>prev+=1)
+          setMissedLetters((prev) => (prev += 1));
         });
-        
       }
-      if (nextWord===null) {
+      if (nextWord === null) {
         testFinished.current = true;
         setEndTestTime(new Date());
         removeClass(currentWord, "current");
