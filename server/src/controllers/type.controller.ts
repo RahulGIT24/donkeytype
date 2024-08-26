@@ -33,7 +33,6 @@ const getMode = (temp: number, type: string) => {
 
 const getWords = asyncHandler(async (req, res) => {
   const { words, time, type } = req.query;
-  console.log(type);
   if (!words && !time) {
     res
       .status(404)

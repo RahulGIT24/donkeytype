@@ -81,7 +81,6 @@ export default function TypingComponent() {
         mode,
       },
     });
-    console.log(res);
     if (res.status === 200) {
       navigate(`/result/${res.data}`, { replace: true });
     }
@@ -117,6 +116,10 @@ export default function TypingComponent() {
     endTestTime,
     startTestTime,
   ]);
+
+  useEffect(()=>{
+    console.log(missedLetters)
+  },[missedLetters])
 
   async function printWords(w: any) {
     const st = w.split(" ");
@@ -155,78 +158,83 @@ export default function TypingComponent() {
     const isBackspace = key === "Backspace";
     const nextWord = currentWord?.nextSibling;
     let nextLetter;
+
     if (isBackspace) return;
 
     if (!testStarted.current) {
-      if (isSpace) {
-        return;
-      }
+        if (isSpace) {
+            return;
+        }
     }
 
     if (!testStarted.current && !isSpace) {
-      setStartTestTime(new Date());
-      await startTest();
+        setStartTestTime(new Date());
+        await startTest();
     }
 
     if (isLetter) {
-      setTotalLettersTyped((prev) => prev + 1);
-      if (currentLetter) {
-        const isCorrect = key === expected;
-        if (isCorrect) {
-          setCorrectLettersTyped((prev) => prev + 1);
-        } else {
-          setWrongLettersTyped((prev) => prev + 1);
+        setTotalLettersTyped((prev) => prev + 1);
+        if (currentLetter) {
+            const isCorrect = key === expected;
+            if (isCorrect) {
+                setCorrectLettersTyped((prev) => prev + 1);
+            } else {
+                setWrongLettersTyped((prev) => prev + 1);
+            }
+            addClass(currentLetter, isCorrect ? "correct" : "wrong");
+            removeClass(currentLetter, "current");
+            nextLetter = currentLetter.nextSibling;
+
+            if (!nextLetter) {
+                if (!nextWord) {
+                    testFinished.current = true;
+                    setEndTestTime(new Date());
+                    removeClass(currentWord, "current");
+                    return;
+                } else {
+                    setTotalWordsTyped((prev) => prev + 1);
+                }
+            } else {
+                addClass(nextLetter, "current");
+            }
+        } else if (!nextLetter && nextWord) {
+            setExtraLetters((prev) => prev + 1)
         }
-        addClass(currentLetter, isCorrect ? "correct" : "wrong");
-        removeClass(currentLetter, "current");
-        nextLetter = currentLetter.nextSibling;
-        if (!nextLetter) {
-          setTotalWordsTyped((prev) => prev + 1);
-          if (!nextWord) {
-            //
-            testFinished.current = true;
-            setEndTestTime(new Date());
-            removeClass(currentWord, "current");
-            return;
-          }
-        } else {
-          addClass(nextLetter, "current");
-        }
-      } else if (!nextLetter && nextWord) {
-        setExtraLetters((prev) => prev + 1);
-      }
     }
 
     if (isSpace) {
-      setTotalLettersTyped((prev) => prev + 1);
-      if (expected !== " ") {
-       
-        const lettersToInvalidate = [
-          ...document.querySelectorAll(".word.current .letter:not(.correct)"),
-        ];
-        lettersToInvalidate.forEach((letter) => {
-          addClass(letter, "wrong");
-          setMissedLetters((prev) => (prev += 1));
-        });
-      }
-      if (nextWord === null) {
-        testFinished.current = true;
-        setEndTestTime(new Date());
+        setTotalLettersTyped((prev) => prev + 1);
+
+        if (expected !== " ") {
+            const lettersToInvalidate = [
+                ...document.querySelectorAll(".word.current .letter:not(.correct):not(.wrong)"),
+            ];
+            setMissedLetters((prev) => prev + lettersToInvalidate.length);
+            lettersToInvalidate.forEach((letter) => {
+                addClass(letter, "wrong");
+            });
+        }
+
+        if (nextWord === null) {
+            testFinished.current = true;
+            setEndTestTime(new Date());
+            removeClass(currentWord, "current");
+            removeClass(currentLetter, "current");
+            return;
+        }
+
         removeClass(currentWord, "current");
-        removeClass(currentLetter, "current");
-        return;
-      }
-      setTotalLettersTyped((prev) => prev + 1);
-      removeClass(currentWord, "current");
-      addClass(currentWord?.nextSibling, "current");
-      addClass(currentWord?.nextSibling?.firstChild, "current");
-      if (currentLetter) {
-        removeClass(currentLetter, "current");
-      }
+        addClass(currentWord?.nextSibling, "current");
+        addClass(currentWord?.nextSibling?.firstChild, "current");
+        if (currentLetter) {
+            removeClass(currentLetter, "current");
+        }
     }
 
     removeClass(document?.querySelector(".letter"), "current");
-  }
+}
+
+
 
   function addClass(element: any, name: any) {
     if (element) element.className += " " + name;
