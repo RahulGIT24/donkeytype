@@ -12,7 +12,7 @@ import fs from "fs";
 import path from "path";
 
 const filePath = path.join(__dirname, "data", "words.json");
-let wordsFromJSON: any = [];
+let wordsFromJSON: any = {};
 fs.readFile(filePath, "utf8", (err, data) => {
   if (err) {
     console.error("Error reading file:", err);
@@ -21,47 +21,87 @@ fs.readFile(filePath, "utf8", (err, data) => {
   wordsFromJSON = JSON.parse(data);
 });
 
-const getWords = asyncHandler(async (req, res) => {
-  const { words } = req.query;
+const getMode = (temp: number, type: string) => {
   let mode: null | string = null;
-  switch (Number(words)) {
-    case 10:
-      mode = "Words 10";
-      break;
-    case 25:
-      mode = "Words 25";
-      break;
-    case 50:
-      mode = "Words 50";
-      break;
-    case 100:
-      mode = "Words 100";
-      break;
+  if (type === "Time") {
+    mode = `${type} ${temp}S`;
+  } else if (type === "Words") {
+    mode = `${type} ${temp}`;
   }
+  return mode;
+};
 
-  if (!words) {
+const getWords = asyncHandler(async (req, res) => {
+  const { words, time, type } = req.query;
+  if (!words && !time) {
     res
       .status(404)
-      .json(new ApiResponse(404, "Please Provide number of words"));
+      .json(new ApiResponse(404, "Please Provide number of words or time"));
   }
-  const shuffled = wordsFromJSON.sort(() => 0.5 - Math.random());
-  const selectedWords = shuffled.slice(0, Number(words));
-  const wordsString = selectedWords.join(" ");
+  let mode: null | string = null;
+  if (words) {
+    mode = getMode(Number(words), "Words");
+  } else if (time) {
+    mode = getMode(Number(time), "Time");
+  }
+
+  let wordList = [];
+  let numbersList = [];
+  let punctuationsList = [];
+
+  if (type !== undefined && type !== null) {
+    if (String(type).includes("numbers")) {
+      numbersList = wordsFromJSON.numbers;
+    }
+    if (String(type).includes("punctuations")) {
+      punctuationsList = wordsFromJSON.punctuations;
+    }
+  }
+
+  wordList = wordsFromJSON.words;
+
+  const totalWords = Number(words);
+  const numberOfNumbers = String(type).includes("numbers")
+    ? Math.floor(totalWords * 0.2)
+    : 0;
+  const numberOfPunctuations = String(type).includes("punctuations")
+    ? Math.floor(totalWords * 0.1)
+    : 0;
+  const numberOfWords = totalWords - (numberOfNumbers + numberOfPunctuations);
+
+  const selectedWords = wordList
+    .sort(() => 0.5 - Math.random())
+    .slice(0, numberOfWords);
+  const selectedNumbers = numbersList
+    .sort(() => 0.5 - Math.random())
+    .slice(0, numberOfNumbers);
+  const selectedPunctuations = punctuationsList
+    .sort(() => 0.5 - Math.random())
+    .slice(0, numberOfPunctuations);
+
+  let finalSelection = [
+    ...selectedWords,
+    ...selectedNumbers,
+    ...selectedPunctuations,
+  ];
+
+  finalSelection = finalSelection.sort(() => 0.5 - Math.random());
+
+  const wordsString = finalSelection.join(" ");
 
   let totalLetters = 0;
-
-  for (let word of selectedWords) {
+  for (let word of finalSelection) {
     totalLetters += word.length;
   }
 
-  let averageWordLength = totalLetters / selectedWords.length;
+  let averageWordLength = totalLetters / finalSelection.length;
 
-  const resutlObj = {
+  const resultObj = {
     text: wordsString,
     avgwordlength: Math.round(averageWordLength),
     mode,
   };
-  return res.status(200).json(new ApiResponse(200, resutlObj));
+  return res.status(200).json(new ApiResponse(200, resultObj));
 });
 
 const startTest = asyncHandler(async (req, res) => {
@@ -85,10 +125,10 @@ const completeTest = asyncHandler(async (req, res) => {
   }
   const { wpm, raw, accuracy, consistency, chars, mode } = req.body;
   const history = new History({
-    wpm:Math.round(wpm),
-    raw:Math.round(raw),
-    accuracy:Math.round(accuracy),
-    consistency:Math.round(consistency),
+    wpm: Math.round(wpm),
+    raw: Math.round(raw),
+    accuracy: Math.round(accuracy),
+    consistency: Math.round(consistency),
     chars,
     mode,
     user: userId,
@@ -99,7 +139,7 @@ const completeTest = asyncHandler(async (req, res) => {
     return res.status(400).json(new ApiResponse(400, "Can't save history"));
   }
   userExist.testCompleted = userExist.testCompleted + 1;
-  await userExist.save({ validateBeforeSave: false });
+  await userExist.save();
   let modelName: any;
   if (mode == "Words 10") {
     modelName = TenWordsBest;
@@ -113,7 +153,7 @@ const completeTest = asyncHandler(async (req, res) => {
 
   const bestExist = await modelName.findOne({ user: userId });
   if (!bestExist) {
-    const newBest = new modelName({   
+    const newBest = new modelName({
       history: savedHistory._id,
       user: userId,
     });
