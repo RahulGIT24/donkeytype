@@ -6,7 +6,9 @@ export default function TypingNav() {
   const dispatch = useDispatch();
 
   const words = ["10", "25", "50", "100"];
-  const time = ["10", "30", "60", "120"];
+  const time = [10, 30, 60, 120];
+  const modes = ["time", "words"];
+  const typeOfText = ["punctuations", "numbers"];
 
   const setWords = (e: any) => {
     dispatch(setSetting({ type: "number", value: e.target.innerText }));
@@ -41,7 +43,7 @@ export default function TypingNav() {
               }`}
               onClick={setTime}
             >
-              {t}
+              {m}
             </li>
           ))}
         </ul>
