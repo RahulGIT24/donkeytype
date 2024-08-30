@@ -11,8 +11,8 @@ export default function TypingNav() {
   const [mode, setMode] = useState<string>("words");
   const dispatch = useDispatch();
 
-  const words = ["10", "25", "50", "100"];
-  const time = [10, 30, 60, 120];
+  const words = ["10", "25", "50", "100",'limitless'];
+  const time = ['10', '30', '60', '120'];
   const modes = ["time", "words"];
   const typeOfText = ["punctuations", "numbers"];
 
