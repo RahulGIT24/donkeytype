@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
 import { useNavigate } from "react-router-dom";
-// import ResultComponent from "./ResultComponent";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -27,20 +26,22 @@ export default function TypingComponent() {
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
 
   const calculateStandardDeviation = (arr: number[]) => {
-    if (arr.length === 0) return 0; // Handle empty array case
+    if (arr.length === 0) return 0;
 
     // Calculate mean accuracy
     const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-  
+
     // Calculate standard deviation
     const squaredDiffs = arr.map((value) => Math.pow(value - mean, 2));
-    const variance = squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length;
+    const variance =
+      squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length;
     const standardDeviation = Math.sqrt(variance);
-  
+
     // Convert to consistency percentage (higher is better consistency)
     const maxPossibleDeviation = Math.sqrt(mean * (1 - mean)); // Max deviation possible
-    const consistencyPercentage = ((maxPossibleDeviation - standardDeviation) / maxPossibleDeviation) * 100;
-  
+    const consistencyPercentage =
+      ((maxPossibleDeviation - standardDeviation) / maxPossibleDeviation) * 100;
+
     return consistencyPercentage;
   };
   function formatWord(word: any) {
@@ -54,6 +55,7 @@ export default function TypingComponent() {
 
   function timer() {
     if (countdown > 0) {
+      console.log("Word 1")
       const interval = setInterval(() => {
         setCountDown((prev: any) => {
           if (prev <= 1) {
@@ -98,7 +100,6 @@ export default function TypingComponent() {
     wpm,
     raw,
     accuracy,
-    consistency,
     chars,
   }: {
     wpm: number;
@@ -117,7 +118,7 @@ export default function TypingComponent() {
         wpm,
         raw,
         accuracy,
-        consistency,
+        consistency:Number(calculateStandardDeviation(wordAccuracies)),
         chars,
         mode,
       },
@@ -129,9 +130,8 @@ export default function TypingComponent() {
   }
 
   useEffect(() => {
-    if (countdown === 0) {
+    if (!countdown) {
       setEndTestTime(new Date());
-      console.log(countdown);
     }
     if (
       (testFinished.current && endTestTime && startTestTime) ||
@@ -177,7 +177,6 @@ export default function TypingComponent() {
     return st;
   }
 
-
   useEffect(() => {
     if (scroll === 0) {
       setTypeString([]);
@@ -189,10 +188,9 @@ export default function TypingComponent() {
             addClass(document?.querySelector(".letter"), "current");
           }, 800);
         });
-    }else if( scroll>0 && setting.wordNumber === "limitless"){ 
+    } else if (scroll > 0 && setting.wordNumber === "limitless") {
       setTypeString(typeString);
-      getWords(setting.wordNumber)
-        .then((r) => printWords(r));
+      getWords(setting.wordNumber).then((r) => printWords(r));
     }
   }, [setting, scroll]);
 
@@ -291,7 +289,6 @@ export default function TypingComponent() {
         });
       }
 
-
       if (nextWord === null) {
         testFinished.current = true;
         setEndTestTime(new Date());
@@ -321,9 +318,11 @@ export default function TypingComponent() {
 
   return (
     <>
-      <h1 className="text-4xl text-left text-yellow-400 relative">
-        {countdown}
-      </h1>
+      {countdown && (
+        <h1 className="text-4xl text-left text-yellow-400 relative">
+          {countdown}
+        </h1>
+      )}
       <div
         className={`flex min-h-40 h-36 w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
