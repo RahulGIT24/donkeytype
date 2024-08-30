@@ -21,6 +21,8 @@ export default function TypingComponent() {
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
   const testStarted = useRef(false);
   const testFinished = useRef(false);
+  const [scroll, setScroll] = useState(0);
+  const [countdown, setCountDown] = useState(setting.time);
   const [mode, setMode] = useState("");
 
   function formatWord(word: any) {
@@ -28,19 +30,40 @@ export default function TypingComponent() {
     return w;
   }
 
-  async function getWords(number: number) {
-    setWordLoader(true);
+  useEffect(() => {
+    setCountDown(setting.time);
+  }, [setting.time]);
+
+  function timer() {
+    if (countdown > 0) {
+      const interval = setInterval(() => {
+        setCountDown((prev: any) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  }
+  const getWords = async (value: any) => {
+    if (value === "limitless") value = 25;
+    else setWordLoader(true);
     const { data } = await apiCall({
       method: "GET",
-      url: `/type/get-words?words=${number}&type=${setting.typeOfText.length != 0 ? setting.typeOfText.join(","):null}`,
+      url: `/type/get-words?words=${value}&type=${
+        setting.typeOfText.length != 0 ? setting.typeOfText.join(",") : null
+      }`,
     });
     setWordLoader(false);
     setAvgWordLength(data.avgwordlength);
     setMode(data.mode);
     return data.text;
-  }
+  };
 
   const startTest = useCallback(async () => {
+    timer();
     testFinished.current = false;
     testStarted.current = true;
     removeClass(document.getElementById("typing-area"), "blur-sm");
@@ -88,7 +111,15 @@ export default function TypingComponent() {
   }
 
   useEffect(() => {
-    if (testFinished.current && endTestTime && startTestTime) {
+    if (countdown === 0) {
+      setEndTestTime(new Date());
+      console.log(countdown);
+    }
+    if (
+      (testFinished.current && endTestTime && startTestTime) ||
+      (countdown === 0 && endTestTime && startTestTime)
+    ) {
+      //console.log("true");
       const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;
@@ -115,31 +146,37 @@ export default function TypingComponent() {
     testFinished.current,
     endTestTime,
     startTestTime,
+    countdown,
   ]);
-
-  useEffect(()=>{
-    console.log(missedLetters)
-  },[missedLetters])
 
   async function printWords(w: any) {
     const st = w.split(" ");
     st.forEach((element: any) => {
-      setTypeString((prev: any) => [...prev, formatWord(element)]);
+      setTypeString((prev: any) => {
+        return [...prev, formatWord(element)];
+      });
     });
     return st;
   }
 
+
   useEffect(() => {
-    setTypeString([]);
-    getWords(setting.wordNumber)
-      .then((r) => printWords(r))
-      .then(() => {
-        setTimeout(() => {
-          addClass(document?.querySelector(".word"), "current");
-          addClass(document?.querySelector(".letter"), "current");
-        }, 800);
-      });
-  }, [setting]);
+    if (scroll === 0) {
+      setTypeString([]);
+      getWords(setting.wordNumber)
+        .then((r) => printWords(r))
+        .then(() => {
+          setTimeout(() => {
+            addClass(document?.querySelector(".word"), "current");
+            addClass(document?.querySelector(".letter"), "current");
+          }, 800);
+        });
+    }else if( scroll>0 && setting.wordNumber === "limitless"){ 
+      setTypeString(typeString);
+      getWords(setting.wordNumber)
+        .then((r) => printWords(r));
+    }
+  }, [setting, scroll]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
@@ -162,79 +199,89 @@ export default function TypingComponent() {
     if (isBackspace) return;
 
     if (!testStarted.current) {
-        if (isSpace) {
-            return;
-        }
+      if (isSpace) {
+        return;
+      }
     }
 
     if (!testStarted.current && !isSpace) {
-        setStartTestTime(new Date());
-        await startTest();
+      setStartTestTime(new Date());
+      await startTest();
+    }
+    const typing_area = document.getElementById("words");
+    if (
+      typing_area &&
+      currentWord &&
+      currentWord?.getBoundingClientRect().top > 370
+    ) {
+      const margin = parseInt(typing_area?.style.marginTop || "0px");
+      typing_area.style.marginTop = margin - 40 + "px";
+      setScroll((prev: any) => prev + 1);
     }
 
     if (isLetter) {
-        setTotalLettersTyped((prev) => prev + 1);
-        if (currentLetter) {
-            const isCorrect = key === expected;
-            if (isCorrect) {
-                setCorrectLettersTyped((prev) => prev + 1);
-            } else {
-                setWrongLettersTyped((prev) => prev + 1);
-            }
-            addClass(currentLetter, isCorrect ? "correct" : "wrong");
-            removeClass(currentLetter, "current");
-            nextLetter = currentLetter.nextSibling;
-
-            if (!nextLetter) {
-                if (!nextWord) {
-                    testFinished.current = true;
-                    setEndTestTime(new Date());
-                    removeClass(currentWord, "current");
-                    return;
-                } else {
-                    setTotalWordsTyped((prev) => prev + 1);
-                }
-            } else {
-                addClass(nextLetter, "current");
-            }
-        } else if (!nextLetter && nextWord) {
-            setExtraLetters((prev) => prev + 1)
+      setTotalLettersTyped((prev) => prev + 1);
+      if (currentLetter) {
+        const isCorrect = key === expected;
+        if (isCorrect) {
+          setCorrectLettersTyped((prev) => prev + 1);
+        } else {
+          setWrongLettersTyped((prev) => prev + 1);
         }
-    }
+        addClass(currentLetter, isCorrect ? "correct" : "wrong");
+        removeClass(currentLetter, "current");
+        nextLetter = currentLetter.nextSibling;
 
-    if (isSpace) {
-        setTotalLettersTyped((prev) => prev + 1);
-
-        if (expected !== " ") {
-            const lettersToInvalidate = [
-                ...document.querySelectorAll(".word.current .letter:not(.correct):not(.wrong)"),
-            ];
-            setMissedLetters((prev) => prev + lettersToInvalidate.length);
-            lettersToInvalidate.forEach((letter) => {
-                addClass(letter, "wrong");
-            });
-        }
-
-        if (nextWord === null) {
+        if (!nextLetter) {
+          if (!nextWord) {
             testFinished.current = true;
             setEndTestTime(new Date());
             removeClass(currentWord, "current");
-            removeClass(currentLetter, "current");
             return;
+          } else {
+            setTotalWordsTyped((prev) => prev + 1);
+          }
+        } else {
+          addClass(nextLetter, "current");
         }
+      } else if (!nextLetter && nextWord) {
+        setExtraLetters((prev) => prev + 1);
+      }
+    }
 
+    if (isSpace) {
+      setTotalLettersTyped((prev) => prev + 1);
+
+      if (expected !== " ") {
+        const lettersToInvalidate = [
+          ...document.querySelectorAll(
+            ".word.current .letter:not(.correct):not(.wrong)"
+          ),
+        ];
+        setMissedLetters((prev) => prev + lettersToInvalidate.length);
+        lettersToInvalidate.forEach((letter) => {
+          addClass(letter, "wrong");
+        });
+      }
+
+      if (nextWord === null) {
+        testFinished.current = true;
+        setEndTestTime(new Date());
         removeClass(currentWord, "current");
-        addClass(currentWord?.nextSibling, "current");
-        addClass(currentWord?.nextSibling?.firstChild, "current");
-        if (currentLetter) {
-            removeClass(currentLetter, "current");
-        }
+        removeClass(currentLetter, "current");
+        return;
+      }
+
+      removeClass(currentWord, "current");
+      addClass(currentWord?.nextSibling, "current");
+      addClass(currentWord?.nextSibling?.firstChild, "current");
+      if (currentLetter) {
+        removeClass(currentLetter, "current");
+      }
     }
 
     removeClass(document?.querySelector(".letter"), "current");
-}
-
-
+  }
 
   function addClass(element: any, name: any) {
     if (element) element.className += " " + name;
@@ -246,8 +293,11 @@ export default function TypingComponent() {
 
   return (
     <>
+      <h1 className="text-4xl text-left text-yellow-400 relative">
+        {countdown}
+      </h1>
       <div
-        className={`flex min-h-40 w-[85%] flex-wrap overflow-auto text-4xl`}
+        className={`flex min-h-40 h-36 w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
       >
         {wordLoader && (
@@ -263,21 +313,23 @@ export default function TypingComponent() {
               wrapperClass=""
             />
           </div>
-        )}
-        {!wordLoader &&
-          typeString?.map((element: any, index) => {
-            return (
-              <div className="word mx-2 my-2 text-3xl" key={index}>
-                {element.map((e: any, index: number) => {
-                  return (
-                    <span className="letter" key={index}>
-                      {e}
-                    </span>
-                  );
-                })}
-              </div>
-            );
-          })}
+        )}{" "}
+        <div id="words" className="flex flex-wrap h-36">
+          {!wordLoader &&
+            typeString?.map((element: any, index) => {
+              return (
+                <div className="word mx-2 my-2 text-3xl" key={index}>
+                  {element.map((e: any, index: number) => {
+                    return (
+                      <span className="letter" key={index}>
+                        {e}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            })}
+        </div>
       </div>
     </>
   );

@@ -13,11 +13,11 @@ body {
 
   }
 
-  .correct{ 
-    color: rgb(234 179 8);
-  }
   .wrong{ 
     color: rgb(254, 78, 78);
+  }
+  .correct{ 
+    color: rgb(234 179 8);
   }
   .word.current { 
     color:rgb(186, 255, 148);
