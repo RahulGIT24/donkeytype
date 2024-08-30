@@ -48,23 +48,25 @@ export default function TypingComponent() {
     let w = word.split("");
     return w;
   }
-//here
+
   useEffect(() => {
     setCountDown(setting.time);
   }, [setting.time]);
-
+  
   function timer() {
-    if (countdown > 0) {
-      console.log("Word 1")
-      const interval = setInterval(() => {
-        setCountDown((prev: any) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    console.log(setting.time)
+    if(setting.time){
+      if (setting.time > 0) {
+        const interval = setInterval(() => {
+          setCountDown((prev: any) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
     }
   }
   const getWords = async (value: any) => {
@@ -81,6 +83,30 @@ export default function TypingComponent() {
     setMode(data.mode);
     return data.text;
   };
+
+  useEffect(() => {
+    let interval: any;
+    if(testStarted.current){
+      if (setting.time > 0) {
+        setCountDown(setting.time);
+        interval = setInterval(() => {
+          setCountDown((prevCount:number) => {
+            if (prevCount <= 1) {
+              clearInterval(interval!);
+              return 0;
+            }
+            return prevCount - 1;
+          });
+        }, 1000);
+      }
+    
+      return () => {
+        if (interval) {
+          clearInterval(interval);
+        }
+      };
+    }
+  }, [setting.time]);
 
   const startTest = useCallback(async () => {
     timer();
