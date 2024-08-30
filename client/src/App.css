@@ -48,3 +48,23 @@ body {
   .remove-blur{
     filter: none;
   }
+/* Width and height for vertical and horizontal scrollbars */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+/* Track of the scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+/* Handle (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
