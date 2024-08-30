@@ -230,7 +230,7 @@ export default function TypingComponent() {
     if (
       typing_area &&
       currentWord &&
-      currentWord?.getBoundingClientRect().top > 470
+      currentWord?.getBoundingClientRect().top > 400
     ) {
       const margin = parseInt(typing_area?.style.marginTop || "0px");
       typing_area.style.marginTop = margin - 40 + "px";
