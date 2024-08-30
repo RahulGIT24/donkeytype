@@ -78,7 +78,7 @@ const data = {
             </div>
             <div className="flex flex-col ">
               <p>consistency</p>
-              <p className="text-yellow-400">{stats.consistency}</p>
+              <p className="text-yellow-400">{stats.consistency}%</p>
             </div>
             <div className="flex flex-col" title="correct, incorrect, extra, missed">
               <p>characters</p>
