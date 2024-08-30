@@ -21,6 +21,8 @@ export default function TypingComponent() {
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
   const testStarted = useRef(false);
   const testFinished = useRef(false);
+  const [scroll, setScroll] = useState(0);
+  const [countdown, setCountDown] = useState(setting.time);
   const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
 
@@ -41,17 +43,34 @@ export default function TypingComponent() {
   
     return consistencyPercentage;
   };
-
   function formatWord(word: any) {
     let w = word.split("");
     return w;
   }
 
-  async function getWords(number: number) {
-    setWordLoader(true);
+  useEffect(() => {
+    setCountDown(setting.time);
+  }, [setting.time]);
+
+  function timer() {
+    if (countdown > 0) {
+      const interval = setInterval(() => {
+        setCountDown((prev: any) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  }
+  const getWords = async (value: any) => {
+    if (value === "limitless") value = 25;
+    else setWordLoader(true);
     const { data } = await apiCall({
       method: "GET",
-      url: `/type/get-words?words=${number}&type=${
+      url: `/type/get-words?words=${value}&type=${
         setting.typeOfText.length != 0 ? setting.typeOfText.join(",") : null
       }`,
     });
@@ -59,9 +78,10 @@ export default function TypingComponent() {
     setAvgWordLength(data.avgwordlength);
     setMode(data.mode);
     return data.text;
-  }
+  };
 
   const startTest = useCallback(async () => {
+    timer();
     testFinished.current = false;
     testStarted.current = true;
     removeClass(document.getElementById("typing-area"), "blur-sm");
@@ -87,7 +107,6 @@ export default function TypingComponent() {
     consistency: number;
     chars: string;
   }) {
-    // console.log(consistency)
     removeClass(document.getElementById("typing-area"), "remove-blur");
     addClass(document.getElementById("typing-area"), "blur-sm");
     document.removeEventListener("keyup", handleKeyPress);
@@ -110,8 +129,15 @@ export default function TypingComponent() {
   }
 
   useEffect(() => {
-    // console.log(calculateStandardDeviation(wordAccuracies))
-    if (testFinished.current && endTestTime && startTestTime) {
+    if (countdown === 0) {
+      setEndTestTime(new Date());
+      console.log(countdown);
+    }
+    if (
+      (testFinished.current && endTestTime && startTestTime) ||
+      (countdown === 0 && endTestTime && startTestTime)
+    ) {
+      //console.log("true");
       const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;
@@ -121,12 +147,11 @@ export default function TypingComponent() {
         Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) / 100
       ).toFixed(2);
       const wpm = rawWPM * (Number(accuracy) / 100);
-      // console.log(calculateStandardDeviation(wordAccuracies))
       testOverUpdateStats({
         wpm: wpm,
         raw: rawWPM,
         accuracy: Number(accuracy),
-        consistency: Number(calculateStandardDeviation(wordAccuracies)),
+        consistency: 12,
         chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
       });
     }
@@ -139,28 +164,37 @@ export default function TypingComponent() {
     testFinished.current,
     endTestTime,
     startTestTime,
-    wordAccuracies
+    countdown,
   ]);
 
   async function printWords(w: any) {
     const st = w.split(" ");
     st.forEach((element: any) => {
-      setTypeString((prev: any) => [...prev, formatWord(element)]);
+      setTypeString((prev: any) => {
+        return [...prev, formatWord(element)];
+      });
     });
     return st;
   }
 
+
   useEffect(() => {
-    setTypeString([]);
-    getWords(setting.wordNumber)
-      .then((r) => printWords(r))
-      .then(() => {
-        setTimeout(() => {
-          addClass(document?.querySelector(".word"), "current");
-          addClass(document?.querySelector(".letter"), "current");
-        }, 800);
-      });
-  }, [setting]);
+    if (scroll === 0) {
+      setTypeString([]);
+      getWords(setting.wordNumber)
+        .then((r) => printWords(r))
+        .then(() => {
+          setTimeout(() => {
+            addClass(document?.querySelector(".word"), "current");
+            addClass(document?.querySelector(".letter"), "current");
+          }, 800);
+        });
+    }else if( scroll>0 && setting.wordNumber === "limitless"){ 
+      setTypeString(typeString);
+      getWords(setting.wordNumber)
+        .then((r) => printWords(r));
+    }
+  }, [setting, scroll]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
@@ -191,6 +225,16 @@ export default function TypingComponent() {
     if (!testStarted.current && !isSpace) {
       setStartTestTime(new Date());
       await startTest();
+    }
+    const typing_area = document.getElementById("words");
+    if (
+      typing_area &&
+      currentWord &&
+      currentWord?.getBoundingClientRect().top > 470
+    ) {
+      const margin = parseInt(typing_area?.style.marginTop || "0px");
+      typing_area.style.marginTop = margin - 40 + "px";
+      setScroll((prev: any) => prev + 1);
     }
 
     if (isLetter) {
@@ -247,6 +291,7 @@ export default function TypingComponent() {
         });
       }
 
+
       if (nextWord === null) {
         testFinished.current = true;
         setEndTestTime(new Date());
@@ -276,8 +321,11 @@ export default function TypingComponent() {
 
   return (
     <>
+      <h1 className="text-4xl text-left text-yellow-400 relative">
+        {countdown}
+      </h1>
       <div
-        className={`flex min-h-40 w-[85%] flex-wrap overflow-auto text-4xl`}
+        className={`flex min-h-40 h-36 w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
       >
         {wordLoader && (
@@ -293,21 +341,23 @@ export default function TypingComponent() {
               wrapperClass=""
             />
           </div>
-        )}
-        {!wordLoader &&
-          typeString?.map((element: any, index) => {
-            return (
-              <div className="word mx-2 my-2 text-3xl" key={index}>
-                {element.map((e: any, index: number) => {
-                  return (
-                    <span className="letter" key={index}>
-                      {e}
-                    </span>
-                  );
-                })}
-              </div>
-            );
-          })}
+        )}{" "}
+        <div id="words" className="flex flex-wrap h-36">
+          {!wordLoader &&
+            typeString?.map((element: any, index) => {
+              return (
+                <div className="word mx-2 my-2 text-3xl" key={index}>
+                  {element.map((e: any, index: number) => {
+                    return (
+                      <span className="letter" key={index}>
+                        {e}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            })}
+        </div>
       </div>
     </>
   );
