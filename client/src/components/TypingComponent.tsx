@@ -48,7 +48,7 @@ export default function TypingComponent() {
     let w = word.split("");
     return w;
   }
-
+//here
   useEffect(() => {
     setCountDown(setting.time);
   }, [setting.time]);
@@ -130,7 +130,7 @@ export default function TypingComponent() {
   }
 
   useEffect(() => {
-    if (!countdown) {
+    if (countdown===0) {
       setEndTestTime(new Date());
     }
     if (
