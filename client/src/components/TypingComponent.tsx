@@ -48,7 +48,7 @@ export default function TypingComponent() {
     let w = word.split("");
     return w;
   }
-
+//here
   useEffect(() => {
     setCountDown(setting.time);
   }, [setting.time]);
@@ -130,7 +130,7 @@ export default function TypingComponent() {
   }
 
   useEffect(() => {
-    if (!countdown) {
+    if (countdown===0) {
       setEndTestTime(new Date());
     }
     if (
@@ -228,7 +228,7 @@ export default function TypingComponent() {
     if (
       typing_area &&
       currentWord &&
-      currentWord?.getBoundingClientRect().top > 400
+      currentWord?.getBoundingClientRect().top > 470
     ) {
       const margin = parseInt(typing_area?.style.marginTop || "0px");
       typing_area.style.marginTop = margin - 40 + "px";
