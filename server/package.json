@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "tsc",
+    "build": "tsc && cp -r src/controllers/data dist/controllers/data",
     "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
