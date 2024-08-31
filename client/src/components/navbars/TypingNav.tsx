@@ -52,11 +52,7 @@ export default function TypingNav() {
               }`}
               onClick={() => {
                 setMode(m);
-                if(m==="time"){
-                  dispatch(setSetting({ type: "time", value: "10" }));
-                }else{
-                  dispatch(setSetting({ type: "time", value: null }));
-                }
+               
               }}
             >
               {m}

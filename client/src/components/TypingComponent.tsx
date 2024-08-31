@@ -54,7 +54,7 @@ export default function TypingComponent() {
   }, [setting.time]);
   
   function timer() {
-    console.log(setting.time)
+    //console.log(setting.time)
     if(setting.time){
       if (setting.time > 0) {
         const interval = setInterval(() => {
@@ -313,6 +313,8 @@ export default function TypingComponent() {
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
         });
+        removeClass(currentLetter,'current')
+        removeClass(currentWord,'current')
       }
 
       if (nextWord === null) {
