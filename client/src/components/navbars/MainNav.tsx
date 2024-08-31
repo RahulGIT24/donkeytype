@@ -1,29 +1,31 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCrown,
   faGear,
   faInfo,
   faKeyboard,
+  faRightFromBracket,
+  faRightToBracket,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
-import { useState } from "react";
-import UserProfileCard from "../UserProfileCard";
+import { logout } from "../../utils/logout";
+import { toast } from "sonner";
 
 export default function MainNav() {
-  const [showProfile, setShowProfile] = useState(false);
+  // // const [showProfile, setShowProfile] = useState(false);
   const isAuthenticated = useSelector(
     (state: any) => state.user.isAuthenticated
   );
-
+  const navigate = useNavigate();
   return (
     <>
-      <nav className="flex fixed top-0">
-        <ul className="flex text-zinc-400 justify-between w-screen p-4 z-20">
+      <nav className="flex fixed top-0 w-full z-20 bg-zinc-800">
+        <ul className="flex text-zinc-400 justify-between w-screen p-4">
           <li>
             <div>
-              <ul className="flex flex-row gap-4 px-5=10 items-center">
+              <ul className="flex flex-row gap-4 items-center">
                 <li>
                   <Link to="/">
                     <h1 className="text-2xl">donkeytype</h1>
@@ -52,22 +54,39 @@ export default function MainNav() {
               </ul>
             </div>
           </li>
-          <li>
-            {!isAuthenticated ? (
-              <Link to="/login">
-                <div title="Login/Register">
+          <li className="relative group flex">
+            {isAuthenticated ? (
+              <Link to="/account">
+                <div title="Profile Card">
                   <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
                 </div>
               </Link>
             ) : (
-              <button onClick={() => setShowProfile(!showProfile)}>
-                <div title="Profile Card">
-                  <FontAwesomeIcon icon={faUser} className="h-5 px-4" />
+              <Link to="/login">
+                <div title="Login">
+                  <FontAwesomeIcon
+                    icon={faRightToBracket}
+                    className="h-5 px-4"
+                  />
                 </div>
-              </button>
+              </Link>
             )}
+            <div className="cursor-pointer">
+              {isAuthenticated && (
+                <FontAwesomeIcon
+                  icon={faRightFromBracket}
+                  className="h-5 px-4"
+                  title="Logout"
+                  onClick={async () => {
+                    if (await logout()) {
+                      toast.success("Logged Out!");
+                      navigate("/login");
+                    }
+                  }}
+                />
+              )}
+            </div>
           </li>
-          {showProfile && <UserProfileCard setShowProfile={setShowProfile} />}
         </ul>
       </nav>
     </>

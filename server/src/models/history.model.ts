@@ -8,7 +8,7 @@ export interface history extends Document{
     chars:string,
     mode:string,
     date:Date,
-    user:mongoose.Schema.Types.ObjectId
+    user:mongoose.Schema.Types.ObjectId,
 }
 
 const schema = new mongoose.Schema<history>(
@@ -33,6 +33,10 @@ const schema = new mongoose.Schema<history>(
             type:String,
             required:[true,"Provide mode of typing"]
         },
+        chars:{
+            type:String,
+            required:[true,"Provide mode of typing"]
+        },
         date:{
             type:Date,
             default:Date.now()
@@ -41,6 +45,8 @@ const schema = new mongoose.Schema<history>(
             type:mongoose.Schema.Types.ObjectId,
             ref:'User'
         }
+    },{
+        timestamps:true
     }
 )
 

@@ -38,9 +38,9 @@ const getHistory = asyncHandler(async (req, res) => {
   const result = await History.aggregate<{ total: number }>(pipeline);
   const total = result[0]?.total || 0;
 
-  const history = await History.find({ user: userId })
+  const history = await History.find({ user: userId }).sort({createdAt:-1})
     .limit(limitNumber)
-    .select("-_id -user -__v");
+    .select("-user -__v");
 
   return res.status(200).json(
     new ApiResponse(200, {
@@ -81,6 +81,40 @@ const getAverageStats = asyncHandler(async (req, res) => {
     },
   ];
 
+  const avgLast10Pipeline: PipelineStage[] = [
+    {
+      $match: {
+        user: userObjectId,
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $group: {
+        _id: null,
+        averageAccuracy: { $avg: "$accuracy" },
+        averageWpm: { $avg: "$wpm" },
+        averageConsistency: { $avg: "$consistency" },
+        averageRawpm: { $avg: "$raw" },
+      },
+    },
+    {
+      $project: {
+        averageAccuracy: { $round: ["$averageAccuracy", 2] },
+        averageWpm: { $round: ["$averageWpm", 2] },
+        averageConsistency: { $round: ["$averageConsistency", 2] },
+        averageRawpm: { $round: ["$averageRawpm", 2] },
+      },
+    },
+  ];
+  
+
   const highestwpmpipeline: PipelineStage[] = [
     {
       $match: { user: userObjectId },
@@ -110,6 +144,7 @@ const getAverageStats = asyncHandler(async (req, res) => {
   const avg = await History.aggregate<DocumentType>(avgpipeline);
   const wpm = await History.aggregate<DocumentType>(highestwpmpipeline);
   const highest = await History.aggregate<DocumentType>(highestpipeline);
+  const lasTenAverages = await History.aggregate<DocumentType>(avgLast10Pipeline);
 
   if (!avg.length || !wpm.length || !highest.length) {
     return res.status(404).json(new ApiResponse(404, "No data found"));
@@ -122,9 +157,38 @@ const getAverageStats = asyncHandler(async (req, res) => {
       mode: wpm[0].mode,
     },
     max: highest[0],
+    lastTenAverages:lasTenAverages[0]
   };
 
   return res.status(200).json(new ApiResponse(200, result));
 });
 
-export { getHistory, getAverageStats };
+const getResultStats = asyncHandler(async(req,res)=>{
+  const {id} = req.body
+  const user = req.user;
+  if(!user || !user.id){
+    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
+  }
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).json(new ApiResponse(404, "Test Not found"));
+  }
+  const history = await History.findById(new ObjectId(id))
+  if(!history){
+    return res.status(404).json(new ApiResponse(404, "Test Not found"));
+  }
+  const userId= user.id
+  if(history.user!=userId){
+    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
+  }
+  const stats = {
+    wpm:Math.round(history.wpm),
+    raw:Math.round(history.raw),
+    accuracy:Math.round(history.accuracy),
+    consistency:Math.round(history.consistency),
+    mode:history.mode,
+    chars:history.chars
+  }
+  return res.status(200).json(new ApiResponse(200, stats));
+})
+
+export { getHistory, getAverageStats,getResultStats };

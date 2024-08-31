@@ -3,7 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState: any = {
   type:null,
   wordNumber: "10",
-  time: 10
+  time: 10,
+  currentMode:"Words 10",
+  typeOfText:[]
 };
 
 
@@ -22,7 +24,16 @@ const typeSlice: any = createSlice({
           break;
       }
     },
+    setCurrentMode:(state,action)=>{
+      state.currentMode = action.payload
+    },
+    setTypeOfText:(state,action)=>{
+      state.typeOfText = [...state.typeOfText, action.payload];
+    },
+    filterTypeOfText: (state, action) => {
+      state.typeOfText = state.typeOfText.filter((item:string) => item !== action.payload);
+    }
   },
 });
-export const { setSetting } = typeSlice.actions;
+export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText } = typeSlice.actions;
 export default typeSlice.reducer;

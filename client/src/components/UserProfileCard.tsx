@@ -25,7 +25,7 @@ export default function UserProfileCard({ setShowProfile }: any) {
 
   return (
     <>
-      <div className="fixed w-80 h-96 bg-zinc-900 right-5 top-10 rounded-lg shadow-lg p-4 text-slate-200 hover:bg-zinc-950 duration-300 ">
+      <div className="fixed w-80 h-96 bg-zinc-800 right-5 top-10 rounded-lg shadow-lg p-4 text-slate-200 hover:bg-zinc-900 duration-300 ">
         <div className="flex flex-col items-center border border-yellow-300 h-full rounded-lg p-4  ">
           <img
             src={user.profilePic}
