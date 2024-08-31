@@ -2,17 +2,17 @@ import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from 'cookie-parser';
-
+config();
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 };
-
 const app = express();
-config();
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors(corsOptions));
+//app.use(express.static(path.join(__dirname, '../../client/dist')));
 const port = process.env.PORT || 5000;
 
 // Routes
