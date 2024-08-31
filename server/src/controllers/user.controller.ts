@@ -78,7 +78,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
   await user.save();
 
-  const url = process.env.FRONTEND_URL + `verifyToken/${verifyToken}`;
+  const url = process.env.FRONTEND_URL + `/verifyToken/${verifyToken}`;
 
   if (!user) {
     return res
@@ -134,7 +134,7 @@ const login = asyncHandler(async (req, res) => {
     user.verifyTokenExpiry = verifyTokenExpiry;
 
     await user.save({ validateBeforeSave: true });
-    let url = process.env.FRONTEND_URL + `verifyToken/${verifyToken}`;
+    let url = process.env.FRONTEND_URL + `/verifyToken/${verifyToken}`;
     const mailed = await mail({ email: user.email, url, emailType: "verify" });
     if (!mailed) {
       return res
