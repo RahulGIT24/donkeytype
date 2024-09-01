@@ -23,10 +23,8 @@ const apiCall = async ({
     if (response.status === 401) {
       await refresh();
     }
-    
     return {data:response.data.data,status:response.status};
   } catch (error: any) {
-    //console.error(error)
     const data = error.response.data.data;
     if (error.response.status === 401) {
       const isRefreshed = await refresh();
