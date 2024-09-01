@@ -10,7 +10,7 @@ export default function Verification() {
   const [verified, setVerified] = useState(false);
   const verfiyToken = async () => {
     const { data, status } = await apiCall({
-      url: "/users/forgot-password",
+      url: "/users/verify",
       reqData: {
         token,
       },
