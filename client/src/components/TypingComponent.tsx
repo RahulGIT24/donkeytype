@@ -21,6 +21,7 @@ export default function TypingComponent() {
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [scroll, setScroll] = useState(0);
+  //const [countdown, setCountDown] = useState(setting.time);
   const [countdown, setCountDown] = useState(setting.time);
   const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
@@ -51,24 +52,10 @@ export default function TypingComponent() {
 
   useEffect(() => {
     setCountDown(setting.time);
+    testStarted.current = false
   }, [setting.time]);
 
-  function timer() {
-    //console.log(setting.time)
-    if (setting.time) {
-      if (setting.time > 0) {
-        const interval = setInterval(() => {
-          setCountDown((prev: any) => {
-            if (prev <= 1) {
-              clearInterval(interval);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      }
-    }
-  }
+  
   const getWords = async (value: any) => {
     const { data } = await apiCall({
       method: "GET",
@@ -104,10 +91,9 @@ export default function TypingComponent() {
         }
       };
     }
-  }, [setting.time]);
+  }, [setting.time,testStarted.current]);
 
   const startTest = useCallback(async () => {
-    timer();
     testFinished.current = false;
     testStarted.current = true;
     removeClass(document.getElementById("typing-area"), "blur-sm");
@@ -155,6 +141,7 @@ export default function TypingComponent() {
 
   useEffect(() => {
     if (countdown === 0) {
+
       setEndTestTime(new Date());
     }
     if (
@@ -178,6 +165,7 @@ export default function TypingComponent() {
         consistency: 12,
         chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
       });
+      
     }
   }, [
     totalLettersTyped,
@@ -252,8 +240,9 @@ export default function TypingComponent() {
     if (
       typing_area &&
       currentWord &&
-      currentWord?.getBoundingClientRect().top > 490
+      currentWord?.getBoundingClientRect().top > (window.innerHeight/2)
     ) {
+      
       const margin = parseInt(typing_area?.style.marginTop || "0px");
       typing_area.style.marginTop = margin - 40 + "px";
       setScroll((prev: any) => prev + 1);
