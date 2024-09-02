@@ -11,7 +11,7 @@ export default function TypingNav() {
   const [mode, setMode] = useState<string>("words");
   const dispatch = useDispatch();
 
-  const words = ["10", "25", "50", "100", "limitless"];
+  const words = ["10", "25", "50", "100"];
   const time = ["10", "30", "60", "120"];
   const modes = ["time", "words"];
   const typeOfText = ["punctuations", "numbers"];
@@ -54,7 +54,7 @@ export default function TypingNav() {
                 setMode(m);
                 if (m === "words")
                   dispatch(setSetting({ type: "time", value: null }));
-                else dispatch(setSetting({ type: "time", value: 10 }));
+                else dispatch(setSetting({ type: "time", value: '10' }));
               }}
             >
               {m}
