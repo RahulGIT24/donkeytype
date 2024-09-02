@@ -52,10 +52,10 @@ export default function TypingComponent() {
   useEffect(() => {
     setCountDown(setting.time);
   }, [setting.time]);
-  
+
   function timer() {
     //console.log(setting.time)
-    if(setting.time){
+    if (setting.time) {
       if (setting.time > 0) {
         const interval = setInterval(() => {
           setCountDown((prev: any) => {
@@ -70,8 +70,6 @@ export default function TypingComponent() {
     }
   }
   const getWords = async (value: any) => {
-    if (value === "limitless") value = 25;
-    else setWordLoader(true);
     const { data } = await apiCall({
       method: "GET",
       url: `/type/get-words?words=${value}&type=${
@@ -86,11 +84,11 @@ export default function TypingComponent() {
 
   useEffect(() => {
     let interval: any;
-    if(testStarted.current){
-      if (setting.time > 0) {
+    if (testStarted.current) {
+      if (Number(setting.time) > 0) {
         setCountDown(setting.time);
         interval = setInterval(() => {
-          setCountDown((prevCount:number) => {
+          setCountDown((prevCount: number) => {
             if (prevCount <= 1) {
               clearInterval(interval!);
               return 0;
@@ -99,7 +97,7 @@ export default function TypingComponent() {
           });
         }, 1000);
       }
-    
+
       return () => {
         if (interval) {
           clearInterval(interval);
@@ -144,7 +142,7 @@ export default function TypingComponent() {
         wpm,
         raw,
         accuracy,
-        consistency:Number(calculateStandardDeviation(wordAccuracies)),
+        consistency: Number(calculateStandardDeviation(wordAccuracies)),
         chars,
         mode,
       },
@@ -156,7 +154,7 @@ export default function TypingComponent() {
   }
 
   useEffect(() => {
-    if (countdown===0) {
+    if (countdown === 0) {
       setEndTestTime(new Date());
     }
     if (
@@ -313,8 +311,8 @@ export default function TypingComponent() {
         lettersToInvalidate.forEach((letter) => {
           addClass(letter, "wrong");
         });
-        removeClass(currentLetter,'current')
-        removeClass(currentWord,'current')
+        removeClass(currentLetter, "current");
+        removeClass(currentWord, "current");
       }
 
       if (nextWord === null) {

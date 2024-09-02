@@ -3,12 +3,19 @@ import ResultComponent from "../components/ResultComponent";
 import apiCall from "../utils/apiCall";
 import Loader from "../components/Loader";
 import MainNav from "../components/navbars/MainNav";
+import { useDispatch } from "react-redux";
+import { resetState } from "../redux/reducers/typeSettingSlice";
 
 const Result = () => {
   const [resultStats, setResultStats] = useState("");
   const [errMessage, setErrMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(0);
+
+  const dispatch = useDispatch()
+  useEffect(()=>{
+    dispatch(resetState())
+  },[])
 
   const getResult = async (id: string) => {
     setLoading(true);

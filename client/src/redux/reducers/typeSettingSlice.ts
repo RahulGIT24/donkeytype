@@ -32,8 +32,16 @@ const typeSlice: any = createSlice({
     },
     filterTypeOfText: (state, action) => {
       state.typeOfText = state.typeOfText.filter((item:string) => item !== action.payload);
+    },
+    resetState:(state)=>{
+      state.type = null;
+      state.type=null,
+      state.wordNumber= "10",
+      state.time= null,
+      state.currentMode="Words 10",
+      state.typeOfText=[]
     }
   },
 });
-export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText } = typeSlice.actions;
+export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText,resetState } = typeSlice.actions;
 export default typeSlice.reducer;
