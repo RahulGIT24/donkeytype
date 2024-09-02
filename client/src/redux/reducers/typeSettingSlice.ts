@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState: any = {
   type:null,
   wordNumber: "10",
-  time: 10,
+  time: null,
   currentMode:"Words 10",
   typeOfText:[]
 };
