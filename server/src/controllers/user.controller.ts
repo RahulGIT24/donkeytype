@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt, { Secret } from "jsonwebtoken";
 import { mail } from "../utils/email";
 import { DecodedToken } from "../types/types";
+import { CookieOptions } from "express";
 
 const generateAccessandRefreshToken = async (userId: string) => {
   try {
@@ -160,9 +161,10 @@ const login = asyncHandler(async (req, res) => {
     user.id
   );
 
-  const options = {
+  const options:CookieOptions = {
     httpOnly: true,
     secure: true,
+    sameSite:'none'
   };
 
   return res
