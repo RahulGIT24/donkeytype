@@ -214,6 +214,9 @@ export default function TypingComponent() {
   }, []);
 
   async function handleKeyPress(e: any) {
+    if(testFinished.current){
+      return;
+    }
     const key = e.key;
     const currentLetter = document.querySelector(".letter.current");
     const currentWord = document.querySelector(".word.current");
