@@ -54,7 +54,7 @@ export default function TypingNav() {
                 setMode(m);
                 if (m === "words")
                   dispatch(setSetting({ type: "time", value: null }));
-                else dispatch(setSetting({ type: "time", value: '10' }));
+                else if (m==='time')dispatch(setSetting({ type: "time", value: '10' }));
               }}
             >
               {m}
