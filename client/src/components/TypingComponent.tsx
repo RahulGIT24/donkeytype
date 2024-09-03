@@ -55,13 +55,14 @@ export default function TypingComponent() {
     return w;
   }
 
+
   useEffect(() => {
     setCountDown(setting.time);
     testStarted.current = false;
   }, [setting.time]);
 
   const getWords = async (value: any) => {
-    if(setting.time) value = 30;
+    if (setting.time) value = 30;
     const { data } = await apiCall({
       method: "GET",
       url: `/type/get-words?words=${value}&type=${
@@ -74,26 +75,10 @@ export default function TypingComponent() {
     return data.text;
   };
 
-  
 
-  const startTest = useCallback(async () => {
-    testFinished.current = false;
-    testStarted.current = true;
-    //console.log("starttest",testStarted.current)
-    removeClass(document.getElementById("typing-area"), "blur-sm");
-    addClass(document.getElementById("typing-area"), "remove-blur");
-    await apiCall({
-      method: "PATCH",
-      url: `/type/start-test`,
-    });
-  }, []);
-
-  useEffect(() => {
+   useEffect(() => {
     let interval: any;
-    //console.log('timer',testStarted.current)
-    //console.log(testStarted.current)
     if (testStarted.current) {
-      //console.log(setting.time)
       if (Number(setting.time) > 0) {
         setCountDown(setting.time);
         interval = setInterval(() => {
@@ -113,13 +98,22 @@ export default function TypingComponent() {
         }
       };
     }
-  }, [setting.time, testStarted.current,testStartRef.current]);
+  }, [testStarted.current]);
 
-  useEffect(() => {
-    if (testStartRef.current === true) {
-      startTest();
-    }
-  }, [testStartRef.current]);
+  const startTest = async () => {
+    testFinished.current = false;
+    testStarted.current = true;
+    removeClass(document.getElementById("typing-area"), "blur-sm");
+    addClass(document.getElementById("typing-area"), "remove-blur");
+    await apiCall({
+      method: "PATCH",
+      url: `/type/start-test`,
+    });
+  }
+
+  
+
+ 
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -230,10 +224,11 @@ export default function TypingComponent() {
         return;
       }
     }
-   
+
     if (!testStarted.current && !isSpace) {
-      setStartTestTime(new Date());
-      testStartRef.current = true;
+      
+      setStartTestTime(new Date()); 
+      startTest() 
     }
     const typing_area = document.getElementById("words");
     if (
