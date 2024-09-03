@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
@@ -22,7 +22,6 @@ export default function TypingComponent() {
   const [extraLetters, setExtraLetters] = useState(0);
   const [startTestTime, setStartTestTime] = useState<Date | null>(null);
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
-  const testStartRef = useRef(false);
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [scroll, setScroll] = useState(0);
