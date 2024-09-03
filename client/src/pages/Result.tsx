@@ -3,23 +3,29 @@ import ResultComponent from "../components/ResultComponent";
 import apiCall from "../utils/apiCall";
 import Loader from "../components/Loader";
 import MainNav from "../components/navbars/MainNav";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { resetState } from "../redux/reducers/typeSettingSlice";
+import { toast } from "sonner";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Result = () => {
-  const [resultStats, setResultStats] = useState("");
+  const [resultStats, setResultStats] = useState<null | string>("");
   const [errMessage, setErrMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(0);
 
-  const dispatch = useDispatch()
-  useEffect(()=>{
-    dispatch(resetState())
-  },[])
+  const recentTestResults = useSelector(
+    (state: any) => state.stats.recentTestResults
+  );
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(resetState());
+  }, []);
 
   const getResult = async (id: string) => {
     setLoading(true);
-    setLoadingStatus(30);
+    setLoadingStatus(45);
     const { data, status } = await apiCall({
       method: "POST",
       url: "/stats/get-result",
@@ -27,6 +33,7 @@ const Result = () => {
         id: id,
       },
     });
+    setLoadingStatus(60);
     if (status == 200) {
       setResultStats(data);
     } else {
@@ -36,10 +43,42 @@ const Result = () => {
     setLoading(false);
   };
 
+  const navigate = useNavigate();
+
+  async function testOverUpdateStats() {
+    if (!recentTestResults) {
+      navigate("/", { replace: true });
+      setResultStats(null);
+      return;
+    }
+    const res = await apiCall({
+      method: "POST",
+      url: `/type/complete-test`,
+      reqData: {
+        wpm: recentTestResults.wpm,
+        raw: recentTestResults.raw,
+        accuracy: recentTestResults.accuracy,
+        consistency: recentTestResults.consistency,
+        chars: recentTestResults.chars,
+        mode: recentTestResults.mode,
+      },
+    });
+    if (res.status === 200) {
+      toast.success("Test Saved");
+    }
+    return;
+  }
+
+  const location = useLocation();
   useEffect(() => {
-    const url = location.href.split("/");
-    const id = url[url.length - 1];
-    getResult(id);
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    if (id) {
+      getResult(id);
+    } else {
+      setResultStats(recentTestResults);
+      testOverUpdateStats();
+    }
   }, []);
   return (
     <>

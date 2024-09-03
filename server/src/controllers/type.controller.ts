@@ -125,10 +125,10 @@ const completeTest = asyncHandler(async (req, res) => {
   }
   const { wpm, raw, accuracy, consistency, chars, mode } = req.body;
   const history = new History({
-    wpm: Math.round(wpm),
-    raw: Math.round(raw),
-    accuracy: Math.round(accuracy),
-    consistency: Math.round(consistency),
+    wpm: wpm,
+    raw: raw,
+    accuracy: accuracy,
+    consistency: consistency,
     chars,
     mode,
     user: userId,

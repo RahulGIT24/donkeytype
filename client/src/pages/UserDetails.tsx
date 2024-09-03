@@ -252,7 +252,7 @@ const History = () => {
               icon={faEye}
               className="cursor-pointer"
               onClick={() => {
-                navigate(`/result/${row.original._id}`);
+                navigate(`/result/?id=${row.original._id}`);
               }}
             />
           </>

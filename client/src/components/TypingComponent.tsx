@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
 import { useNavigate } from "react-router-dom";
+import {
+  revertRecentTestResults,
+  setRecentTestResults,
+} from "../redux/reducers/statSlice";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -18,6 +22,7 @@ export default function TypingComponent() {
   const [extraLetters, setExtraLetters] = useState(0);
   const [startTestTime, setStartTestTime] = useState<Date | null>(null);
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
+  const testStartRef = useRef(false);
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [scroll, setScroll] = useState(0);
@@ -52,10 +57,9 @@ export default function TypingComponent() {
 
   useEffect(() => {
     setCountDown(setting.time);
-    testStarted.current = false
+    testStarted.current = false;
   }, [setting.time]);
 
-  
   const getWords = async (value: any) => {
     const { data } = await apiCall({
       method: "GET",
@@ -91,7 +95,7 @@ export default function TypingComponent() {
         }
       };
     }
-  }, [setting.time,testStarted.current]);
+  }, [setting.time, testStarted.current]);
 
   const startTest = useCallback(async () => {
     testFinished.current = false;
@@ -104,44 +108,21 @@ export default function TypingComponent() {
     });
   }, []);
 
-  const navigate = useNavigate();
-
-  async function testOverUpdateStats({
-    wpm,
-    raw,
-    accuracy,
-    chars,
-  }: {
-    wpm: number;
-    raw: number;
-    accuracy: number;
-    consistency: number;
-    chars: string;
-  }) {
-    removeClass(document.getElementById("typing-area"), "remove-blur");
-    addClass(document.getElementById("typing-area"), "blur-sm");
-    document.removeEventListener("keyup", handleKeyPress);
-    const res = await apiCall({
-      method: "POST",
-      url: `/type/complete-test`,
-      reqData: {
-        wpm,
-        raw,
-        accuracy,
-        consistency: Number(calculateStandardDeviation(wordAccuracies)),
-        chars,
-        mode,
-      },
-    });
-    if (res.status === 200) {
-      navigate(`/result/${res.data}`, { replace: true });
+  useEffect(() => {
+    if (testStartRef.current === true) {
+      startTest();
     }
-    return;
-  }
+  }, [testStartRef.current]);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(revertRecentTestResults());
+  }, []);
 
   useEffect(() => {
     if (countdown === 0) {
-
       setEndTestTime(new Date());
     }
     if (
@@ -158,14 +139,22 @@ export default function TypingComponent() {
         Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) / 100
       ).toFixed(2);
       const wpm = rawWPM * (Number(accuracy) / 100);
-      testOverUpdateStats({
-        wpm: wpm,
-        raw: rawWPM,
-        accuracy: Number(accuracy),
-        consistency: 12,
-        chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
-      });
-      
+      removeClass(document.getElementById("typing-area"), "remove-blur");
+      addClass(document.getElementById("typing-area"), "blur-sm");
+      document.removeEventListener("keyup", handleKeyPress);
+      dispatch(
+        setRecentTestResults({
+          wpm: Math.round(wpm),
+          raw: Math.round(rawWPM),
+          accuracy: Math.round(Number(accuracy)),
+          consistency: Math.round(
+            Number(calculateStandardDeviation(wordAccuracies))
+          ),
+          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+          mode: mode,
+        })
+      );
+      navigate(`/result`, { replace: true });
     }
   }, [
     totalLettersTyped,
@@ -214,7 +203,7 @@ export default function TypingComponent() {
   }, []);
 
   async function handleKeyPress(e: any) {
-    if(testFinished.current){
+    if (testFinished.current) {
       return;
     }
     const key = e.key;
@@ -237,15 +226,14 @@ export default function TypingComponent() {
 
     if (!testStarted.current && !isSpace) {
       setStartTestTime(new Date());
-      await startTest();
+      testStartRef.current = true;
     }
     const typing_area = document.getElementById("words");
     if (
       typing_area &&
       currentWord &&
-      currentWord?.getBoundingClientRect().top > (window.innerHeight/2)
+      currentWord?.getBoundingClientRect().top > window.innerHeight / 2
     ) {
-      
       const margin = parseInt(typing_area?.style.marginTop || "0px");
       typing_area.style.marginTop = margin - 40 + "px";
       setScroll((prev: any) => prev + 1);

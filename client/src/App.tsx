@@ -41,7 +41,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/account" element={<UserDetails/>} />
-          <Route path="/result/:id" element={<Result/>
+          <Route path="/result" element={<Result/>
           } />
         </Route>
         <Route path="*" element={<NotFound />} />

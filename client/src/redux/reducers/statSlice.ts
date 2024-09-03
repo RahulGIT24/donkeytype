@@ -2,7 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState: any = {
     history:null,
-    userAverageStats:null
+    userAverageStats:null,
+    recentTestResults:null,
 };
 
 const statSlice = createSlice({
@@ -15,8 +16,14 @@ const statSlice = createSlice({
         setUserAverageStats:(state,action)=>{
             state.userAverageStats = action.payload
         },
+        setRecentTestResults:(state,action)=>{
+            state.recentTestResults = action.payload
+        },
+        revertRecentTestResults:(state)=>{
+            state.recentTestResults = null
+        }
     }
 })
 
-export const {setHistory,setUserAverageStats} = statSlice.actions
+export const {setHistory,setUserAverageStats,setRecentTestResults,revertRecentTestResults} = statSlice.actions
 export default statSlice.reducer
