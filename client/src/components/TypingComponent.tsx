@@ -61,6 +61,7 @@ export default function TypingComponent() {
   }, [setting.time]);
 
   const getWords = async (value: any) => {
+    if(setting.time) value = 30;
     const { data } = await apiCall({
       method: "GET",
       url: `/type/get-words?words=${value}&type=${
@@ -73,9 +74,26 @@ export default function TypingComponent() {
     return data.text;
   };
 
+  
+
+  const startTest = useCallback(async () => {
+    testFinished.current = false;
+    testStarted.current = true;
+    //console.log("starttest",testStarted.current)
+    removeClass(document.getElementById("typing-area"), "blur-sm");
+    addClass(document.getElementById("typing-area"), "remove-blur");
+    await apiCall({
+      method: "PATCH",
+      url: `/type/start-test`,
+    });
+  }, []);
+
   useEffect(() => {
     let interval: any;
+    //console.log('timer',testStarted.current)
+    //console.log(testStarted.current)
     if (testStarted.current) {
+      //console.log(setting.time)
       if (Number(setting.time) > 0) {
         setCountDown(setting.time);
         interval = setInterval(() => {
@@ -95,18 +113,7 @@ export default function TypingComponent() {
         }
       };
     }
-  }, [setting.time, testStarted.current]);
-
-  const startTest = useCallback(async () => {
-    testFinished.current = false;
-    testStarted.current = true;
-    removeClass(document.getElementById("typing-area"), "blur-sm");
-    addClass(document.getElementById("typing-area"), "remove-blur");
-    await apiCall({
-      method: "PATCH",
-      url: `/type/start-test`,
-    });
-  }, []);
+  }, [setting.time, testStarted.current,testStartRef.current]);
 
   useEffect(() => {
     if (testStartRef.current === true) {
@@ -189,7 +196,7 @@ export default function TypingComponent() {
             addClass(document?.querySelector(".letter"), "current");
           }, 800);
         });
-    } else if (scroll > 0 && setting.wordNumber === "limitless") {
+    } else if (scroll > 0 && setting.time) {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
@@ -223,7 +230,7 @@ export default function TypingComponent() {
         return;
       }
     }
-
+   
     if (!testStarted.current && !isSpace) {
       setStartTestTime(new Date());
       testStartRef.current = true;
@@ -330,7 +337,7 @@ export default function TypingComponent() {
         </h1>
       )}
       <div
-        className={`flex min-h-40 h-36 w-[85%] overflow-hidden flex-wrap  text-4xl`}
+        className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
       >
         {wordLoader && (
