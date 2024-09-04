@@ -30,30 +30,31 @@ export default function TypingComponent() {
   const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
 
-  const calculateStandardDeviation = (arr: number[]) => {
+  const calculateStandardDeviation = (arr:number[]) => {
     if (arr.length === 0) return 0;
-
-    // Calculate mean accuracy
+  
     const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-
-    // Calculate standard deviation
     const squaredDiffs = arr.map((value) => Math.pow(value - mean, 2));
     const variance =
       squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length;
     const standardDeviation = Math.sqrt(variance);
-
-    // Convert to consistency percentage (higher is better consistency)
-    const maxPossibleDeviation = Math.sqrt(mean * (1 - mean)); // Max deviation possible
+  
+    // Handle the special case where mean is 1
+    if (mean === 1) {
+      return 100; // Perfect consistency
+    }
+  
+    const maxPossibleDeviation = Math.sqrt(mean * (1 - mean));
     const consistencyPercentage =
       ((maxPossibleDeviation - standardDeviation) / maxPossibleDeviation) * 100;
-
-    return consistencyPercentage;
+  
+    return Number(consistencyPercentage);
   };
+  
   function formatWord(word: any) {
     let w = word.split("");
     return w;
   }
-
 
   useEffect(() => {
     setCountDown(setting.time);
@@ -74,8 +75,7 @@ export default function TypingComponent() {
     return data.text;
   };
 
-
-   useEffect(() => {
+  useEffect(() => {
     let interval: any;
     if (testStarted.current) {
       if (Number(setting.time) > 0) {
@@ -108,11 +108,7 @@ export default function TypingComponent() {
       method: "PATCH",
       url: `/type/start-test`,
     });
-  }
-
-  
-
- 
+  };
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -225,9 +221,8 @@ export default function TypingComponent() {
     }
 
     if (!testStarted.current && !isSpace) {
-      
-      setStartTestTime(new Date()); 
-      startTest() 
+      setStartTestTime(new Date());
+      startTest();
     }
     const typing_area = document.getElementById("words");
     if (
@@ -276,8 +271,14 @@ export default function TypingComponent() {
           currentWord.querySelectorAll(".correct").length;
         const totalLettersInWord =
           currentWord.querySelectorAll(".letter").length;
-        const wordAccuracy = correctLettersInWord / totalLettersInWord;
+
+        const wordAccuracy =
+          totalLettersInWord > 0
+            ? correctLettersInWord / totalLettersInWord
+            : 1;
+
         setWordAccuracies((prev) => [...prev, wordAccuracy]);
+        console.log(correctLettersInWord, totalLettersInWord, wordAccuracy);
       }
 
       setTotalLettersTyped((prev) => prev + 1);
