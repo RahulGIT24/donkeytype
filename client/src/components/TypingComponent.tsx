@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Oval } from "react-loader-spinner";
 import apiCall from "../utils/apiCall";
@@ -22,7 +22,6 @@ export default function TypingComponent() {
   const [extraLetters, setExtraLetters] = useState(0);
   const [startTestTime, setStartTestTime] = useState<Date | null>(null);
   const [endTestTime, setEndTestTime] = useState<Date | null>(null);
-  const testStartRef = useRef(false);
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [scroll, setScroll] = useState(0);
@@ -55,12 +54,14 @@ export default function TypingComponent() {
     return w;
   }
 
+
   useEffect(() => {
     setCountDown(setting.time);
     testStarted.current = false;
   }, [setting.time]);
 
   const getWords = async (value: any) => {
+    if (setting.time) value = 30;
     const { data } = await apiCall({
       method: "GET",
       url: `/type/get-words?words=${value}&type=${
@@ -73,7 +74,8 @@ export default function TypingComponent() {
     return data.text;
   };
 
-  useEffect(() => {
+
+   useEffect(() => {
     let interval: any;
     if (testStarted.current) {
       if (Number(setting.time) > 0) {
@@ -95,9 +97,9 @@ export default function TypingComponent() {
         }
       };
     }
-  }, [setting.time, testStarted.current]);
+  }, [testStarted.current]);
 
-  const startTest = useCallback(async () => {
+  const startTest = async () => {
     testFinished.current = false;
     testStarted.current = true;
     removeClass(document.getElementById("typing-area"), "blur-sm");
@@ -106,13 +108,11 @@ export default function TypingComponent() {
       method: "PATCH",
       url: `/type/start-test`,
     });
-  }, []);
+  }
 
-  useEffect(() => {
-    if (testStartRef.current === true) {
-      startTest();
-    }
-  }, [testStartRef.current]);
+  
+
+ 
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -189,7 +189,7 @@ export default function TypingComponent() {
             addClass(document?.querySelector(".letter"), "current");
           }, 800);
         });
-    } else if (scroll > 0 && setting.wordNumber === "limitless") {
+    } else if (scroll > 0 && setting.time) {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
@@ -225,8 +225,9 @@ export default function TypingComponent() {
     }
 
     if (!testStarted.current && !isSpace) {
-      setStartTestTime(new Date());
-      testStartRef.current = true;
+      
+      setStartTestTime(new Date()); 
+      startTest() 
     }
     const typing_area = document.getElementById("words");
     if (
@@ -330,7 +331,7 @@ export default function TypingComponent() {
         </h1>
       )}
       <div
-        className={`flex min-h-40 h-36 w-[85%] overflow-hidden flex-wrap  text-4xl`}
+        className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
       >
         {wordLoader && (
