@@ -1,7 +1,11 @@
 import {
+  FiftySecBest,
   FiftyWordsBest,
+  HunderedSecBest,
   HunderedWordsBest,
+  TenSecBest,
   TenWordsBest,
+  TwentyFiveSecBest,
   TwentyFiveWordsBest,
 } from "../models/alltimebest.model";
 import { History } from "../models/history.model";
@@ -21,28 +25,12 @@ fs.readFile(filePath, "utf8", (err, data) => {
   wordsFromJSON = JSON.parse(data);
 });
 
-const getMode = (temp: number, type: string) => {
-  let mode: null | string = null;
-  if (type === "Time") {
-    mode = `${type} ${temp}S`;
-  } else if (type === "Words") {
-    mode = `${type} ${temp}`;
-  }
-  return mode;
-};
-
 const getWords = asyncHandler(async (req, res) => {
-  const { words, time, type } = req.query;
-  if (!words && !time) {
+  const { words, mode, type } = req.query;
+  if (!words) {
     res
       .status(404)
       .json(new ApiResponse(404, "Please Provide number of words or time"));
-  }
-  let mode: null | string = null;
-  if (words) {
-    mode = getMode(Number(words), "Words");
-  } else if (time) {
-    mode = getMode(Number(time), "Time");
   }
 
   let wordList = [];
@@ -149,6 +137,14 @@ const completeTest = asyncHandler(async (req, res) => {
     modelName = FiftyWordsBest;
   } else if (mode == "Words 100") {
     modelName = HunderedWordsBest;
+  } else if (mode == "Time 10 S") {
+    modelName = TenSecBest
+  } else if (mode == "Time 25 S") {
+    modelName = TwentyFiveSecBest
+  } else if (mode == "Time 50 S") {
+    modelName = FiftySecBest
+  } else if (mode == "Time 100 S") {
+    modelName = HunderedSecBest
   }
 
   const bestExist = await modelName.findOne({ user: userId });

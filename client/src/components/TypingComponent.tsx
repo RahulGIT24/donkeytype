@@ -62,13 +62,20 @@ export default function TypingComponent() {
   }, [setting.time]);
 
   const getWords = async (value: any) => {
-    if (setting.time) value = 30;
+    let typeOfText = "words"
+    let mode = `Words ${value}`
+    if (setting.time){ 
+      value = 30
+      typeOfText = 'time'
+      mode = `Time ${setting.time} S`
+    }
     const { data } = await apiCall({
       method: "GET",
       url: `/type/get-words?words=${value}&type=${
         setting.typeOfText.length != 0 ? setting.typeOfText.join(",") : null
-      }`,
+      }&mode=${mode}`,
     });
+    // console.log(data)
     setWordLoader(false);
     setAvgWordLength(data.avgwordlength);
     setMode(data.mode);
@@ -278,7 +285,7 @@ export default function TypingComponent() {
             : 1;
 
         setWordAccuracies((prev) => [...prev, wordAccuracy]);
-        console.log(correctLettersInWord, totalLettersInWord, wordAccuracy);
+        // console.log(correctLettersInWord, totalLettersInWord, wordAccuracy);
       }
 
       setTotalLettersTyped((prev) => prev + 1);
