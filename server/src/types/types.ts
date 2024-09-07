@@ -9,3 +9,8 @@ declare module "express-serve-static-core" {
     user?: typeof User.prototype;
   }
 }
+
+export interface Room{
+  roomId:string,
+  users:string[]
+}

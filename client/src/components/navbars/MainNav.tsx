@@ -8,6 +8,7 @@ import {
   faRightFromBracket,
   faRightToBracket,
   faUser,
+  faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import { logout } from "../../utils/logout";
@@ -44,6 +45,11 @@ export default function MainNav() {
                 <li title="Info">
                   <Link to="/info">
                     <FontAwesomeIcon icon={faInfo} className="h-5 px-4" />
+                  </Link>
+                </li>
+                <li title="Multiplayer">
+                  <Link to="/multiplayer">
+                    <FontAwesomeIcon icon={faUserGroup} className="h-5 px-4" />
                   </Link>
                 </li>
                 <li title="Settings">
