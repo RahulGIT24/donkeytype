@@ -17,7 +17,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "*",
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
   },
 });
@@ -53,6 +53,7 @@ const rooms: { [key: string]: Room } = {};
 // socket connection
 io.on("connection", (socket: Socket) => {
   // Room creation
+  console.log('connected')
   socket.on("create-room", (roomId: string) => {
     if (!rooms[roomId]) {
       rooms[roomId] = { roomId, users: [socket.id] };

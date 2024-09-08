@@ -15,6 +15,7 @@ import { setAuth } from "./redux/reducers/userSlice";
 import { useEffect } from "react";
 import Main from "./components/multiplayer/Main";
 import CreateRoom from "./components/multiplayer/CreateRoom";
+import JoinRoom from "./components/multiplayer/JoinRoom";
 
 function App() {
   const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated);
@@ -43,6 +44,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/account" element={<UserDetails/>} />
+          <Route path="/join-room" element={<JoinRoom/>} />
           <Route path="/create-room" element={<CreateRoom/>} />
           <Route path="/result" element={<Result/>} />
           <Route path="/multiplayer" element={<Main/>} />
