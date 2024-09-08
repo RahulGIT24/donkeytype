@@ -52,8 +52,8 @@ const JoinRoom = () => {
       <MainNav />
       <main className="w-full flex justify-center items-center">
         <div className="mt-44 flex text-yellow-500 justify-center items-center">
-          <p className="font-semibold text-2xl mx-4">Enter room id</p>
-          <FontAwesomeIcon className="w-5 h-5" icon={faDownLong} />
+          <p className="font-semibold text-4xl mx-4">Join room</p>
+          
         </div>
       </main>
       <main className="flex justify-center items-center mt-20 text-yellow-500 flex-col">
