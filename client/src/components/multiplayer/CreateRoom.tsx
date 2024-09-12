@@ -50,7 +50,7 @@ const CreateRoom = () => {
         <div className="border border-yellow-500 p-4 rounded-xl flex felx-col justify-between items-center w-[30%]">
           {roomId ?? "Room ID Will Appear Here"}
           {copied ? (
-            <FontAwesomeIcon icon={faCircleCheck} className=" w-5 h-5" />
+            <FontAwesomeIcon icon={faCircleCheck} className="w-5 h-5" />
           ) : (
             <FontAwesomeIcon
               icon={faCopy}
