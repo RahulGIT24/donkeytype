@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 
-const PORT = process.env.PORT ?? 5000
+const PORT = process.env.PORT ?? 5000;
 
 config();
 const corsOptions = {
@@ -19,6 +19,7 @@ const io = new Server(httpServer, {
   cors: {
     origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -52,8 +53,6 @@ const rooms: { [key: string]: Room } = {};
 
 // socket connection
 io.on("connection", (socket: Socket) => {
-  // Room creation
-  console.log('connected')
   socket.on("create-room", (roomId: string) => {
     if (!rooms[roomId]) {
       rooms[roomId] = { roomId, users: [socket.id] };
@@ -63,21 +62,44 @@ io.on("connection", (socket: Socket) => {
       io.to(socket.id).emit("error", "Room Already Exist");
     }
   });
-  // Join Room
+
   socket.on("join-room", (roomId: string) => {
     const room = rooms[roomId];
     if (room && room.users.length < 2) {
       room.users.push(socket.id);
       socket.join(roomId);
-      io.to(roomId).emit("User Joined", socket.id);
+      io.to(roomId).emit("User Joined", roomId);
     } else if (!room) {
       io.to(socket.id).emit("error", "Room Not Exist");
     } else {
       io.to(socket.id).emit("error", "Room is Full");
     }
   });
+
+  socket.on("verify-room", (roomId: string) => {
+    const room = rooms[roomId];
+    if (room && room.users.length < 2) {
+      socket.emit("Verfied", socket.id);
+    } else {
+      socket.emit("Not Verfied", socket.id);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    for (const roomId in rooms) {
+      const room = rooms[roomId];
+      const userIndex = room.users.indexOf(socket.id);
+      if (userIndex != -1) {
+        room.users.splice(userIndex, 1);
+        io.to(roomId).emit("User Left", socket.id);
+        if (room.users.length == 0) {
+          delete rooms[roomId];
+        }
+      }
+    }
+  });
 });
 
-httpServer.listen(process.env.SOCKET_PORT,()=>{
-  console.log('Socket Port is listening on PORT',process.env.SOCKET_PORT)
-})
+httpServer.listen(process.env.SOCKET_PORT, () => {
+  console.log("Socket Port is listening on PORT", process.env.SOCKET_PORT);
+});

@@ -1,5 +1,3 @@
-// import MainNav from "../navbars/MainNav"
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MainNav from "../navbars/MainNav";
 import TypingNav from "../navbars/TypingNav";
@@ -8,12 +6,37 @@ import {
   faCopy,
   faUpLong,
 } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setMultiplayer,
+  setRoomIdState,
+} from "../../redux/reducers/multiplayerSlice";
 
 const CreateRoom = () => {
-  const [roomId, setRoomId] = useState<string | null>(null);
+  const roomId = useSelector((state: any) => state.multiplayer.roomId);
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const socket = useSelector((state: any) => state.multiplayer.socketInstance);
+
+  useEffect(() => {
+    socket.on("connect", () => {});
+    socket.on("Room Created", (id: string) => {
+      dispatch(setRoomIdState(id));
+      toast.success("Room Created");
+    });
+    socket.on("User Joined", (id: string) => {
+      dispatch(setMultiplayer(true));
+      navigate(`/${id}`);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, [socket]);
+
   const handleCopy = () => {
     if (!roomId) return;
     navigator.clipboard.writeText(roomId);
@@ -34,7 +57,9 @@ const CreateRoom = () => {
     return roomId;
   };
   const createRoom = () => {
-    setRoomId(generateRoomId(10));
+    const roomid = generateRoomId(10);
+    dispatch(setRoomIdState(roomid));
+    socket.emit("create-room", roomid);
   };
   return (
     <>

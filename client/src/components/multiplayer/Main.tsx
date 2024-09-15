@@ -45,14 +45,12 @@ const Main = () => {
       <main className="flex justify-center items-center text-yellow-500 w-full h-[100vh] px-28">
         {roomBoxConfig.map((item, index) => {
           return (
-            <>
               <RoomBox
                 icon={item.icon}
                 text={item.text}
                 key={index}
                 link={item.link}
               />
-            </>
           );
         })}
       </main>
