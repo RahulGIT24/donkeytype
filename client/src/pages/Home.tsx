@@ -29,7 +29,7 @@ export default function Home() {
 
     return () => {
       dispatch(invalidateState());
-      socket.disconnect();
+      // socket.disconnect();
     };
   }, [socket]);
 

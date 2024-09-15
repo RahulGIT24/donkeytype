@@ -4,7 +4,12 @@ import { toast } from "sonner";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setMultiplayer, setRoomIdState } from "../../redux/reducers/multiplayerSlice";
+import {
+  setMode,
+  setMultiplayer,
+  setRoomIdState,
+} from "../../redux/reducers/multiplayerSlice";
+import { ISetting } from "../../types/user";
 
 const JoinRoom = () => {
   const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_API), []);
@@ -14,16 +19,17 @@ const JoinRoom = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on("connect", () => {});
-    socket.on("User Joined", (id) => {
+    // socket.on("connect", () => {});
+    socket.on("User Joined", (id: string, mode: ISetting) => {
       setIsJoining(false);
-      dispatch(setMultiplayer(true))
+      dispatch(setMode(mode));
+      dispatch(setMultiplayer(true));
       navigate(`/${id}`);
     });
     socket.on("error", handleError);
 
     return () => {
-      socket.disconnect();
+      // socket.disconnect();
     };
   }, [socket]);
 

@@ -53,9 +53,9 @@ const rooms: { [key: string]: Room } = {};
 
 // socket connection
 io.on("connection", (socket: Socket) => {
-  socket.on("create-room", (roomId: string) => {
+  socket.on("create-room", (roomId: string, mode: any) => {
     if (!rooms[roomId]) {
-      rooms[roomId] = { roomId, users: [socket.id] };
+      rooms[roomId] = { roomId, users: [socket.id], mode: mode };
       socket.join(roomId);
       io.to(socket.id).emit("Room Created", roomId);
     } else {
@@ -68,7 +68,7 @@ io.on("connection", (socket: Socket) => {
     if (room && room.users.length < 2) {
       room.users.push(socket.id);
       socket.join(roomId);
-      io.to(roomId).emit("User Joined", roomId);
+      io.to(roomId).emit("User Joined", roomId, room.mode);
     } else if (!room) {
       io.to(socket.id).emit("error", "Room Not Exist");
     } else {

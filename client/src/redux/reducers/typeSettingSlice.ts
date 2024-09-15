@@ -1,13 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { ISetting } from "../../types/user";
 
-const initialState: any = {
+const initialState: ISetting = {
   type:null,
   wordNumber: "10",
   time: null,
   currentMode:"Words 10",
   typeOfText:[]
 };
-
 
 const typeSlice: any = createSlice({
   name: "setting",

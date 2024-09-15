@@ -7,14 +7,19 @@ export interface IUser {
   profilePic: string;
   createdAt: string;
 }
-export interface Multiplayer {
+export interface IMultiplayer {
   roomId: string | null;
   members: [];
-  settings: {
-    time: null | string;
-    words: null | string;
-  };
+  settings: ISetting;
   socketId: null | string;
   socketInstance:unknown,
   multiplayer:boolean
+}
+
+export interface ISetting{
+  type:string|null,
+  wordNumber:string | null,
+  time:string | null,
+  currentMode: string | null,
+  typeOfText:any
 }

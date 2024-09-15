@@ -12,5 +12,6 @@ declare module "express-serve-static-core" {
 
 export interface Room{
   roomId:string,
-  users:string[]
+  users:string[],
+  mode:any
 }

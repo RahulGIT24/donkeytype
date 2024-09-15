@@ -11,9 +11,11 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  setMode,
   setMultiplayer,
   setRoomIdState,
 } from "../../redux/reducers/multiplayerSlice";
+import { ISetting } from "../../types/user";
 
 const CreateRoom = () => {
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
@@ -21,19 +23,37 @@ const CreateRoom = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const socket = useSelector((state: any) => state.multiplayer.socketInstance);
+  const [multiplayerMode, setMultiplayerMode] = useState<ISetting | null>(null);
+
+  const type = useSelector((state: any) => state.setting.type);
+  const wordNumber = useSelector((state: any) => state.setting.wordNumber);
+  const time = useSelector((state: any) => state.setting.time);
+  const currentMode = useSelector((state: any) => state.setting.currentMode);
+  const typeOfText = useSelector((state: any) => state.setting.typeOfText);
 
   useEffect(() => {
-    socket.on("connect", () => {});
+    setMultiplayerMode({
+      type,
+      wordNumber,
+      time,
+      currentMode,
+      typeOfText,
+    });
+  }, [type, wordNumber, time, currentMode, typeOfText]);
+
+  useEffect(() => {
+    // socket.on("connect", () => {});
     socket.on("Room Created", (id: string) => {
       dispatch(setRoomIdState(id));
       toast.success("Room Created");
     });
-    socket.on("User Joined", (id: string) => {
+    socket.on("User Joined", (id: string, mode: ISetting) => {
       dispatch(setMultiplayer(true));
+      dispatch(setMode(mode));
       navigate(`/${id}`);
     });
     return () => {
-      socket.disconnect();
+      // socket.disconnect();
     };
   }, [socket]);
 
@@ -59,7 +79,7 @@ const CreateRoom = () => {
   const createRoom = () => {
     const roomid = generateRoomId(10);
     dispatch(setRoomIdState(roomid));
-    socket.emit("create-room", roomid);
+    socket.emit("create-room", roomid, multiplayerMode);
   };
   return (
     <>

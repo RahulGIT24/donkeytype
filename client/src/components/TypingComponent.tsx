@@ -12,8 +12,10 @@ export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
   const [wordLoader, setWordLoader] = useState<boolean>(true);
   const [avgWordLength, setAvgWordLength] = useState(0);
+  const isMultiplayer = useSelector((state:any)=>state.multiplayer.multiplayer)
 
-  const setting = useSelector((state: any) => state.setting);
+  const setting = isMultiplayer ? useSelector((state: any) => state.multiplayer.settings) : useSelector((state: any) => state.setting);
+
   const [totalLettersTyped, setTotalLettersTyped] = useState(0);
   const [totalWordsTyped, setTotalWordsTyped] = useState(0);
   const [correctLettersTyped, setCorrectLettersTyped] = useState(0);

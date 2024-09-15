@@ -1,13 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Multiplayer } from "../../types/user";
+import { IMultiplayer } from "../../types/user";
 import { socket } from "../../socket/socket";
 
-const initialState: Multiplayer = {
+const initialState: IMultiplayer = {
   roomId: null,
   members: [],
   settings: {
     time: null,
-    words: "",
+    currentMode: null,
+    type: null,
+    typeOfText: null,
+    wordNumber: null,
   },
   socketId: null,
   socketInstance: null,
@@ -30,13 +33,22 @@ const multiplayerSlice = createSlice({
     setMultiplayer: (state, action) => {
       state.multiplayer = action.payload;
     },
+    setMode:(state,action)=>{
+      state.settings = action.payload
+    },
     invalidateState: (state) => {
       state.members = [];
       state.settings = {
         time: null,
-        words: "",
+        currentMode: null,
+        type: null,
+        typeOfText: null,
+        wordNumber: null,
       };
       state.roomId = null;
+      state.socketId = null;
+      state.socketInstance = null;
+      state.multiplayer = false
     },
   },
 });
@@ -47,6 +59,7 @@ export const {
   setSocketId,
   setSocketInstance,
   setMultiplayer,
+  setMode
 } = multiplayerSlice.actions;
 
 export const initializeSocket = () => (dispatch: any) => {

@@ -6,6 +6,7 @@ import { getUser } from "../utils/getUser";
 import { refresh } from "../utils/refreshToken";
 import { logout } from "../utils/logout";
 import Loader from "./Loader";
+import { invalidateState } from "../redux/reducers/multiplayerSlice";
 
 const ProtectedRoute = () => {
   const [loader, setLoader] = useState(10);
@@ -40,6 +41,7 @@ const ProtectedRoute = () => {
           if (isAuthenticated) {
             await logout()
             dispatch(revertInitial);
+            dispatch(invalidateState())
           }
         }
       }
