@@ -14,15 +14,18 @@ import {
   setMode,
   setMultiplayer,
   setRoomIdState,
+  setSocketId,
+  setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
 import { ISetting } from "../../types/user";
+import { socket } from "../../socket/socket";
 
 const CreateRoom = () => {
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const socket = useSelector((state: any) => state.multiplayer.socketInstance);
+  const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const [multiplayerMode, setMultiplayerMode] = useState<ISetting | null>(null);
 
   const type = useSelector((state: any) => state.setting.type);
@@ -42,20 +45,31 @@ const CreateRoom = () => {
   }, [type, wordNumber, time, currentMode, typeOfText]);
 
   useEffect(() => {
-    // socket.on("connect", () => {});
-    socket.on("Room Created", (id: string) => {
-      dispatch(setRoomIdState(id));
-      toast.success("Room Created");
-    });
-    socket.on("User Joined", (id: string, mode: ISetting) => {
-      dispatch(setMultiplayer(true));
-      dispatch(setMode(mode));
-      navigate(`/${id}`);
-    });
-    return () => {
-      // socket.disconnect();
-    };
-  }, [socket]);
+    dispatch(setRoomIdState(null));
+  }, []);
+
+  // error
+  useEffect(() => {
+    if (socketI) {
+      socketI.on("Room Created", (id: string) => {
+        dispatch(setRoomIdState(id));
+        toast.success("Room Created");
+      });
+      socketI.on("User Joined", (id: string, mode: ISetting) => {
+        dispatch(setMultiplayer(true));
+        dispatch(setMode(mode));
+        navigate(`/${id}`);
+      });
+    }
+  }, [socketI]);
+
+  useEffect(() => {
+    if (!socketI) {
+      socket.connect();
+      dispatch(setSocketId(socket.id));
+      dispatch(setSocketInstance(socket));
+    }
+  },[socketI]);
 
   const handleCopy = () => {
     if (!roomId) return;

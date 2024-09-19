@@ -4,6 +4,8 @@ import { ThreeDots } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import apiCall from "../../utils/apiCall";
+import { useDispatch } from "react-redux";
+// import { initializeSocket } from "../../redux/reducers/multiplayerSlice";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -39,11 +41,14 @@ export default function Login() {
       if (status >= 400) {
         toast.error(data);
       } else {
+        // dispatch(initializeSocket() as any)
         navigate("/");
       }
       setDisabled(false);
     }
   };
+
+  const dispatch = useDispatch();
 
   return (
     <>
