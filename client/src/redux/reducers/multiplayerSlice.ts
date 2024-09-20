@@ -33,8 +33,8 @@ const multiplayerSlice = createSlice({
     setMultiplayer: (state, action) => {
       state.multiplayer = action.payload;
     },
-    setMode:(state,action)=>{
-      state.settings = action.payload
+    setMode: (state, action) => {
+      state.settings = action.payload;
     },
     invalidateState: (state) => {
       state.members = [];
@@ -48,7 +48,7 @@ const multiplayerSlice = createSlice({
       state.roomId = null;
       state.socketId = null;
       state.socketInstance = null;
-      state.multiplayer = false
+      state.multiplayer = false;
     },
   },
 });
@@ -59,12 +59,12 @@ export const {
   setSocketId,
   setSocketInstance,
   setMultiplayer,
-  setMode
+  setMode,
 } = multiplayerSlice.actions;
 
 export const initializeSocket = () => (dispatch: any) => {
-  socket.connect();
   socket.on("connect", () => {
+    console.log("socket connected", socket.id);
     dispatch(setSocketId(socket.id));
     dispatch(setSocketInstance(socket));
   });

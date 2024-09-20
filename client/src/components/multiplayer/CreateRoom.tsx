@@ -41,6 +41,8 @@ const CreateRoom = () => {
     });
   }, [type, wordNumber, time, currentMode, typeOfText]);
 
+
+
   useEffect(() => {
     // socket.on("connect", () => {});
     socket.on("Room Created", (id: string) => {
