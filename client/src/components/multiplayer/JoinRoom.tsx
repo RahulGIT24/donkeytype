@@ -13,7 +13,8 @@ import { ISetting } from "../../types/user";
 
 const JoinRoom = () => {
   const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_API), []);
-  const roomId = useSelector((state: any) => state.multiplayer.roomId);
+  const[roomId, setRoomId] = useState('')
+  //const roomId = useSelector((state: any) => state.multiplayer.roomId)?useSelector((state: any) => state.multiplayer.roomId):'';
   const dispatch = useDispatch();
   const [isJoining, setIsJoining] = useState(false);
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ const JoinRoom = () => {
       toast.error("Room ID cannot be empty");
       return;
     }
+    dispatch(setRoomIdState(roomId))
     setIsJoining(true);
     socket.emit("join-room", roomId);
   };
@@ -66,7 +68,7 @@ const JoinRoom = () => {
           className="border border-yellow-500 p-4 rounded-xl flex felx-col justify-between items-center w-[30%] bg-transparent placeholder:text-yellow-400 outline-yellow-400"
           placeholder="Enter room id"
           value={roomId}
-          onChange={(e) => dispatch(setRoomIdState(e.target.value))}
+          onChange={(e)=>setRoomId(e.target.value)}
         />
 
         <button
