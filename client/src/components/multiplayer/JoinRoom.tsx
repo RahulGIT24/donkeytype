@@ -19,19 +19,25 @@ const JoinRoom = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if(socket){
+      socket.on("User Joined", (id: string, mode: ISetting) => {
+        setIsJoining(false);
+        dispatch(setMode(mode));
+        dispatch(setMultiplayer(true));
+        navigate(`/${id}`);
+      });
+      socket.on("error", handleError);
+  
+      return () => {
+        // socket.disconnect();
+      };
+    }
     // socket.on("connect", () => {});
-    socket.on("User Joined", (id: string, mode: ISetting) => {
-      setIsJoining(false);
-      dispatch(setMode(mode));
-      dispatch(setMultiplayer(true));
-      navigate(`/${id}`);
-    });
-    socket.on("error", handleError);
-
-    return () => {
-      // socket.disconnect();
-    };
   }, [socket]);
+
+  useEffect(()=>{
+    dispatch(setRoomIdState(""))
+  },[])
 
   function handleError(message: string) {
     setIsJoining(false);
