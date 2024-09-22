@@ -19,6 +19,7 @@ const JoinRoom = () => {
   const [isJoining, setIsJoining] = useState(false);
   const navigate = useNavigate();
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
+  const user = useSelector((state:any)=>state.user.user);
 
   useEffect(() => {
     if (socketI) {
@@ -56,7 +57,7 @@ const JoinRoom = () => {
     }
     dispatch(setRoomIdState(roomId))
     setIsJoining(true);
-    socket.emit("join-room", roomId);
+    socket.emit("join-room", roomId,user.name,user._id);
   };
 
   return (

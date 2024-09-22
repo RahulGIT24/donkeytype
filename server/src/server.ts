@@ -53,9 +53,9 @@ const rooms: { [key: string]: Room } = {};
 
 // socket connection
 io.on("connection", (socket: Socket) => {
-  socket.on("create-room", (roomId: string, mode: any) => {
+  socket.on("create-room", (roomId: string, mode: any,creator:string,userId:string) => {
     if (!rooms[roomId]) {
-      rooms[roomId] = { roomId, users: [socket.id], mode: mode };
+      rooms[roomId] = { roomId, users: [{id:socket.id,name:creator,userId}], mode: mode };
       socket.join(roomId);
       io.to(socket.id).emit("Room Created", roomId);
     } else {
@@ -63,10 +63,15 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
-  socket.on("join-room", (roomId: string) => {
+  socket.on("join-room", (roomId: string,name:string,userId:string) => {
     const room = rooms[roomId];
     if (room && room.users.length < 2) {
-      room.users.push(socket.id);
+      const userIndex = room.users.findIndex(u=>u.id === socket.id || u.userId === userId)
+      if(userIndex!=-1){
+        io.to(socket.id).emit("error", "You can't join the same room");
+        return;
+      }
+      room.users.push({id:socket.id,name,userId});
       socket.join(roomId);
       io.to(roomId).emit("User Joined", roomId, room.mode);
     } else if (!room) {
@@ -87,12 +92,12 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("leave-room",(roomId:string)=>{
     const room = rooms[roomId];
-    const userIndex = room.users.indexOf(socket.id);
+    const userIndex = room.users.findIndex(u => u.id === socket.id);
     if (userIndex != -1) {
       io.to(roomId).emit("User Left", socket.id);
       room.users.splice(userIndex, 1);
       console.log("User Left")
-      if (room.users.length == 0) {
+      if (room.users.length == 0) { 
         delete rooms[roomId];
       }
     }
@@ -101,7 +106,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
       const room = rooms[roomId];
-      const userIndex = room.users.indexOf(socket.id);
+      const userIndex = room.users.findIndex(u => u.id === socket.id);
       if (userIndex != -1) {
         room.users.splice(userIndex, 1);
         io.to(roomId).emit("User Left", socket.id);
