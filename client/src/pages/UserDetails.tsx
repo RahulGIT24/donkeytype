@@ -27,7 +27,7 @@ export default function UserDetails() {
   );
 }
 
-function UserCard({ user }: any) {
+export function UserCard({ user }: any) {
   return (
     <>
       <div className="flex bg-zinc-800 p-4 rounded-md mx-2 group border border-transparent hover:border-yellow-500 duration-300 w-full h-[25vh]">

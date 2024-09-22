@@ -22,6 +22,7 @@ import Main from "./components/multiplayer/Main";
 import CreateRoom from "./components/multiplayer/CreateRoom";
 import JoinRoom from "./components/multiplayer/JoinRoom";
 import { initializeSocket } from "./redux/reducers/multiplayerSlice";
+import MultiplayerResult from "./components/multiplayer/MutiplayerResult";
 
 function App() {
   const isAuthenticated = useSelector(
@@ -74,6 +75,7 @@ function App() {
           <Route path="/join-room" element={<JoinRoom />} />
           <Route path="/create-room" element={<CreateRoom />} />
           <Route path="/result" element={<Result />} />
+          <Route path="/pvp-result" element={<MultiplayerResult />} />
           <Route path="/multiplayer" element={<Main />} />
         </Route>
         <Route path="*" element={<NotFound />} />
