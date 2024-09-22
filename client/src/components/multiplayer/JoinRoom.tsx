@@ -1,40 +1,44 @@
 import MainNav from "../navbars/MainNav";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setMode,
   setMultiplayer,
   setRoomIdState,
+  setSocketId,
+  setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
 import { ISetting } from "../../types/user";
+import { socket } from "../../socket/socket";
 
 const JoinRoom = () => {
-  const socket = useMemo(() => io(import.meta.env.VITE_SOCKET_API), []);
-  const[roomId, setRoomId] = useState('')
-  //const roomId = useSelector((state: any) => state.multiplayer.roomId)?useSelector((state: any) => state.multiplayer.roomId):'';
+  const roomId = useSelector((state: any) => state.multiplayer.roomId);
   const dispatch = useDispatch();
   const [isJoining, setIsJoining] = useState(false);
   const navigate = useNavigate();
+  const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
 
   useEffect(() => {
-    if(socket){
-      socket.on("User Joined", (id: string, mode: ISetting) => {
-        setIsJoining(false);
-        dispatch(setMode(mode));
+    if (socketI) {
+      socketI.on("User Joined", (id: string, mode: ISetting) => {
         dispatch(setMultiplayer(true));
+        dispatch(setMode(mode));
         navigate(`/${id}`);
       });
-      socket.on("error", handleError);
-  
-      return () => {
-        // socket.disconnect();
-      };
+      socketI.on("error", handleError);
     }
     // socket.on("connect", () => {});
-  }, [socket]);
+  }, [socketI]);
+
+  useEffect(() => {
+    if (!socketI) {
+      socket.connect();
+      dispatch(setSocketId(socket.id));
+      dispatch(setSocketInstance(socket));
+    }
+  },[socketI]);
 
   useEffect(()=>{
     dispatch(setRoomIdState(""))
@@ -68,7 +72,7 @@ const JoinRoom = () => {
           className="border border-yellow-500 p-4 rounded-xl flex felx-col justify-between items-center w-[30%] bg-transparent placeholder:text-yellow-400 outline-yellow-400"
           placeholder="Enter room id"
           value={roomId}
-          onChange={(e)=>setRoomId(e.target.value)}
+          onChange={(e)=>dispatch(setRoomIdState(e.target.value))}
         />
 
         <button

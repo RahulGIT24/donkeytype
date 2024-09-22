@@ -9,6 +9,9 @@ export interface history extends Document{
     mode:string,
     date:Date,
     user:mongoose.Schema.Types.ObjectId,
+    opponent?:mongoose.Schema.Types.ObjectId,
+    multiplater:boolean,
+    winner?:mongoose.Schema.Types.ObjectId
 }
 
 const schema = new mongoose.Schema<history>(
@@ -44,6 +47,20 @@ const schema = new mongoose.Schema<history>(
         user:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'User'
+        },
+        opponent:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User',
+            default:null
+        },
+        winner:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User',
+            default:null
+        },
+        multiplater:{
+            type:Boolean,
+            default:false,
         }
     },{
         timestamps:true

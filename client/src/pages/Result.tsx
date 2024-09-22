@@ -61,6 +61,9 @@ const Result = () => {
         consistency: recentTestResults.consistency,
         chars: recentTestResults.chars,
         mode: recentTestResults.mode,
+        multiplayer: recentTestResults.multiplayer,
+        winner: recentTestResults.winner,
+        opponent: recentTestResults.opponent,
       },
     });
     if (res.status === 200) {

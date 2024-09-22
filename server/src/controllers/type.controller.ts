@@ -111,7 +111,7 @@ const completeTest = asyncHandler(async (req, res) => {
   if (!userExist) {
     return res.status(404).json(new ApiResponse(404, "User not exist in DB"));
   }
-  const { wpm, raw, accuracy, consistency, chars, mode } = req.body;
+  const { wpm, raw, accuracy, consistency, chars, mode,multiplayer,opponent,winner } = req.body;
   const history = new History({
     wpm: wpm,
     raw: raw,
@@ -119,7 +119,10 @@ const completeTest = asyncHandler(async (req, res) => {
     consistency: consistency,
     chars,
     mode,
+    multiplayer,
     user: userId,
+    winner: winner ? winner : null,
+    opponent: opponent ? opponent : null
   });
   const savedHistory = await history.save();
   const savedHistoryId = savedHistory.id;

@@ -31,6 +31,7 @@ export default function TypingComponent() {
   const [countdown, setCountDown] = useState(setting.time);
   const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
+  // const isMultiplayer = useSelector((state: any) => state.multiplayer.multiplayer);
 
   const calculateStandardDeviation = (arr:number[]) => {
     if (arr.length === 0) return 0;
@@ -134,7 +135,6 @@ export default function TypingComponent() {
       (testFinished.current && endTestTime && startTestTime) ||
       (countdown === 0 && endTestTime && startTestTime)
     ) {
-      //console.log("true");
       const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;
@@ -157,6 +157,7 @@ export default function TypingComponent() {
           ),
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
           mode: mode,
+          multiplayer: isMultiplayer,
         })
       );
       navigate(`/result`, { replace: true });

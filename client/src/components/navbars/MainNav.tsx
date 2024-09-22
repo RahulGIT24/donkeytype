@@ -11,9 +11,16 @@ import {
   faUser,
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../utils/logout";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { socket } from "../../socket/socket";
+import {
+  setMultiplayer,
+  setSocketId,
+  setSocketInstance,
+} from "../../redux/reducers/multiplayerSlice";
 
 export default function MainNav() {
   const isAuthenticated = useSelector(
@@ -22,6 +29,37 @@ export default function MainNav() {
   const isMultiplayer = useSelector(
     (state: any) => state.multiplayer.multiplayer
   );
+  const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
+  const socketId = useSelector((state: any) => state.multiplayer.socketId);
+
+  const roomId = useSelector((state: any) => state.multiplayer.roomId);
+
+  const disconnectFromRoom = () => {
+    socketI.emit("leave-room",roomId)
+  };
+
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    if(socketI){
+      socketI.on("User Left",(id:string)=>{
+        if(id!=socketId){
+        }else{
+        }
+        dispatch(setMultiplayer(false));
+        navigate("/")
+      })
+    }
+  },[socketI])
+
+  useEffect(() => {
+    if (!socketI) {
+      socket.connect();
+      dispatch(setSocketId(socket.id));
+      dispatch(setSocketInstance(socket));
+    }
+  },[socketI]);
+
   const navigate = useNavigate();
   return (
     <>
@@ -116,9 +154,7 @@ export default function MainNav() {
                     icon={faArrowAltCircleLeft}
                     className="h-8 px-4"
                     title="Quit Game"
-                    onClick={() => {
-                      navigate("/");
-                    }}
+                    onClick={disconnectFromRoom}
                   />
                 )}
               </div>
