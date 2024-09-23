@@ -7,11 +7,23 @@ import {
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
 import { Bars } from "react-loader-spinner";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
   const [opponent, setOpponent] = useState<any>(null);
-  const [winner, setWinner] = useState(null);
+  let myScore = 0;
+  let opponentScore = 0;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (multiplayerinfo.multiplayer === false) {
+      navigate("/");
+    }
+  }, []);
+
+  const [winner, setWinner] = useState<any>(null);
 
   const multiplayerinfo = useSelector((state: any) => state.multiplayer);
 
@@ -42,6 +54,41 @@ export default function MultiplayerResult() {
     }
   }, [socketI]);
 
+  // score calculator
+  useEffect(() => {
+    if (opponent && opponent.results) {
+      console.log(opponent.results);
+      if (myResult.wpm > opponent.results.wpm) {
+        myScore++;
+      } else if (myResult.wpm < opponent.results.wpm) {
+        opponentScore++;
+      }
+      if (myResult.accuracy > opponent.results.accuracy) {
+        myScore++;
+      } else if (myResult.accuracy < opponent.results.accuracy) {
+        opponentScore++;
+      }
+      if (myResult.consistency > opponent.results.consistency) {
+        myScore++;
+      } else if (myResult.consistency < opponent.results.consistency) {
+        opponentScore++;
+      }
+      if (myScore === opponentScore) {
+        toast.info('Tie')
+      } else if (myScore > opponentScore) {
+          document.querySelector('#me')?.classList.add("border-win")
+          document.querySelector('#opponent')?.classList.add("border-loose")
+          toast.info("You Won")
+        setWinner(user);
+      } else {
+        document.querySelector('#opponent')?.classList.add("border-win")
+        document.querySelector('#me')?.classList.add("border-loose")
+        toast.info('You Lost!')
+        setWinner(opponent);
+      }
+    }
+  }, [opponent, opponent?.results]);
+
   useEffect(() => {}, []);
 
   return (
@@ -49,13 +96,11 @@ export default function MultiplayerResult() {
       <MainNav />
       <div className=" flex justify-center items-center w-full h-full absolute text-white overflow-hidden">
         <div className="flex justify-center items-center h-[100%] w-[50%]">
-          <ResultCard user={user} stats={myResult} />
+          <ResultCard user={user} stats={myResult} id={'me'}/>
         </div>
         <hr className="w-screen fixed  rotate-90 border-none bg-yellow-500 h-[2px]" />
         <div className="flex justify-center items-center h-screen w-[50%]">
-          {opponent && 
-            <ResultCard user={opponent} stats={opponent.results} />
-          }
+          {opponent && <ResultCard user={opponent} stats={opponent.results} id={'opponent'}/>}
         </div>
       </div>
     </>
@@ -65,16 +110,17 @@ export default function MultiplayerResult() {
 const ResultCard = ({
   user,
   stats,
-  classname,
+  id,
 }: {
   user: any;
   stats: any;
-  classname?: any;
+  id?: any;
 }) => {
   return (
     <>
       <div
-        className={`flex flex-col gap-5 hover:bg-green-400 hover:bg-opacity-30 duration-200 m-5 p-4 h-[66%] rounded-md border-4 hover:border-4 hover: border-green-400 w-[70%] ${classname}`}
+        className={`flex flex-col gap-5 hover:bg-opacity-30 duration-200 m-5 p-4 h-[66%] rounded-md w-[70%]`}
+        id={id}
       >
         <div className="flex m-2 flex-wrap gap-2 justify-center">
           <div className="flex flex-col justify-center items-center">
@@ -92,20 +138,20 @@ const ResultCard = ({
                 <Stat title={"Chars"} value={stats.chars} />
                 <Stat title={"Mode"} value={stats.mode} />
               </>
-            ):
-            <div className="flex flex-col items-center">
-              <Bars
-                height="80"
-                width="80"
-                color="yellow"
-                ariaLabel="bars-loading"
-                wrapperStyle={{}}
-                wrapperClass=""
-                visible={true}
-              />
-              <p className="my-4 text-3xl">Waiting for Opponent's result</p>
-            </div>
-            }
+            ) : (
+              <div className="flex flex-col items-center">
+                <Bars
+                  height="80"
+                  width="80"
+                  color="yellow"
+                  ariaLabel="bars-loading"
+                  wrapperStyle={{}}
+                  wrapperClass=""
+                  visible={true}
+                />
+                <p className="my-4 text-3xl">Waiting for Opponent's result</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
