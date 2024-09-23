@@ -12,8 +12,9 @@ declare module "express-serve-static-core" {
 
 interface SocketUser{
   id:string,
-  name?:string,
-  userId:string
+  username?:string,
+  userId:string,
+  results?:any
 }
 
 export interface Room{

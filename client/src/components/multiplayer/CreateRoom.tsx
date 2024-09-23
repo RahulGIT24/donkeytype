@@ -99,7 +99,7 @@ const CreateRoom = () => {
     }
     const roomid = generateRoomId(10);
     dispatch(setRoomIdState(roomid));
-    socket.emit("create-room", roomid, multiplayerMode,user.name,user._id);
+    socket.emit("create-room", roomid, multiplayerMode,user.username,user._id);
   };
   return (
     <>

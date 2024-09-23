@@ -7,14 +7,23 @@ import {
   revertRecentTestResults,
   setRecentTestResults,
 } from "../redux/reducers/statSlice";
+import { socket } from "../socket/socket";
+import {
+  setSocketId,
+  setSocketInstance,
+} from "../redux/reducers/multiplayerSlice";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
   const [wordLoader, setWordLoader] = useState<boolean>(true);
   const [avgWordLength, setAvgWordLength] = useState(0);
-  const isMultiplayer = useSelector((state:any)=>state.multiplayer.multiplayer)
+  const isMultiplayer = useSelector(
+    (state: any) => state.multiplayer.multiplayer
+  );
 
-  const setting = isMultiplayer ? useSelector((state: any) => state.multiplayer.settings) : useSelector((state: any) => state.setting);
+  const setting = isMultiplayer
+    ? useSelector((state: any) => state.multiplayer.settings)
+    : useSelector((state: any) => state.setting);
 
   const [totalLettersTyped, setTotalLettersTyped] = useState(0);
   const [totalWordsTyped, setTotalWordsTyped] = useState(0);
@@ -31,29 +40,40 @@ export default function TypingComponent() {
   const [countdown, setCountDown] = useState(setting.time);
   const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
-  // const isMultiplayer = useSelector((state: any) => state.multiplayer.multiplayer);
+  const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
+  const roomId = useSelector((state: any) => state.multiplayer.roomId);
 
-  const calculateStandardDeviation = (arr:number[]) => {
+  useEffect(() => {
+    if (isMultiplayer) {
+      if (!socketI) {
+        socket.connect();
+        dispatch(setSocketId(socket.id));
+        dispatch(setSocketInstance(socket));
+      }
+    }
+  }, [socketI]);
+
+  const calculateStandardDeviation = (arr: number[]) => {
     if (arr.length === 0) return 0;
-  
+
     const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
     const squaredDiffs = arr.map((value) => Math.pow(value - mean, 2));
     const variance =
       squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length;
     const standardDeviation = Math.sqrt(variance);
-  
+
     // Handle the special case where mean is 1
     if (mean === 1) {
       return 100; // Perfect consistency
     }
-  
+
     const maxPossibleDeviation = Math.sqrt(mean * (1 - mean));
     const consistencyPercentage =
       ((maxPossibleDeviation - standardDeviation) / maxPossibleDeviation) * 100;
-  
+
     return Number(consistencyPercentage);
   };
-  
+
   function formatWord(word: any) {
     let w = word.split("");
     return w;
@@ -65,12 +85,12 @@ export default function TypingComponent() {
   }, [setting.time]);
 
   const getWords = async (value: any) => {
-    let typeOfText = "words"
-    let mode = `Words ${value}`
-    if (setting.time){ 
-      value = 30
-      typeOfText = 'time'
-      mode = `Time ${setting.time} S`
+    let typeOfText = "words";
+    let mode = `Words ${value}`;
+    if (setting.time) {
+      value = 30;
+      typeOfText = "time";
+      mode = `Time ${setting.time} S`;
     }
     const { data } = await apiCall({
       method: "GET",
@@ -147,6 +167,18 @@ export default function TypingComponent() {
       removeClass(document.getElementById("typing-area"), "remove-blur");
       addClass(document.getElementById("typing-area"), "blur-sm");
       document.removeEventListener("keyup", handleKeyPress);
+      if (isMultiplayer && roomId) {
+        socket.emit("complete-test", roomId, {
+          wpm: Math.round(wpm),
+          raw: Math.round(rawWPM),
+          accuracy: Math.round(Number(accuracy)),
+          consistency: Math.round(
+            Number(calculateStandardDeviation(wordAccuracies))
+          ),
+          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+          mode: mode,
+        });
+      }
       dispatch(
         setRecentTestResults({
           wpm: Math.round(wpm),
@@ -160,7 +192,11 @@ export default function TypingComponent() {
           multiplayer: isMultiplayer,
         })
       );
-      navigate(`/result`, { replace: true });
+      if (isMultiplayer && roomId) {
+        navigate("/pvp-result", { replace: true });
+      } else {
+        navigate(`/result`, { replace: true });
+      }
     }
   }, [
     totalLettersTyped,

@@ -57,7 +57,7 @@ const JoinRoom = () => {
     }
     dispatch(setRoomIdState(roomId))
     setIsJoining(true);
-    socket.emit("join-room", roomId,user.name,user._id);
+    socket.emit("join-room", roomId,user.username,user._id);
   };
 
   return (
