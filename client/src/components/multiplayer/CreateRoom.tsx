@@ -94,6 +94,9 @@ const CreateRoom = () => {
     return roomId;
   };
   const createRoom = () => {
+    if(roomId){
+      socket.emit('destroy-room',roomId);
+    }
     const roomid = generateRoomId(10);
     dispatch(setRoomIdState(roomid));
     socket.emit("create-room", roomid, multiplayerMode,user.name,user._id);

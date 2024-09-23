@@ -103,6 +103,13 @@ io.on("connection", (socket: Socket) => {
     }
   })
 
+  // destroy room when user creates new one
+  socket.on('destroy-room',(roomId:string)=>{
+    const room = rooms[roomId]
+    if(!room) return;
+    delete rooms[roomId];
+  })
+
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
       const room = rooms[roomId];
@@ -110,7 +117,7 @@ io.on("connection", (socket: Socket) => {
       if (userIndex != -1) {
         room.users.splice(userIndex, 1);
         io.to(roomId).emit("User Left", socket.id);
-        console.log("User Left")
+        // console.log("User Left")
         if (room.users.length == 0) {
           delete rooms[roomId];
         }
