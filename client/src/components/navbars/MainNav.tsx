@@ -64,13 +64,13 @@ export default function MainNav() {
   return (
     <>
       <nav className="flex fixed top-0 w-full z-20 bg-zinc-800">
-        <ul className="flex text-zinc-400 justify-between w-screen p-4">
+        <ul className="flex text-zinc-400 justify-between w-screen p-4 items-center">
           <li>
             <div>
               <ul className="flex flex-row gap-4 items-center">
                 <li>
-                  <Link to="/">
-                    <h1 className="text-2xl">donkeytype</h1>
+                  <Link to="/" className="flex justify-center items-center">
+                  <img src="/icon.png" className="w-10 h-12 mx-2"/><h1 className="text-2xl">donkeytype</h1>
                   </Link>
                 </li>
                 {!isMultiplayer && (

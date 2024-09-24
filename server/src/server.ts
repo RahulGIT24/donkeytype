@@ -53,20 +53,34 @@ const rooms: { [key: string]: Room } = {};
 
 // socket connection
 io.on("connection", (socket: Socket) => {
-  socket.on("create-room", (roomId: string, mode: any) => {
-    if (!rooms[roomId]) {
-      rooms[roomId] = { roomId, users: [socket.id], mode: mode };
-      socket.join(roomId);
-      io.to(socket.id).emit("Room Created", roomId);
-    } else {
-      io.to(socket.id).emit("error", "Room Already Exist");
+  socket.on(
+    "create-room",
+    (roomId: string, mode: any, creator: string, userId: string) => {
+      if (!rooms[roomId]) {
+        rooms[roomId] = {
+          roomId,
+          users: [{ id: socket.id, username: creator, userId }],
+          mode: mode,
+        };
+        socket.join(roomId);
+        io.to(socket.id).emit("Room Created", roomId);
+      } else {
+        io.to(socket.id).emit("error", "Room Already Exist");
+      }
     }
-  });
+  );
 
-  socket.on("join-room", (roomId: string) => {
+  socket.on("join-room", (roomId: string, username: string, userId: string) => {
     const room = rooms[roomId];
     if (room && room.users.length < 2) {
-      room.users.push(socket.id);
+      const userIndex = room.users.findIndex(
+        (u) => u.id === socket.id || u.userId === userId
+      );
+      if (userIndex != -1) {
+        io.to(socket.id).emit("error", "You can't join the same room");
+        return;
+      }
+      room.users.push({ id: socket.id, username, userId });
       socket.join(roomId);
       io.to(roomId).emit("User Joined", roomId, room.mode);
     } else if (!room) {
@@ -85,27 +99,47 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
-  socket.on("leave-room",(roomId:string)=>{
+  socket.on("leave-room", (roomId: string) => {
     const room = rooms[roomId];
-    const userIndex = room.users.indexOf(socket.id);
+    const userIndex = room.users.findIndex((u) => u.id === socket.id);
     if (userIndex != -1) {
       io.to(roomId).emit("User Left", socket.id);
       room.users.splice(userIndex, 1);
-      console.log("User Left")
       if (room.users.length == 0) {
         delete rooms[roomId];
       }
     }
-  })
+  });
+
+  // destroy room when user creates new one
+  socket.on("destroy-room", (roomId: string) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    delete rooms[roomId];
+  });
+
+  socket.on("complete-test", (roomId: string, res: any) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    const userIndex = room.users.findIndex((u) => u.id === socket.id);
+    room.users[userIndex].results = res;
+  });
+
+  // get room results based on id
+  socket.on("give-results", (roomId: string) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    io.to(roomId).emit("Results", room.users);
+  });
 
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
       const room = rooms[roomId];
-      const userIndex = room.users.indexOf(socket.id);
+      const userIndex = room.users.findIndex((u) => u.id === socket.id);
       if (userIndex != -1) {
         room.users.splice(userIndex, 1);
         io.to(roomId).emit("User Left", socket.id);
-        console.log("User Left")
+        // console.log("User Left")
         if (room.users.length == 0) {
           delete rooms[roomId];
         }

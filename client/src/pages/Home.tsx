@@ -4,7 +4,7 @@ import TypeLayout from "./TypeLayout";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { invalidateState } from "../redux/reducers/multiplayerSlice";
+import { setMultiplayer } from "../redux/reducers/multiplayerSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -28,8 +28,9 @@ export default function Home() {
     }
 
     return () => {
-      dispatch(invalidateState());
+      // dispatch(invalidateState());
       // socket.disconnect();
+      dispatch(setMultiplayer(false))
     };
   }, [socket]);
 

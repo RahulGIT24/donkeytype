@@ -12,6 +12,8 @@ export interface history extends Document{
     opponent?:mongoose.Schema.Types.ObjectId,
     multiplater:boolean,
     winner?:mongoose.Schema.Types.ObjectId
+    roomId?:string
+    tie?:boolean
 }
 
 const schema = new mongoose.Schema<history>(
@@ -57,6 +59,14 @@ const schema = new mongoose.Schema<history>(
             type:mongoose.Schema.Types.ObjectId,
             ref:'User',
             default:null
+        },
+        roomId:{
+            type:String,
+            default:null
+        },
+        tie:{
+            type:Boolean,
+            default:false
         },
         multiplater:{
             type:Boolean,

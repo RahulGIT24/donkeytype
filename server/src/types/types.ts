@@ -10,8 +10,15 @@ declare module "express-serve-static-core" {
   }
 }
 
+interface SocketUser{
+  id:string,
+  username?:string,
+  userId:string,
+  results?:any
+}
+
 export interface Room{
   roomId:string,
-  users:string[],
+  users:SocketUser[],
   mode:any
 }

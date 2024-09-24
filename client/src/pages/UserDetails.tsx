@@ -27,7 +27,13 @@ export default function UserDetails() {
   );
 }
 
-export function UserCard({ user }: any) {
+export function UserCard({
+  user,
+  joinedon = true,
+}: {
+  user: any;
+  joinedon?: boolean;
+}) {
   return (
     <>
       <div className="flex bg-zinc-800 p-4 rounded-md mx-2 group border border-transparent hover:border-yellow-500 duration-300 w-full h-[25vh]">
@@ -38,9 +44,11 @@ export function UserCard({ user }: any) {
         />
         <div className="flex relative top-12 -right-10 flex-col gap-4 group-hover:text-yellow-500 duration-300">
           <p className="text-4xl">{user.username}</p>
-          <p>
-            {"Joined On "} {convertToCustomFormat(user.createdAt)}
-          </p>
+          {joinedon && (
+            <p>
+              {"Joined On "} {convertToCustomFormat(user.createdAt)}
+            </p>
+          )}
         </div>
       </div>
     </>
@@ -83,7 +91,7 @@ const UserStats = () => {
   const averages = userStats?.averages;
   const highestWpm = userStats?.highestWPM;
   const max = userStats?.max;
-  const lastTenAverages = userStats?.lastTenAverages
+  const lastTenAverages = userStats?.lastTenAverages;
 
   return (
     <>
@@ -186,19 +194,25 @@ const UserStats = () => {
                     </p>
                   </div>
                   <div className="mt-6 ">
-                    <p className="text-zinc-300">average accuracy (last 10 tests)</p>
+                    <p className="text-zinc-300">
+                      average accuracy (last 10 tests)
+                    </p>
                     <p className="font-semibold text-5xl">
                       {Math.round(averages.averageAccuracy)}
                     </p>
                   </div>
                   <div className="mt-6 ">
-                    <p className="text-zinc-300">average consistency (last 10 tests)</p>
+                    <p className="text-zinc-300">
+                      average consistency (last 10 tests)
+                    </p>
                     <p className="font-semibold text-5xl">
                       {Math.round(averages.averageConsistency)}
                     </p>
                   </div>
                   <div className="mt-6 ">
-                    <p className="text-zinc-300">average raw wpm  (last 10 tests)</p>
+                    <p className="text-zinc-300">
+                      average raw wpm (last 10 tests)
+                    </p>
                     <p className="font-semibold text-5xl">
                       {Math.round(averages.averageRawpm)}
                     </p>

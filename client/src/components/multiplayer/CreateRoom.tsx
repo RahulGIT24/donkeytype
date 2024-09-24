@@ -33,6 +33,7 @@ const CreateRoom = () => {
   const time = useSelector((state: any) => state.setting.time);
   const currentMode = useSelector((state: any) => state.setting.currentMode);
   const typeOfText = useSelector((state: any) => state.setting.typeOfText);
+  const user = useSelector((state:any)=>state.user.user);
 
   useEffect(() => {
     setMultiplayerMode({
@@ -93,9 +94,12 @@ const CreateRoom = () => {
     return roomId;
   };
   const createRoom = () => {
+    if(roomId){
+      socket.emit('destroy-room',roomId);
+    }
     const roomid = generateRoomId(10);
     dispatch(setRoomIdState(roomid));
-    socket.emit("create-room", roomid, multiplayerMode);
+    socket.emit("create-room", roomid, multiplayerMode,user.username,user._id);
   };
   return (
     <>

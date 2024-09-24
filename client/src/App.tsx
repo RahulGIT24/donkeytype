@@ -35,7 +35,7 @@ function App() {
   }
   useEffect(() => {
     checkAuth();
-    dispatch(initializeSocket() as any)
+    dispatch(initializeSocket() as any);
   }, []);
 
   return (
