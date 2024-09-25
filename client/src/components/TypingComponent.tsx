@@ -38,6 +38,8 @@ export default function TypingComponent() {
   const [scroll, setScroll] = useState(0);
   //const [countdown, setCountDown] = useState(setting.time);
   const [countdown, setCountDown] = useState(setting.time);
+  const [startTimer, setStartTimer] = useState(3);
+  const [afkTimer, setAfkTimer] = useState<any>(10);
   const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
@@ -50,8 +52,51 @@ export default function TypingComponent() {
         dispatch(setSocketId(socket.id));
         dispatch(setSocketInstance(socket));
       }
+      let interval = setInterval(() => {
+        setStartTimer((prevCount: number) => {
+          if (prevCount <= 0) {
+            clearInterval(interval!);
+            return -1;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
+      /*   if(startTimer<=0){
+      let afkinterval = setInterval(() => {
+        setAfkTimer((prevCount: number) => {
+          if (prevCount <= 0) {
+            clearInterval(afkinterval!);
+            return 0;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
+    } */
     }
   }, [socketI]);
+  useEffect(() => {
+    let afkinterval: any;
+    if (startTimer <= 0) {
+      afkinterval = setInterval(() => {
+        setAfkTimer((prevCount: any) => {
+          if (testStarted.current) {
+            clearInterval(afkinterval!);
+            return null;
+          } else if (prevCount <= 1) {
+            clearInterval(afkinterval!);
+
+            return 0;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (afkinterval) {
+        clearInterval(afkinterval);
+      }
+    };
+  }, [startTimer]);
 
   const calculateStandardDeviation = (arr: number[]) => {
     if (arr.length === 0) return 0;
@@ -148,12 +193,21 @@ export default function TypingComponent() {
   }, []);
 
   useEffect(() => {
+    if (afkTimer <= 0 && !testStarted.current) setEndTestTime(new Date());
+  }, [afkTimer]);
+
+  useEffect(() => {
     if (countdown === 0) {
+      setEndTestTime(new Date());
+    }
+    if (afkTimer === 0) {
+      setStartTestTime(new Date());
       setEndTestTime(new Date());
     }
     if (
       (testFinished.current && endTestTime && startTestTime) ||
-      (countdown === 0 && endTestTime && startTestTime)
+      (countdown === 0 && endTestTime && startTestTime) ||
+      (afkTimer <= 0 && endTestTime && startTestTime)
     ) {
       const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
@@ -208,6 +262,7 @@ export default function TypingComponent() {
     endTestTime,
     startTestTime,
     countdown,
+    afkTimer,
   ]);
 
   async function printWords(w: any) {
@@ -226,10 +281,20 @@ export default function TypingComponent() {
       getWords(setting.wordNumber)
         .then((r) => printWords(r))
         .then(() => {
-          setTimeout(() => {
-            addClass(document?.querySelector(".word"), "current");
-            addClass(document?.querySelector(".letter"), "current");
-          }, 800);
+          /*  if(isMultiplayer){
+        setTimeout(() => {
+          addClass(document?.querySelector(".word"), "current");
+          addClass(document?.querySelector(".letter"), "current");
+        },4000);
+       } */
+
+          setTimeout(
+            () => {
+              addClass(document?.querySelector(".word"), "current");
+              addClass(document?.querySelector(".letter"), "current");
+            },
+            isMultiplayer ? 4500 : 800
+          );
         });
     } else if (scroll > 0 && setting.time) {
       setTypeString(typeString);
@@ -370,7 +435,9 @@ export default function TypingComponent() {
     if (element) element.className = element.className.replace(name, "");
   }
 
-  return (
+  return isMultiplayer && startTimer > -1 ? (
+    <MultiplayerTimer timer={startTimer} />
+  ) : (
     <>
       {countdown && (
         <h1 className="text-4xl text-left text-yellow-400 relative">
@@ -414,4 +481,56 @@ export default function TypingComponent() {
       </div>
     </>
   );
+  /*  return (
+    <>
+      {countdown && (
+        <h1 className="text-4xl text-left text-yellow-400 relative">
+          {countdown}
+        </h1>
+      )}
+      <div
+        className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
+        id="typing-area"
+      >
+        {wordLoader && (
+          <div className="flex justify-center items-center w-full">
+            <Oval
+              visible={true}
+              height="80"
+              width="80"
+              color="rgb(234 179 8 / var(--tw-text-opacity))"
+              ariaLabel="oval-loading"
+              secondaryColor="transparent"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
+        )}{" "}
+        <div id="words" className="flex flex-wrap h-36">
+          {!wordLoader &&
+            typeString?.map((element: any, index) => {
+              return (
+                <div className="word mx-2 my-2 text-3xl" key={index}>
+                  {element.map((e: any, index: number) => {
+                    return (
+                      <span className="letter" key={index}>
+                        {e}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    </>
+  ); */
 }
+
+const MultiplayerTimer = ({ timer }: any) => {
+  return (
+    <h1 className="text-9xl text-left text-yellow-400 relative">
+      {timer == 0 ? "GO!!!" : timer}
+    </h1>
+  );
+};
