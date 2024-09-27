@@ -14,7 +14,7 @@ import apiCall from "../../utils/apiCall";
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
   const [opponent, setOpponent] = useState<any>(null);
-  const winnerRef = useRef<any>()
+  const winnerRef = useRef<any>();
   let myScore = 0;
   let opponentScore = 0;
   const navigate = useNavigate();
@@ -49,7 +49,11 @@ export default function MultiplayerResult() {
         console.log(users);
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];
-        setOpponent({ username: opp.username, results: opp.results,userId:opp.userId });
+        setOpponent({
+          username: opp.username,
+          results: opp.results,
+          userId: opp.userId,
+        });
       });
     }
   }, [socketI]);
@@ -73,7 +77,9 @@ export default function MultiplayerResult() {
       } else if (myResult.consistency < opponent.results.consistency) {
         opponentScore++;
       }
-      if (myScore === opponentScore) {
+      if (!opponent.results.raw) {
+        toast.info("Opponent Timed out");
+      } else if (myScore === opponentScore) {
         toast.info("Tie");
       } else if (myScore > opponentScore) {
         document.querySelector("#me")?.classList.add("border-win");
@@ -102,7 +108,10 @@ export default function MultiplayerResult() {
         chars: myResult.chars,
         mode: myResult.mode,
         multiplayer: true,
-        winner: winnerRef.current && winnerRef.current?.userId ? winnerRef.current.userId : null,
+        winner:
+          winnerRef.current && winnerRef.current?.userId
+            ? winnerRef.current.userId
+            : null,
         opponent: opponent.userId,
         tie: winnerRef ? false : true,
         roomId: multiplayerinfo.roomId,
