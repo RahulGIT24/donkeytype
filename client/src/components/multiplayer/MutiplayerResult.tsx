@@ -61,7 +61,6 @@ export default function MultiplayerResult() {
   // score calculator
   useEffect(() => {
     if (opponent && opponent.results) {
-      console.log(opponent.results);
       if (myResult.wpm > opponent.results.wpm) {
         myScore++;
       } else if (myResult.wpm < opponent.results.wpm) {
@@ -79,7 +78,8 @@ export default function MultiplayerResult() {
       }
       if (!opponent.results.raw) {
         toast.info("Opponent Timed out");
-      } else if (myScore === opponentScore) {
+      }
+      if (myScore === opponentScore) {
         toast.info("Tie");
       } else if (myScore > opponentScore) {
         document.querySelector("#me")?.classList.add("border-win");
@@ -101,7 +101,7 @@ export default function MultiplayerResult() {
       method: "POST",
       url: `/type/complete-test`,
       reqData: {
-        wpm: myResult.wpm,
+        wpm: myResult.wpm?myResult.wpm:0,
         raw: myResult.raw,
         accuracy: myResult.accuracy,
         consistency: myResult.consistency,

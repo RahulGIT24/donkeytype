@@ -36,6 +36,7 @@ export default function MainNav() {
 
   const disconnectFromRoom = () => {
     socketI.emit("leave-room",roomId)
+
   };
 
   const dispatch = useDispatch()
