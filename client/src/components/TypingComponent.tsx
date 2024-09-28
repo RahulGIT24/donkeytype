@@ -209,7 +209,7 @@ export default function TypingComponent() {
       (countdown === 0 && endTestTime && startTestTime) ||
       (afkTimer <= 0 && endTestTime && startTestTime)
     ) {
-      const durationInSeconds =
+      const durationInSeconds =   
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;
       const rawWPM =
@@ -223,24 +223,30 @@ export default function TypingComponent() {
       document.removeEventListener("keyup", handleKeyPress);
       if (isMultiplayer && roomId) {
         socket.emit("complete-test", roomId, {
-          wpm: Math.round(wpm),
-          raw: Math.round(rawWPM),
-          accuracy: Math.round(Number(accuracy)),
+          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+          accuracy: Math.round(Number(accuracy))
+            ? Math.round(Number(accuracy))
+            : 0,
           consistency: Math.round(
             Number(calculateStandardDeviation(wordAccuracies))
-          ),
+          )
+            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+            : 0,
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
           mode: mode,
         });
       }
       dispatch(
         setRecentTestResults({
-          wpm: Math.round(wpm),
-          raw: Math.round(rawWPM),
-          accuracy: Math.round(Number(accuracy)),
+          wpm: Math.round(wpm)?Math.round(wpm):0,
+          raw: Math.round(rawWPM)?Math.round(rawWPM):0,
+          accuracy: Math.round(Number(accuracy))?Math.round(Number(accuracy)):0,
           consistency: Math.round(
             Number(calculateStandardDeviation(wordAccuracies))
-          ),
+          )?Math.round(
+            Number(calculateStandardDeviation(wordAccuracies))
+          ):0,
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
           mode: mode,
           multiplayer: isMultiplayer,
