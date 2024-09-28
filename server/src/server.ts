@@ -100,6 +100,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("leave-room", (roomId: string) => {
+   
     const room = rooms[roomId];
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     if (userIndex != -1) {
