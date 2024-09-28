@@ -444,6 +444,11 @@ export default function TypingComponent() {
           {countdown}
         </h1>
       )}
+      {afkTimer && (
+        <h1 className="text-4xl text-right text-yellow-400 relative">
+         Start typing before: {afkTimer}s
+        </h1>
+      )}
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
