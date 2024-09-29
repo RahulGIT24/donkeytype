@@ -9,9 +9,11 @@ import {
 } from "../redux/reducers/statSlice";
 import { socket } from "../socket/socket";
 import {
+  setAllUsersPresent,
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
+import { toast } from "sonner";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -44,14 +46,22 @@ export default function TypingComponent() {
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
-
+  const allUsersPresent = useSelector((state:any)=>state.multiplayer.allUsersPresent)
   useEffect(() => {
     if (isMultiplayer) {
       if (!socketI) {
         socket.connect();
         dispatch(setSocketId(socket.id));
         dispatch(setSocketInstance(socket));
+
       }
+      socket.on('User Left',()=>{
+        //console.log('user left')
+        toast.error('Opponent left the game');
+        dispatch(setAllUsersPresent(false))
+        navigate("/");
+      })
+    
       let interval = setInterval(() => {
         setStartTimer((prevCount: number) => {
           if (prevCount <= 0) {
@@ -79,10 +89,15 @@ export default function TypingComponent() {
     if (startTimer <= 0) {
       afkinterval = setInterval(() => {
         setAfkTimer((prevCount: any) => {
-          if (testStarted.current) {
+          if (testStarted.current ) {
             clearInterval(afkinterval!);
             return null;
-          } else if (prevCount <= 1) {
+          } else if(!allUsersPresent){
+            //console.log('cleared afk')
+            clearInterval(afkinterval!)
+            return ;
+          }
+          else if (prevCount <= 1) {
             clearInterval(afkinterval!);
 
             return 0;
@@ -200,14 +215,14 @@ export default function TypingComponent() {
     if (countdown === 0) {
       setEndTestTime(new Date());
     }
-    if (afkTimer === 0) {
+    if (afkTimer === 0 &&allUsersPresent) {
       setStartTestTime(new Date());
       setEndTestTime(new Date());
     }
     if (
       (testFinished.current && endTestTime && startTestTime) ||
-      (countdown === 0 && endTestTime && startTestTime) ||
-      (afkTimer <= 0 && endTestTime && startTestTime)
+      (countdown === 0 && endTestTime && startTestTime ) ||
+      (afkTimer <= 0 && endTestTime && startTestTime &&allUsersPresent)
     ) {
       const durationInSeconds =   
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
@@ -221,7 +236,8 @@ export default function TypingComponent() {
       removeClass(document.getElementById("typing-area"), "remove-blur");
       addClass(document.getElementById("typing-area"), "blur-sm");
       document.removeEventListener("keyup", handleKeyPress);
-      if (isMultiplayer && roomId) {
+      if (isMultiplayer && roomId &&allUsersPresent ) {
+        console.log('test sent')
         socket.emit("complete-test", roomId, {
           wpm: Math.round(wpm) ? Math.round(wpm) : 0,
           raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
@@ -254,7 +270,10 @@ export default function TypingComponent() {
       );
       if (isMultiplayer && roomId) {
         navigate("/pvp-result", { replace: true });
-      } else {
+      }else if(!allUsersPresent){
+        navigate(`/`, { replace: true });
+      }
+       else {
         navigate(`/result`, { replace: true });
       }
     }
@@ -287,13 +306,6 @@ export default function TypingComponent() {
       getWords(setting.wordNumber)
         .then((r) => printWords(r))
         .then(() => {
-          /*  if(isMultiplayer){
-        setTimeout(() => {
-          addClass(document?.querySelector(".word"), "current");
-          addClass(document?.querySelector(".letter"), "current");
-        },4000);
-       } */
-
           setTimeout(
             () => {
               addClass(document?.querySelector(".word"), "current");
@@ -445,11 +457,16 @@ export default function TypingComponent() {
     <MultiplayerTimer timer={startTimer} />
   ) : (
     <>
-      {countdown && (
-        <h1 className="text-4xl text-left text-yellow-400 relative">
+      {countdown &&countdown!==0 ? (
+        <h1 className="text-4xl text-left text-yellow-400 relative countdown">
           {countdown}
         </h1>
-      )}
+      ):null}
+      {(afkTimer &&isMultiplayer)? (
+        <h1 className="text-4xl text-right text-yellow-400 relative">
+         Start typing before: {afkTimer}s
+        </h1>
+      ):null}
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
@@ -487,50 +504,7 @@ export default function TypingComponent() {
       </div>
     </>
   );
-  /*  return (
-    <>
-      {countdown && (
-        <h1 className="text-4xl text-left text-yellow-400 relative">
-          {countdown}
-        </h1>
-      )}
-      <div
-        className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
-        id="typing-area"
-      >
-        {wordLoader && (
-          <div className="flex justify-center items-center w-full">
-            <Oval
-              visible={true}
-              height="80"
-              width="80"
-              color="rgb(234 179 8 / var(--tw-text-opacity))"
-              ariaLabel="oval-loading"
-              secondaryColor="transparent"
-              wrapperStyle={{}}
-              wrapperClass=""
-            />
-          </div>
-        )}{" "}
-        <div id="words" className="flex flex-wrap h-36">
-          {!wordLoader &&
-            typeString?.map((element: any, index) => {
-              return (
-                <div className="word mx-2 my-2 text-3xl" key={index}>
-                  {element.map((e: any, index: number) => {
-                    return (
-                      <span className="letter" key={index}>
-                        {e}
-                      </span>
-                    );
-                  })}
-                </div>
-              );
-            })}
-        </div>
-      </div>
-    </>
-  ); */
+ 
 }
 
 const MultiplayerTimer = ({ timer }: any) => {

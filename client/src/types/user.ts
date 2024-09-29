@@ -13,7 +13,8 @@ export interface IMultiplayer {
   settings: ISetting;
   socketId: null | string;
   socketInstance:unknown,
-  multiplayer:boolean
+  multiplayer:boolean,
+  allUsersPresent:boolean
 }
 
 export interface ISetting{
