@@ -14,6 +14,7 @@ import {
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
 import { toast } from "sonner";
+import { setMode } from "../redux/reducers/typeSettingSlice";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -42,26 +43,21 @@ export default function TypingComponent() {
   const [countdown, setCountDown] = useState(setting.time);
   const [startTimer, setStartTimer] = useState(3);
   const [afkTimer, setAfkTimer] = useState<any>(10);
-  const [mode, setMode] = useState("");
+  const mode = useSelector((state: any) => state.setting.mode);
+  // const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
-  const allUsersPresent = useSelector((state:any)=>state.multiplayer.allUsersPresent)
+  const allUsersPresent = useSelector(
+    (state: any) => state.multiplayer.allUsersPresent
+  );
   useEffect(() => {
     if (isMultiplayer) {
       if (!socketI) {
         socket.connect();
         dispatch(setSocketId(socket.id));
         dispatch(setSocketInstance(socket));
-
       }
-      socket.on('User Left',()=>{
-        //console.log('user left')
-        toast.error('Opponent left the game');
-        dispatch(setAllUsersPresent(false))
-        navigate("/");
-      })
-    
       let interval = setInterval(() => {
         setStartTimer((prevCount: number) => {
           if (prevCount <= 0) {
@@ -71,33 +67,22 @@ export default function TypingComponent() {
           return prevCount - 1;
         });
       }, 1000);
-      /*   if(startTimer<=0){
-      let afkinterval = setInterval(() => {
-        setAfkTimer((prevCount: number) => {
-          if (prevCount <= 0) {
-            clearInterval(afkinterval!);
-            return 0;
-          }
-          return prevCount - 1;
-        });
-      }, 1000);
-    } */
     }
   }, [socketI]);
+
   useEffect(() => {
     let afkinterval: any;
     if (startTimer <= 0) {
       afkinterval = setInterval(() => {
         setAfkTimer((prevCount: any) => {
-          if (testStarted.current ) {
+          if (testStarted.current) {
             clearInterval(afkinterval!);
             return null;
-          } else if(!allUsersPresent){
+          } else if (!allUsersPresent) {
             //console.log('cleared afk')
-            clearInterval(afkinterval!)
-            return ;
-          }
-          else if (prevCount <= 1) {
+            clearInterval(afkinterval!);
+            return;
+          } else if (prevCount <= 1) {
             clearInterval(afkinterval!);
 
             return 0;
@@ -161,7 +146,7 @@ export default function TypingComponent() {
     // console.log(data)
     setWordLoader(false);
     setAvgWordLength(data.avgwordlength);
-    setMode(data.mode);
+    dispatch(setMode(data.mode));
     return data.text;
   };
 
@@ -211,20 +196,23 @@ export default function TypingComponent() {
     if (afkTimer <= 0 && !testStarted.current) setEndTestTime(new Date());
   }, [afkTimer]);
 
+  const userLeft = useSelector((state:any)=>state.multiplayer.userLeft)
+
   useEffect(() => {
     if (countdown === 0) {
       setEndTestTime(new Date());
     }
-    if (afkTimer === 0 &&allUsersPresent) {
+    if (afkTimer === 0 && allUsersPresent) {
       setStartTestTime(new Date());
       setEndTestTime(new Date());
     }
     if (
       (testFinished.current && endTestTime && startTestTime) ||
-      (countdown === 0 && endTestTime && startTestTime ) ||
-      (afkTimer <= 0 && endTestTime && startTestTime &&allUsersPresent)
+      (countdown === 0 && endTestTime && startTestTime) ||
+      (afkTimer <= 0 && endTestTime && startTestTime && allUsersPresent)||
+      (startTestTime && endTestTime && userLeft)
     ) {
-      const durationInSeconds =   
+      const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;
       const rawWPM =
@@ -236,8 +224,7 @@ export default function TypingComponent() {
       removeClass(document.getElementById("typing-area"), "remove-blur");
       addClass(document.getElementById("typing-area"), "blur-sm");
       document.removeEventListener("keyup", handleKeyPress);
-      if (isMultiplayer && roomId &&allUsersPresent ) {
-        console.log('test sent')
+      if (isMultiplayer && roomId && allUsersPresent) {
         socket.emit("complete-test", roomId, {
           wpm: Math.round(wpm) ? Math.round(wpm) : 0,
           raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
@@ -255,14 +242,16 @@ export default function TypingComponent() {
       }
       dispatch(
         setRecentTestResults({
-          wpm: Math.round(wpm)?Math.round(wpm):0,
-          raw: Math.round(rawWPM)?Math.round(rawWPM):0,
-          accuracy: Math.round(Number(accuracy))?Math.round(Number(accuracy)):0,
+          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+          accuracy: Math.round(Number(accuracy))
+            ? Math.round(Number(accuracy))
+            : 0,
           consistency: Math.round(
             Number(calculateStandardDeviation(wordAccuracies))
-          )?Math.round(
-            Number(calculateStandardDeviation(wordAccuracies))
-          ):0,
+          )
+            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+            : 0,
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
           mode: mode,
           multiplayer: isMultiplayer,
@@ -270,14 +259,14 @@ export default function TypingComponent() {
       );
       if (isMultiplayer && roomId) {
         navigate("/pvp-result", { replace: true });
-      }else if(!allUsersPresent){
+      } else if (!allUsersPresent) {
         navigate(`/`, { replace: true });
-      }
-       else {
+      } else {
         navigate(`/result`, { replace: true });
       }
     }
   }, [
+    userLeft,
     totalLettersTyped,
     correctLettersTyped,
     wrongLettersTyped,
@@ -457,16 +446,16 @@ export default function TypingComponent() {
     <MultiplayerTimer timer={startTimer} />
   ) : (
     <>
-      {countdown &&countdown!==0 ? (
+      {countdown && countdown !== 0 ? (
         <h1 className="text-4xl text-left text-yellow-400 relative countdown">
           {countdown}
         </h1>
-      ):null}
-      {(afkTimer &&isMultiplayer)? (
+      ) : null}
+      {afkTimer && isMultiplayer ? (
         <h1 className="text-4xl text-right text-yellow-400 relative">
-         Start typing before: {afkTimer}s
+          Start typing before: {afkTimer}s
         </h1>
-      ):null}
+      ) : null}
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
@@ -504,7 +493,6 @@ export default function TypingComponent() {
       </div>
     </>
   );
- 
 }
 
 const MultiplayerTimer = ({ timer }: any) => {

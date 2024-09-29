@@ -6,7 +6,8 @@ const initialState: ISetting = {
   wordNumber: "10",
   time: null,
   currentMode:"Words 10",
-  typeOfText:[]
+  typeOfText:[],
+  mode:""
 };
 
 const typeSlice: any = createSlice({
@@ -30,6 +31,9 @@ const typeSlice: any = createSlice({
     setTypeOfText:(state,action)=>{
       state.typeOfText = [...state.typeOfText, action.payload];
     },
+    setMode:(state,action)=>{
+      state.mode = action.payload;
+    },
     filterTypeOfText: (state, action) => {
       state.typeOfText = state.typeOfText.filter((item:string) => item !== action.payload);
     },
@@ -43,5 +47,5 @@ const typeSlice: any = createSlice({
     }
   },
 });
-export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText,resetState } = typeSlice.actions;
+export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText,resetState,setMode } = typeSlice.actions;
 export default typeSlice.reducer;

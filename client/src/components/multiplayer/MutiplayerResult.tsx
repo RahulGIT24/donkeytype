@@ -13,6 +13,7 @@ import apiCall from "../../utils/apiCall";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
+  const roomId = useSelector((state:any)=>state.multiplayer.roomId)
   const [opponent, setOpponent] = useState<any>(null);
   const winnerRef = useRef<any>();
   let myScore = 0;
@@ -43,12 +44,10 @@ export default function MultiplayerResult() {
   }, [socketI]);
 
   useEffect(() => {
-    if (socketI ) {
-      console.log(allUsersPresent)
+    if (socketI) {
       socketI.emit("give-results", multiplayerinfo.roomId);
     
       socketI.on("Results", (users: any) => {
-        console.log(users);
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];
         setOpponent({
@@ -95,6 +94,7 @@ export default function MultiplayerResult() {
         winnerRef.current = opponent;
       }
       submitResults();
+      socket.emit("cleanup",roomId)
     }
   }, [opponent, opponent?.results]);
 

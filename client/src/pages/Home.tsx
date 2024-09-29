@@ -4,7 +4,7 @@ import TypeLayout from "./TypeLayout";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setMultiplayer,setAllUsersPresent } from "../redux/reducers/multiplayerSlice";
+import { setMultiplayer,setAllUsersPresent, setUserLeft } from "../redux/reducers/multiplayerSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -25,14 +25,14 @@ export default function Home() {
         toast.error("Room may be full or not existed");
         navigate("/");
       });
-      
+      socket.on('User Left',()=>{
+        dispatch(setUserLeft(true))
+      })
     } else {
       navigate("/");
     }
 
     return () => {
-      // dispatch(invalidateState());
-      // socket.disconnect();
       dispatch(setAllUsersPresent(true))
       dispatch(setMultiplayer(false))
     };

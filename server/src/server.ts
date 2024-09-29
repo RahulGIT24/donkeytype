@@ -100,15 +100,14 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("leave-room", (roomId: string) => {
-   
     const room = rooms[roomId];
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     if (userIndex != -1) {
       io.to(roomId).emit("User Left", socket.id);
-      room.users.splice(userIndex, 1);
-      if (room.users.length == 0) {
-        delete rooms[roomId];
-      }
+      // room.users.splice(userIndex, 1);
+      // if (room.users.length == 0) {
+      //   delete rooms[roomId];
+      // }
     }
   });
 
@@ -132,6 +131,13 @@ io.on("connection", (socket: Socket) => {
     if (!room) return;
     io.to(roomId).emit("Results", room.users);
   });
+
+  socket.on("cleanup",(roomId:string)=>{
+    const room = rooms[roomId];
+    if(room){
+      delete rooms[roomId];
+    }
+  })
 
   socket.on("disconnect", () => {
     for (const roomId in rooms) {

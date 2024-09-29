@@ -14,7 +14,8 @@ export interface IMultiplayer {
   socketId: null | string;
   socketInstance:unknown,
   multiplayer:boolean,
-  allUsersPresent:boolean
+  allUsersPresent:boolean,
+  userLeft:boolean
 }
 
 export interface ISetting{
@@ -23,4 +24,5 @@ export interface ISetting{
   time:string | null,
   currentMode: string | null,
   typeOfText:any
+  mode?:string
 }
