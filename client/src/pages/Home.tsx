@@ -4,7 +4,7 @@ import TypeLayout from "./TypeLayout";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setMultiplayer,setAllUsersPresent } from "../redux/reducers/multiplayerSlice";
+import { setMultiplayer,setAllUsersPresent, setUserLeft } from "../redux/reducers/multiplayerSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -26,18 +26,13 @@ export default function Home() {
         navigate("/");
       });
       socket.on('User Left',()=>{
-        console.log('user left')
-        toast.error('Opponent left the game');
-        dispatch(setAllUsersPresent(false))
-        navigate("/");
+        dispatch(setUserLeft(true))
       })
     } else {
       navigate("/");
     }
 
     return () => {
-      // dispatch(invalidateState());
-      // socket.disconnect();
       dispatch(setAllUsersPresent(true))
       dispatch(setMultiplayer(false))
     };

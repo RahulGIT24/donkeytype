@@ -4,7 +4,6 @@ import { ThreeDots } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import apiCall from "../../utils/apiCall";
-import { useDispatch } from "react-redux";
 // import { initializeSocket } from "../../redux/reducers/multiplayerSlice";
 
 export default function Login() {
@@ -47,8 +46,6 @@ export default function Login() {
       setDisabled(false);
     }
   };
-
-  const dispatch = useDispatch();
 
   return (
     <>

@@ -21,6 +21,7 @@ import {
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
+import { setRecentTestResults } from "../../redux/reducers/statSlice";
 
 export default function MainNav() {
   const isAuthenticated = useSelector(
@@ -33,25 +34,33 @@ export default function MainNav() {
   const socketId = useSelector((state: any) => state.multiplayer.socketId);
 
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
+  const mode = useSelector((state:any)=>state.setting.mode)
 
   const disconnectFromRoom = () => {
+    dispatch(
+      setRecentTestResults({
+        wpm: 0,
+        raw: 0,
+        accuracy: 0,
+        consistency: 0,
+        chars: `${0}/${0}/${0}/${0}`,
+        mode: mode,
+        multiplayer: isMultiplayer,
+      })
+    );
+    socket.emit("complete-test", roomId, {
+      wpm: 0,
+      raw: 0,
+      accuracy: 0,
+      consistency: 0,
+      chars: `${0}/${0}/${0}/${0}`,
+      mode: mode,
+    });
     socketI.emit("leave-room",roomId)
-
+    navigate("/pvp-result",{replace:true})
   };
 
   const dispatch = useDispatch()
-
-  useEffect(()=>{
-    if(socketI){
-      socketI.on("User Left",(id:string)=>{
-        if(id!=socketId){
-        }else{
-        }
-        dispatch(setMultiplayer(false));
-        navigate("/")
-      })
-    }
-  },[socketI])
 
   useEffect(() => {
     if (!socketI) {
