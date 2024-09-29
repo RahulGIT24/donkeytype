@@ -4,7 +4,7 @@ import TypeLayout from "./TypeLayout";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserLeft } from "../redux/reducers/multiplayerSlice";
+import { setMultiplayer, setUserLeft,invalidateState } from "../redux/reducers/multiplayerSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -25,21 +25,21 @@ export default function Home() {
       });
       socket.on("User Left", () => {
         dispatch(setUserLeft(true))
+        
+     
+       // socket.emit("cleanup",roomId)
       });
     } else {
       navigate("/");
     }
 
     return () => {
-<<<<<<< HEAD
-      dispatch(setAllUsersPresent(true))
-     // dispatch(setMultiplayer(false))
-=======
       // dispatch(invalidateState());
       // socket.disconnect();
->>>>>>> origin/multiplayer
     };
   }, [socket]); 
+
+
 
   return (
     <>

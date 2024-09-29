@@ -371,7 +371,7 @@ export default function TypingComponent() {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
-  }, [setting, scroll]);
+  }, [setting.words, scroll]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);

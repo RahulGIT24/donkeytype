@@ -97,6 +97,7 @@ export default function MultiplayerResult() {
       }
       submitResults();
       socket.emit("cleanup",roomId)
+      dispatch(setMultiplayer(false))
     }
   }, [opponent, opponent?.results]);
 
