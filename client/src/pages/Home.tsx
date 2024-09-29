@@ -9,6 +9,7 @@ import { setMultiplayer, setUserLeft,invalidateState } from "../redux/reducers/m
 export default function Home() {
   const dispatch = useDispatch();
   const socket = useSelector((state: any) => state.multiplayer.socketInstance);
+  const isMultiplayer = useSelector((state: any) => state.multiplayer.multiplayer);
   const navigate = useNavigate();
   const { roomId } = useParams();
   useEffect(() => {
@@ -38,7 +39,9 @@ export default function Home() {
       // socket.disconnect();
     };
   }, [socket]); 
-
+  useEffect(()=>{
+console.log(isMultiplayer)
+  },[isMultiplayer])
 
 
   return (
