@@ -9,7 +9,6 @@ import {
 } from "../redux/reducers/statSlice";
 import { socket } from "../socket/socket";
 import {
-  setAllUsersPresent,
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
@@ -39,12 +38,10 @@ export default function TypingComponent() {
   const testStarted = useRef(false);
   const testFinished = useRef(false);
   const [scroll, setScroll] = useState(0);
-  //const [countdown, setCountDown] = useState(setting.time);
   const [countdown, setCountDown] = useState(setting.time);
   const [startTimer, setStartTimer] = useState(3);
   const [afkTimer, setAfkTimer] = useState<any>(10);
   const mode = useSelector((state: any) => state.setting.mode);
-  // const [mode, setMode] = useState("");
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
@@ -79,7 +76,6 @@ export default function TypingComponent() {
             clearInterval(afkinterval!);
             return null;
           } else if (!allUsersPresent) {
-            //console.log('cleared afk')
             clearInterval(afkinterval!);
             return;
           } else if (prevCount <= 1) {
@@ -107,9 +103,8 @@ export default function TypingComponent() {
       squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length;
     const standardDeviation = Math.sqrt(variance);
 
-    // Handle the special case where mean is 1
     if (mean === 1) {
-      return 100; // Perfect consistency
+      return 100; 
     }
 
     const maxPossibleDeviation = Math.sqrt(mean * (1 - mean));
@@ -143,7 +138,6 @@ export default function TypingComponent() {
         setting.typeOfText.length != 0 ? setting.typeOfText.join(",") : null
       }&mode=${mode}`,
     });
-    // console.log(data)
     setWordLoader(false);
     setAvgWordLength(data.avgwordlength);
     dispatch(setMode(data.mode));
@@ -206,6 +200,76 @@ export default function TypingComponent() {
       setStartTestTime(new Date());
       setEndTestTime(new Date());
     }
+
+    if(!startTestTime && !endTestTime && userLeft){
+      socket.emit("complete-test", roomId, {
+        wpm: 0,
+        raw:  0,
+        accuracy:  0,
+        consistency: 0,
+        chars: `${0}/${0}/${0}/${0}`,
+        mode: mode,
+      })
+      dispatch(
+        setRecentTestResults({
+          wpm: 0,
+          raw: 0,
+          accuracy: 0,
+          consistency:  0,
+          chars: `${0}/${0}/${0}/${0}`,
+          mode: mode,
+          multiplayer: isMultiplayer,
+        })
+      );
+      toast.success("User Left the game")
+      navigate("/pvp-result")
+    }
+
+    if(startTestTime && userLeft){
+      const endTestT = new Date();
+      const durationInSeconds =
+        (endTestT.getTime() - startTestTime.getTime()) / 1000;
+      const durationInMinutes = durationInSeconds / 60;
+      const rawWPM =
+        (totalLettersTyped / avgWordLength) * (1 / durationInMinutes);
+      const accuracy = (
+        Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) / 100
+      ).toFixed(2);
+      const wpm = rawWPM * (Number(accuracy) / 100);
+      socket.emit("complete-test", roomId, {
+        wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+        raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+        accuracy: Math.round(Number(accuracy))
+          ? Math.round(Number(accuracy))
+          : 0,
+        consistency: Math.round(
+          Number(calculateStandardDeviation(wordAccuracies))
+        )
+          ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+          : 0,
+        chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+        mode: mode,
+      });
+      dispatch(
+        setRecentTestResults({
+          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+          accuracy: Math.round(Number(accuracy))
+            ? Math.round(Number(accuracy))
+            : 0,
+          consistency: Math.round(
+            Number(calculateStandardDeviation(wordAccuracies))
+          )
+            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+            : 0,
+          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+          mode: mode,
+          multiplayer: isMultiplayer,
+        })
+      );
+      navigate("/pvp-result", { replace: true });
+    }
+
     if (
       (testFinished.current && endTestTime && startTestTime) ||
       (countdown === 0 && endTestTime && startTestTime) ||

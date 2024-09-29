@@ -3,6 +3,7 @@ import MainNav from "../navbars/MainNav";
 import { useDispatch, useSelector } from "react-redux";
 import { socket } from "../../socket/socket";
 import {
+  setMultiplayer,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
@@ -45,6 +46,7 @@ export default function MultiplayerResult() {
 
   useEffect(() => {
     if (socketI) {
+      setMultiplayer(false)
       socketI.emit("give-results", multiplayerinfo.roomId);
       if(allUsersPresent)
       socketI.on("Results", (users: any) => {

@@ -57,6 +57,8 @@ const multiplayerSlice = createSlice({
       state.socketId = null;
       state.socketInstance = null;
       state.multiplayer = false;
+      state.allUsersPresent = false;
+      state.userLeft = false;
     },
   },
 });

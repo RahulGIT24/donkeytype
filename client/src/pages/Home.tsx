@@ -4,19 +4,17 @@ import TypeLayout from "./TypeLayout";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setMultiplayer,setAllUsersPresent, setUserLeft } from "../redux/reducers/multiplayerSlice";
+import { setUserLeft } from "../redux/reducers/multiplayerSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
   const socket = useSelector((state: any) => state.multiplayer.socketInstance);
-
   const navigate = useNavigate();
   const { roomId } = useParams();
   useEffect(() => {
     if (roomId) {
       socket.on("connect", () => {
         socket.emit("verify-room", roomId);
-        console.log('connected')
       });
       socket.on("Verified", () => {
         toast.success("Room verified!");
@@ -25,18 +23,18 @@ export default function Home() {
         toast.error("Room may be full or not existed");
         navigate("/");
       });
-      socket.on('User Left',()=>{
+      socket.on("User Left", () => {
         dispatch(setUserLeft(true))
-      })
+      });
     } else {
       navigate("/");
     }
 
     return () => {
-      dispatch(setAllUsersPresent(true))
-      dispatch(setMultiplayer(false))
+      // dispatch(invalidateState());
+      // socket.disconnect();
     };
-  }, [socket]);
+  }, [socket]); 
 
   return (
     <>
