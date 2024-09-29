@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { socket } from "../../socket/socket";
 import {
-  setMultiplayer,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
@@ -31,7 +30,6 @@ export default function MainNav() {
     (state: any) => state.multiplayer.multiplayer
   );
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
-  const socketId = useSelector((state: any) => state.multiplayer.socketId);
 
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
   const mode = useSelector((state:any)=>state.setting.mode)
