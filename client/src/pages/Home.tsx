@@ -25,12 +25,7 @@ export default function Home() {
         toast.error("Room may be full or not existed");
         navigate("/");
       });
-      socket.on('User Left',()=>{
-        console.log('user left')
-        toast.error('Opponent left the game');
-        dispatch(setAllUsersPresent(false))
-        navigate("/");
-      })
+      
     } else {
       navigate("/");
     }

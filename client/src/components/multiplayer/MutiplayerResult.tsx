@@ -10,7 +10,6 @@ import { Bars } from "react-loader-spinner";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import apiCall from "../../utils/apiCall";
-import { all } from "axios";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
@@ -47,7 +46,7 @@ export default function MultiplayerResult() {
     if (socketI ) {
       console.log(allUsersPresent)
       socketI.emit("give-results", multiplayerinfo.roomId);
-      if(allUsersPresent)
+    
       socketI.on("Results", (users: any) => {
         console.log(users);
         const arr = users.filter((u: any) => u.userId !== user._id);
