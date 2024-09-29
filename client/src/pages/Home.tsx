@@ -34,7 +34,7 @@ export default function Home() {
 
     return () => {
       dispatch(setAllUsersPresent(true))
-      dispatch(setMultiplayer(false))
+     // dispatch(setMultiplayer(false))
     };
   }, [socket]);
 

@@ -48,6 +48,10 @@ export default function MainNav() {
         multiplayer: isMultiplayer,
       })
     );
+    socketI.emit("leave-room",roomId)
+    navigate("/pvp-result",{replace:true})
+    dispatch(setMultiplayer(false))
+    navigate('/')
     socket.emit("complete-test", roomId, {
       wpm: 0,
       raw: 0,
@@ -56,8 +60,6 @@ export default function MainNav() {
       chars: `${0}/${0}/${0}/${0}`,
       mode: mode,
     });
-    socketI.emit("leave-room",roomId)
-    navigate("/pvp-result",{replace:true})
   };
 
   const dispatch = useDispatch()
