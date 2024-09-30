@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { socket } from "../../socket/socket";
 import {
-  setMultiplayer,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
@@ -33,10 +32,10 @@ export default function MainNav() {
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
 
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
-  const mode = useSelector((state:any)=>state.setting.mode)
+  const mode = useSelector((state: any) => state.setting.mode);
 
   const disconnectFromRoom = () => {
-    /* dispatch(
+    dispatch(
       setRecentTestResults({
         wpm: 0,
         raw: 0,
@@ -46,21 +45,21 @@ export default function MainNav() {
         mode: mode,
         multiplayer: isMultiplayer,
       })
-    ); */
-   /*  socket.emit("complete-test", roomId, {
+    );
+    socket.emit("complete-test", roomId, {
       wpm: 0,
       raw: 0,
       accuracy: 0,
       consistency: 0,
       chars: `${0}/${0}/${0}/${0}`,
       mode: mode,
-    }); */
-    socketI.emit("leave-room",roomId)
-    dispatch(setMultiplayer(false))
-   //  navigate("/pvp-result",{replace:true})
+    });
+    socketI.emit("leave-room", roomId);
+    //dispatch(setMultiplayer(false));
+    navigate("/pvp-result", { replace: true });
   };
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (!socketI) {
@@ -68,7 +67,7 @@ export default function MainNav() {
       dispatch(setSocketId(socket.id));
       dispatch(setSocketInstance(socket));
     }
-  },[socketI]);
+  }, [socketI]);
 
   const navigate = useNavigate();
   return (
@@ -80,7 +79,8 @@ export default function MainNav() {
               <ul className="flex flex-row gap-4 items-center">
                 <li>
                   <Link to="/" className="flex justify-center items-center">
-                  <img src="/icon.png" className="w-10 h-12 mx-2"/><h1 className="text-2xl">donkeytype</h1>
+                    <img src="/icon.png" className="w-10 h-12 mx-2" />
+                    <h1 className="text-2xl">donkeytype</h1>
                   </Link>
                 </li>
                 {!isMultiplayer && (

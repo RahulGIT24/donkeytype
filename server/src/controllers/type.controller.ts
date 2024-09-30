@@ -112,6 +112,24 @@ const completeTest = asyncHandler(async (req, res) => {
     return res.status(404).json(new ApiResponse(404, "User not exist in DB"));
   }
   const { wpm, raw, accuracy, consistency, chars, mode,multiplayer,opponent,winner,roomId,tie } = req.body;
+  // if(opponentResult){
+  //   const {wpm,raw,accuracy,consistency,chars,mode,winner,_id,opponent,tie,roomId} = opponentResult
+  //   const check = await History.findOne({roomId})
+  //   const ooponentHistory = new History({
+  //     wpm: wpm,
+  //     raw: raw,
+  //     accuracy: accuracy,
+  //     consistency: consistency,
+  //     chars,
+  //     mode,
+  //     multiplayer,
+  //     user: userId,
+  //     winner: winner ? winner : null,
+  //     opponent: opponent ? opponent : null,
+  //     roomId:roomId?roomId : null,
+  //     tie
+  //   });
+  // }
   const history = new History({
     wpm: wpm,
     raw: raw,

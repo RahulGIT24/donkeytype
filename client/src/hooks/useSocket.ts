@@ -5,6 +5,7 @@ const socket = io(import.meta.env.VITE_SERVER_API);
 export const useSocket = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
   useEffect(() => {
+    console.log(isConnected)
     function onConnect() {
       setIsConnected(true);
     }

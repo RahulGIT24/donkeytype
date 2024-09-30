@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
+import cron from "node-cron";
 
 const PORT = process.env.PORT ?? 5000;
 
@@ -33,6 +34,7 @@ import typeRouter from "./routes/type.routes";
 import statRouter from "./routes/stats.routes";
 import connectDB from "./db";
 import { Room } from "./types/types";
+import axios from "axios";
 
 connectDB()
   .then(() => {
@@ -47,6 +49,9 @@ connectDB()
 app.use("/donkeyapi/v1/users", userRouter);
 app.use("/donkeyapi/v1/type", typeRouter);
 app.use("/donkeyapi/v1/stats", statRouter);
+app.get("/donkeyapi/v1/health", (req, res) => {
+  res.status(200).json({ message: "Health is Good" });
+});
 
 // Socket Connection for multiplayers
 const rooms: { [key: string]: Room } = {};
@@ -100,9 +105,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("leave-room", (roomId: string) => {
-    console.log('roommmmmmmmssss',rooms)
     const room = rooms[roomId];
-    console.log('roooooommmmmmmm',room)
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     if (userIndex != -1) {
       io.to(roomId).emit("User Left", socket.id);
@@ -115,14 +118,14 @@ io.on("connection", (socket: Socket) => {
 
   // destroy room when user creates new one
   socket.on("destroy-room", (roomId: string) => {
-    console.log('destroy room ')
+    console.log("destroy room ");
     const room = rooms[roomId];
     if (!room) return;
     delete rooms[roomId];
   });
 
   socket.on("complete-test", (roomId: string, res: any) => {
-  console.log('complete test')
+    console.log("complete test");
     const room = rooms[roomId];
     if (!room) return;
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
@@ -131,34 +134,62 @@ io.on("connection", (socket: Socket) => {
 
   // get room results based on id
   socket.on("give-results", (roomId: string) => {
-    console.log('give results')
+    console.log("give results");
     const room = rooms[roomId];
     if (!room) return;
     io.to(roomId).emit("Results", room.users);
   });
 
-  socket.on("cleanup",(roomId:string)=>{
-    console.log('cleanup')
+  socket.on("cleanup", (roomId: string) => {
+    console.log("cleanup");
     const room = rooms[roomId];
-    if(room){
+    if (room) {
       delete rooms[roomId];
     }
-  })
+  });
 
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
       const room = rooms[roomId];
       const userIndex = room.users.findIndex((u) => u.id === socket.id);
-      if (userIndex != -1) {
-        room.users.splice(userIndex, 1);
-        io.to(roomId).emit("User Left", socket.id);
-       console.log("User Left")
-        if (room.users.length == 0) {
-          delete rooms[roomId];
-        }
+
+      if (userIndex) {
+        room.users[userIndex].results = {
+          wpm: 0,
+          raw: 0,
+          accuracy: 0,
+          consistency: 0,
+          chars: `${0}/${0}/${0}/${0}`,
+          mode: "",
+        };
       }
+
+      io.to(roomId).emit("User Left", socket.id);
+
+      // if (userIndex != -1) {
+      //   // room.users.splice(userIndex, 1);
+      //   if (room.users.length == 0) {
+      //     delete rooms[roomId];
+      //   }
+      // }
     }
   });
+});
+
+// to keep the backend up on render
+const hitAPi = async () => {
+  try {
+    const res = await axios.get(
+      `${process.env.BACKEND_URL}/donkeyapi/v1/health`
+    );
+    console.log(res.data.message);
+  } catch (error) {
+    console.log(error);
+  }
+};
+cron.schedule("* * * * *", async () => {
+  // console.log("Cron job started");
+  await hitAPi();
 });
 
 httpServer.listen(process.env.SOCKET_PORT, () => {

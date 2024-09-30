@@ -14,7 +14,6 @@ import apiCall from "../../utils/apiCall";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
-  const roomId = useSelector((state:any)=>state.multiplayer.roomId)
   const [opponent, setOpponent] = useState<any>(null);
   const winnerRef = useRef<any>();
   let myScore = 0;
@@ -30,7 +29,7 @@ export default function MultiplayerResult() {
   const multiplayerinfo = useSelector((state: any) => state.multiplayer);
 
   const user = useSelector((state: any) => state.user.user);
-  const userLeft = useSelector((state:any)=>state.multiplayer.userLeft)
+  const userLeft = useSelector((state: any) => state.multiplayer.userLeft);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const dispatch = useDispatch();
 
@@ -45,11 +44,9 @@ export default function MultiplayerResult() {
   }, [socketI]);
 
   useEffect(() => {
-    if (socketI) {
-      setMultiplayer(false)
-      socketI.emit("give-results", multiplayerinfo.roomId);
-    
-      socketI.on("Results", (users: any) => {
+    if (socket) {
+      socket.emit("give-results", multiplayerinfo.roomId);
+      socket.on("Results", (users: any) => {
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];
         setOpponent({
@@ -59,7 +56,7 @@ export default function MultiplayerResult() {
         });
       });
     }
-  }, [socketI]);
+  }, [socketI, socket]);
 
   // score calculator
   useEffect(() => {
@@ -79,9 +76,6 @@ export default function MultiplayerResult() {
       } else if (myResult.consistency < opponent.results.consistency) {
         opponentScore++;
       }
-      if (!opponent.results.raw) {
-        toast.info("Opponent Timed out");
-      }
       if (myScore === opponentScore) {
         toast.info("Tie");
       } else if (myScore > opponentScore) {
@@ -96,23 +90,35 @@ export default function MultiplayerResult() {
         winnerRef.current = opponent;
       }
       submitResults();
-      console.log('pvp result before cleanup')
-      //state not being set
-      dispatch(setMultiplayer(false))
-      socket.emit("cleanup",roomId)
+      dispatch(setMultiplayer(false));
     }
-  }, [opponent, opponent?.results,userLeft]);
-//test
-  useEffect(()=>{
-    dispatch(setMultiplayer(false))
-  },[navigate])
+  }, [opponent, opponent?.results, userLeft]);
 
   const submitResults = async () => {
+    // let oppoRes = null;
+    // if (opponent.results) {
+    //   oppoRes = {
+    //     wpm: opponent.results.wpm,
+    //     raw: opponent.results.raw,
+    //     accuracy: opponent.results.accuracy,
+    //     consistency: opponent.results.consistency,
+    //     chars: opponent.results.chars,
+    //     mode: opponent.results.mode,
+    //     winner:
+    //       winnerRef.current && winnerRef.current?.userId
+    //         ? winnerRef.current.userId
+    //         : null,
+    //     _id: opponent.userId,
+    //     opponent:user._id,
+    //     tie: winnerRef ? false : true,
+    //     roomId: multiplayerinfo.roomId,
+    //   };
+    // }
     await apiCall({
       method: "POST",
       url: `/type/complete-test`,
       reqData: {
-        wpm: myResult.wpm?myResult.wpm:0,
+        wpm: myResult.wpm ? myResult.wpm : 0,
         raw: myResult.raw,
         accuracy: myResult.accuracy,
         consistency: myResult.consistency,
@@ -126,6 +132,7 @@ export default function MultiplayerResult() {
         opponent: opponent.userId,
         tie: winnerRef ? false : true,
         roomId: multiplayerinfo.roomId,
+        // opponentResult:oppoRes
       },
     });
   };

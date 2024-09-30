@@ -12,7 +12,6 @@ import {
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
-import { toast } from "sonner";
 import { setMode } from "../redux/reducers/typeSettingSlice";
 
 export default function TypingComponent() {
@@ -104,7 +103,7 @@ export default function TypingComponent() {
     const standardDeviation = Math.sqrt(variance);
 
     if (mean === 1) {
-      return 100; 
+      return 100;
     }
 
     const maxPossibleDeviation = Math.sqrt(mean * (1 - mean));
@@ -126,6 +125,7 @@ export default function TypingComponent() {
 
   const getWords = async (value: any) => {
     let typeOfText = "words";
+    console.log(typeOfText);
     let mode = `Words ${value}`;
     if (setting.time) {
       value = 30;
@@ -190,7 +190,7 @@ export default function TypingComponent() {
     if (afkTimer <= 0 && !testStarted.current) setEndTestTime(new Date());
   }, [afkTimer]);
 
-  const userLeft = useSelector((state:any)=>state.multiplayer.userLeft)
+  const userLeft = useSelector((state: any) => state.multiplayer.userLeft);
 
   useEffect(() => {
     if (countdown === 0) {
@@ -201,31 +201,30 @@ export default function TypingComponent() {
       setEndTestTime(new Date());
     }
 
-    if(!startTestTime && !endTestTime && userLeft){
+    if (!startTestTime && !endTestTime && userLeft) {
       socket.emit("complete-test", roomId, {
         wpm: 0,
-        raw:  0,
-        accuracy:  0,
+        raw: 0,
+        accuracy: 0,
         consistency: 0,
         chars: `${0}/${0}/${0}/${0}`,
         mode: mode,
-      })
+      });
       dispatch(
         setRecentTestResults({
           wpm: 0,
           raw: 0,
           accuracy: 0,
-          consistency:  0,
+          consistency: 0,
           chars: `${0}/${0}/${0}/${0}`,
           mode: mode,
           multiplayer: isMultiplayer,
         })
       );
-      toast.success("User Left the game")
-      navigate("/pvp-result")
+      navigate("/pvp-result",{ replace:true });
     }
 
-    if(startTestTime && userLeft){
+    if (startTestTime && userLeft) {
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -236,17 +235,16 @@ export default function TypingComponent() {
         Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) / 100
       ).toFixed(2);
       const wpm = rawWPM * (Number(accuracy) / 100);
+      let consistency = Math.round(
+        Number(calculateStandardDeviation(wordAccuracies))
+      );
       socket.emit("complete-test", roomId, {
         wpm: Math.round(wpm) ? Math.round(wpm) : 0,
         raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
         accuracy: Math.round(Number(accuracy))
           ? Math.round(Number(accuracy))
           : 0,
-        consistency: Math.round(
-          Number(calculateStandardDeviation(wordAccuracies))
-        )
-          ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
-          : 0,
+        consistency: consistency ? consistency : 0,
         chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
         mode: mode,
       });
@@ -259,7 +257,7 @@ export default function TypingComponent() {
             : 0,
           consistency: Math.round(
             Number(calculateStandardDeviation(wordAccuracies))
-          )
+          ) 
             ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
             : 0,
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
@@ -273,7 +271,7 @@ export default function TypingComponent() {
     if (
       (testFinished.current && endTestTime && startTestTime) ||
       (countdown === 0 && endTestTime && startTestTime) ||
-      (afkTimer <= 0 && endTestTime && startTestTime && allUsersPresent)||
+      (afkTimer <= 0 && endTestTime && startTestTime && allUsersPresent) ||
       (startTestTime && endTestTime && userLeft)
     ) {
       const durationInSeconds =
