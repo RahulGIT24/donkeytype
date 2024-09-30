@@ -30,7 +30,7 @@ export default function MultiplayerResult() {
   const multiplayerinfo = useSelector((state: any) => state.multiplayer);
 
   const user = useSelector((state: any) => state.user.user);
-  const allUsersPresent = useSelector((state:any)=>state.multiplayer.allUsersPresent)
+  const userLeft = useSelector((state:any)=>state.multiplayer.userLeft)
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const dispatch = useDispatch();
 
@@ -48,7 +48,7 @@ export default function MultiplayerResult() {
     if (socketI) {
       setMultiplayer(false)
       socketI.emit("give-results", multiplayerinfo.roomId);
-      if(allUsersPresent)
+    
       socketI.on("Results", (users: any) => {
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];
@@ -96,9 +96,16 @@ export default function MultiplayerResult() {
         winnerRef.current = opponent;
       }
       submitResults();
+      console.log('pvp result before cleanup')
+      //state not being set
+      dispatch(setMultiplayer(false))
       socket.emit("cleanup",roomId)
     }
-  }, [opponent, opponent?.results]);
+  }, [opponent, opponent?.results,userLeft]);
+//test
+  useEffect(()=>{
+    dispatch(setMultiplayer(false))
+  },[navigate])
 
   const submitResults = async () => {
     await apiCall({

@@ -100,7 +100,9 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("leave-room", (roomId: string) => {
+    console.log('roommmmmmmmssss',rooms)
     const room = rooms[roomId];
+    console.log('roooooommmmmmmm',room)
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     if (userIndex != -1) {
       io.to(roomId).emit("User Left", socket.id);
@@ -113,12 +115,14 @@ io.on("connection", (socket: Socket) => {
 
   // destroy room when user creates new one
   socket.on("destroy-room", (roomId: string) => {
+    console.log('destroy room ')
     const room = rooms[roomId];
     if (!room) return;
     delete rooms[roomId];
   });
 
   socket.on("complete-test", (roomId: string, res: any) => {
+  console.log('complete test')
     const room = rooms[roomId];
     if (!room) return;
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
@@ -127,12 +131,14 @@ io.on("connection", (socket: Socket) => {
 
   // get room results based on id
   socket.on("give-results", (roomId: string) => {
+    console.log('give results')
     const room = rooms[roomId];
     if (!room) return;
     io.to(roomId).emit("Results", room.users);
   });
 
   socket.on("cleanup",(roomId:string)=>{
+    console.log('cleanup')
     const room = rooms[roomId];
     if(room){
       delete rooms[roomId];
@@ -146,7 +152,7 @@ io.on("connection", (socket: Socket) => {
       if (userIndex != -1) {
         room.users.splice(userIndex, 1);
         io.to(roomId).emit("User Left", socket.id);
-        // console.log("User Left")
+       console.log("User Left")
         if (room.users.length == 0) {
           delete rooms[roomId];
         }
