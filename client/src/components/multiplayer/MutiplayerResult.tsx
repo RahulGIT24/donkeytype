@@ -3,6 +3,7 @@ import MainNav from "../navbars/MainNav";
 import { useDispatch, useSelector } from "react-redux";
 import { socket } from "../../socket/socket";
 import {
+  setAllUsersPresent,
   setMultiplayer,
   setSocketId,
   setSocketInstance,
@@ -91,8 +92,11 @@ export default function MultiplayerResult() {
       }
       submitResults();
       dispatch(setMultiplayer(false));
+      dispatch(setAllUsersPresent(true))
     }
   }, [opponent, opponent?.results, userLeft]);
+
+
 
   const submitResults = async () => {
     // let oppoRes = null;
