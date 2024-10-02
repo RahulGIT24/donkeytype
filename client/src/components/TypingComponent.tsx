@@ -9,6 +9,7 @@ import {
 } from "../redux/reducers/statSlice";
 import { socket } from "../socket/socket";
 import {
+  setRes,
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
@@ -221,10 +222,11 @@ export default function TypingComponent() {
           multiplayer: isMultiplayer,
         })
       );
-      navigate("/pvp-result",{ replace:true });
+      navigate("/pvp-result", { replace: true });
     }
 
-    if (startTestTime && userLeft) {
+    if ((startTestTime && userLeft) || (startTestTime && !allUsersPresent)) {
+      console.log("leave res");
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -257,7 +259,24 @@ export default function TypingComponent() {
             : 0,
           consistency: Math.round(
             Number(calculateStandardDeviation(wordAccuracies))
-          ) 
+          )
+            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+            : 0,
+          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+          mode: mode,
+          multiplayer: isMultiplayer,
+        })
+      );
+      dispatch(
+        setRes({
+          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+          accuracy: Math.round(Number(accuracy))
+            ? Math.round(Number(accuracy))
+            : 0,
+          consistency: Math.round(
+            Number(calculateStandardDeviation(wordAccuracies))
+          )
             ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
             : 0,
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
@@ -339,6 +358,7 @@ export default function TypingComponent() {
     startTestTime,
     countdown,
     afkTimer,
+    allUsersPresent,
   ]);
 
   async function printWords(w: any) {

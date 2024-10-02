@@ -140,6 +140,12 @@ io.on("connection", (socket: Socket) => {
     io.to(roomId).emit("Results", room.users);
   });
 
+
+  //test
+  socket.on('leave-results',(data:any)=>{
+    io.to(data.roomId).emit("leave-results", data);//{userid ,results ,roomid}
+  })
+
   socket.on("cleanup", (roomId: string) => {
     console.log("cleanup");
     const room = rooms[roomId];
