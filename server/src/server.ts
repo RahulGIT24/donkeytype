@@ -149,7 +149,7 @@ io.on("connection", (socket: Socket) => {
       const room = rooms[roomId];
       const userIndex = room.users.findIndex((u) => u.id === socket.id);
 
-      if (userIndex) {
+      if (userIndex!=-1) {
         room.users[userIndex].results = {
           wpm: 0,
           raw: 0,
