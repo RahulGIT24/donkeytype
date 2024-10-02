@@ -12,9 +12,6 @@ import {
 export default function Home() {
   const dispatch = useDispatch();
   const socket = useSelector((state: any) => state.multiplayer.socketInstance);
-  const isMultiplayer = useSelector(
-    (state: any) => state.multiplayer.multiplayer
-  );
   const navigate = useNavigate();
   const { roomId } = useParams();
 
@@ -32,13 +29,6 @@ export default function Home() {
       socket.on("Not Verified", () => {
         toast.error("Room may be full or not existed");
         navigate("/");
-      });
-      socket.on("User Left", (socketId: string) => {
-        if (socketId !== mySocketId) {
-          toast.warning("User Left");
-        }
-        dispatch(setUserLeft(true));
-        dispatch(setAllUsersPresent(false));
       });
       socket.on("User Left", (socketId: string) => {
         if (socketId !== mySocketId) {

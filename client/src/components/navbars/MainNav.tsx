@@ -1,4 +1,4 @@
-import { Link, useFetcher, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowAltCircleLeft,
@@ -18,13 +18,11 @@ import { useEffect } from "react";
 import { socket } from "../../socket/socket";
 import {
   setAllUsersPresent,
-  setMultiplayer,
-  setRes,
+  // setRes,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
 import { setRecentTestResults } from "../../redux/reducers/statSlice";
-import { isImmutableDefault } from "@reduxjs/toolkit";
 
 export default function MainNav() {
   const isAuthenticated = useSelector(
@@ -36,28 +34,37 @@ export default function MainNav() {
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
 
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
+  // const res = useSelector((state: any) => state.multiplayer.res);
   const mode = useSelector((state: any) => state.setting.mode);
-  const res = useSelector((state: any) => state.multiplayer.res);
-  const allUsersPresent = useSelector(
-    (state: any) => state.multiplayer.allUsersPresent
-  );
+
   const disconnectFromRoom = () => {
+    dispatch(
+      setRecentTestResults({
+        wpm: 0,
+        raw: 0,
+        accuracy: 0,
+        consistency: 0,
+        chars: `${0}/${0}/${0}/${0}`,
+        mode: mode,
+        multiplayer: isMultiplayer,
+      })
+    );
+    socketI.emit("complete-test", roomId, {
+      wpm: 0,
+      raw: 0,
+      accuracy: 0,
+      consistency: 0,
+      chars: `${0}/${0}/${0}/${0}`,
+      mode: mode,
+    });
+    socketI.emit("leave-room", roomId);
+    navigate("/pvp-result", { replace: true });
+    // dispatch(setRes(null));
     dispatch(setAllUsersPresent(false));
   };
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-   if(res){
-    console.log('mainnav execution leave')
-      {dispatch(setRecentTestResults(res));
-      socketI.emit("complete-test", roomId, res);
-      socketI.emit("leave-room", roomId);
-      //dispatch(setMultiplayer(false));
-      navigate("/pvp-result", { replace: true });}
-      dispatch(setRes(null));
-    }
-  }, [allUsersPresent]);
   useEffect(() => {
     if (!socketI) {
       socket.connect();
@@ -116,7 +123,6 @@ export default function MainNav() {
                     </li>
                   </>
                 )}
-               
               </ul>
             </div>
           </li>

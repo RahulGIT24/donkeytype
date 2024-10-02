@@ -276,10 +276,11 @@ const History = () => {
     [limit]
   );
   const [disabled, setDisabled] = useState(false);
+  const [currentHistoryMode, setCurrentHistoryMode] = useState("NORMAL");
   const getHistory = async () => {
     const res = await apiCall({
       method: "GET",
-      url: `/stats/get-history?limit=${limit}`,
+      url: `/stats/get-history?limit=${limit}&mode=${currentHistoryMode}`,
     });
     if (res.data.totalResultFetched >= res.data.totalResults) {
       setDisabled(true);
@@ -291,11 +292,37 @@ const History = () => {
   };
   useEffect(() => {
     getHistory();
-  }, [limit]);
+  }, [limit, currentHistoryMode]);
+  const toogleMode = () => {
+    if (currentHistoryMode === "NORMAL") {
+      setCurrentHistoryMode("MULTIPLAYER");
+    } else {
+      setCurrentHistoryMode("NORMAL");
+    }
+  };
   return (
     <>
       <div className="bg-zinc-800 pt-3">
         <h1 className="text-2xl text-center">History</h1>
+        <div className="flex w-full my-3">
+          <button
+            className={`w-full p-3 ${
+              currentHistoryMode === "NORMAL" && "bg-zinc-200 text-zinc-900"
+            } hover:bg-white hover:text-zinc-900`}
+            onClick={toogleMode}
+          >
+            Normal
+          </button>
+          <button
+            className={`w-full p-3 ${
+              currentHistoryMode === "MULTIPLAYER" &&
+              "bg-zinc-200 text-zinc-900"
+            } hover:bg-white hover:text-zinc-900`}
+            onClick={toogleMode}
+          >
+            Multiplayer
+          </button>
+        </div>
         {history && history.length > 0 && (
           <TableHoc columns={columns} data={history} />
         )}

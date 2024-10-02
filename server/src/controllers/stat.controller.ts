@@ -3,6 +3,7 @@ import { History } from "../models/history.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { PipelineStage } from "mongoose";
+import { User } from "../models/user.model";
 
 interface DocumentType {
   user: ObjectId;
@@ -10,15 +11,16 @@ interface DocumentType {
   consistency: number;
   raw: number;
   wpm: number;
-  mode: string; 
+  mode: string;
 }
 
 const getHistory = asyncHandler(async (req, res) => {
   const user = req.user;
   const userId = user._id;
   const userObjectId = new ObjectId(userId);
-  const { limit } = req.query;
+  const { limit, mode } = req.query;
   const limitNumber = parseInt(limit as string, 10);
+  const multiplayer = mode === "NORMAL" ? false : true;
 
   if (isNaN(limitNumber) || limitNumber <= 0) {
     return res
@@ -38,7 +40,8 @@ const getHistory = asyncHandler(async (req, res) => {
   const result = await History.aggregate<{ total: number }>(pipeline);
   const total = result[0]?.total || 0;
 
-  const history = await History.find({ user: userId }).sort({createdAt:-1})
+  const history = await History.find({ user: userId, multiplayer: multiplayer })
+    .sort({ createdAt: -1 })
     .limit(limitNumber)
     .select("-user -__v");
 
@@ -113,7 +116,6 @@ const getAverageStats = asyncHandler(async (req, res) => {
       },
     },
   ];
-  
 
   const highestwpmpipeline: PipelineStage[] = [
     {
@@ -144,7 +146,9 @@ const getAverageStats = asyncHandler(async (req, res) => {
   const avg = await History.aggregate<DocumentType>(avgpipeline);
   const wpm = await History.aggregate<DocumentType>(highestwpmpipeline);
   const highest = await History.aggregate<DocumentType>(highestpipeline);
-  const lasTenAverages = await History.aggregate<DocumentType>(avgLast10Pipeline);
+  const lasTenAverages = await History.aggregate<DocumentType>(
+    avgLast10Pipeline
+  );
 
   if (!avg.length || !wpm.length || !highest.length) {
     return res.status(404).json(new ApiResponse(404, "No data found"));
@@ -157,38 +161,86 @@ const getAverageStats = asyncHandler(async (req, res) => {
       mode: wpm[0].mode,
     },
     max: highest[0],
-    lastTenAverages:lasTenAverages[0]
+    lastTenAverages: lasTenAverages[0],
   };
 
   return res.status(200).json(new ApiResponse(200, result));
 });
 
-const getResultStats = asyncHandler(async(req,res)=>{
-  const {id} = req.body
+const getResultStats = asyncHandler(async (req, res) => {
+  const { id } = req.body;
   const user = req.user;
-  if(!user || !user.id){
+  if (!user || !user.id) {
     return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
   }
   if (!ObjectId.isValid(id)) {
     return res.status(404).json(new ApiResponse(404, "Test Not found"));
   }
-  const history = await History.findById(new ObjectId(id))
-  if(!history){
+  const history = await History.findById(new ObjectId(id));
+  if (!history) {
     return res.status(404).json(new ApiResponse(404, "Test Not found"));
   }
-  const userId= user.id
-  if(history.user!=userId){
+  const userId = user.id;
+  if (history.user != userId) {
     return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
   }
-  const stats = {
-    wpm:Math.round(history.wpm),
-    raw:Math.round(history.raw),
-    accuracy:Math.round(history.accuracy),
-    consistency:Math.round(history.consistency),
-    mode:history.mode,
-    chars:history.chars
-  }
-  return res.status(200).json(new ApiResponse(200, stats));
-})
 
-export { getHistory, getAverageStats,getResultStats };
+  const isMultiplayer = history.multiplayer;
+  if (isMultiplayer) {
+    const roomId = history.roomId;
+    const opponentId = history.opponent;
+    const opponent = await User.findById(opponentId);
+    const opponentHistory = await History.findOne({
+      roomId: roomId,
+      multiplayer: true,
+      user: opponentId,
+    });
+    if (opponentHistory) {
+      const stats = {
+        user1:{
+          username:user?.username,
+          profilePic:user?.profilePic
+        },
+        user1Results: {
+          wpm: Math.round(history.wpm),
+          raw: Math.round(history.raw),
+          accuracy: Math.round(history.accuracy),
+          consistency: Math.round(history.consistency),
+          mode: history.mode,
+          chars: history.chars,
+          multiplayer: history.multiplayer,
+        },
+        user2:{
+          username:opponent?.username,
+          profilePic:opponent?.profilePic,
+        },
+        user2Results: {
+          wpm: Math.round(opponentHistory.wpm),
+          raw: Math.round(opponentHistory.raw),
+          accuracy: Math.round(opponentHistory.accuracy),
+          consistency: Math.round(opponentHistory.consistency),
+          mode: opponentHistory.mode,
+          chars: opponentHistory.chars,
+          multiplayer: opponentHistory.multiplayer,
+        },
+        winner: history.winner === opponentId ? false:true,
+        tie: history.tie,
+        multiplayer: true
+      };
+      return res.status(200).json(new ApiResponse(200, stats));
+    }
+  }
+
+  const stats = {
+    wpm: Math.round(history.wpm),
+    raw: Math.round(history.raw),
+    accuracy: Math.round(history.accuracy),
+    consistency: Math.round(history.consistency),
+    mode: history.mode,
+    chars: history.chars,
+    multiplayer: history.multiplayer,
+  };
+  return res.status(200).json(new ApiResponse(200, stats));
+});
+
+export { getHistory, getAverageStats, getResultStats };

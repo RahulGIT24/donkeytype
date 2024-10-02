@@ -10,7 +10,7 @@ export interface history extends Document{
     date:Date,
     user:mongoose.Schema.Types.ObjectId,
     opponent?:mongoose.Schema.Types.ObjectId,
-    multiplater:boolean,
+    multiplayer:boolean,
     winner?:mongoose.Schema.Types.ObjectId
     roomId?:string
     tie?:boolean
@@ -68,7 +68,7 @@ const schema = new mongoose.Schema<history>(
             type:Boolean,
             default:false
         },
-        multiplater:{
+        multiplayer:{
             type:Boolean,
             default:false,
         }

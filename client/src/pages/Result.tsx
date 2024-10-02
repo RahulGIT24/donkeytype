@@ -13,6 +13,7 @@ const Result = () => {
   const [errMessage, setErrMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(0);
+  const [multiplayer,setMultiplayer] = useState(false);
 
   const recentTestResults = useSelector(
     (state: any) => state.stats.recentTestResults
@@ -33,6 +34,8 @@ const Result = () => {
         id: id,
       },
     });
+    console.log(data)
+    setMultiplayer(data.multiplayer)
     setLoadingStatus(60);
     if (status == 200) {
       setResultStats(data);
@@ -96,7 +99,7 @@ const Result = () => {
       )}
       {!errMessage && resultStats && (
         <div className={`flex h-screen justify-center items-center`}>
-          <ResultComponent stats={resultStats} />
+          <ResultComponent stats={resultStats} multiplayer={multiplayer} />
         </div>
       )}
     </>
