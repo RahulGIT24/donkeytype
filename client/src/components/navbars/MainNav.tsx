@@ -59,7 +59,6 @@ export default function MainNav() {
     });
     socketI.emit("leave-room", roomId);
     navigate("/pvp-result", { replace: true });
-    // dispatch(setRes(null));
     dispatch(setAllUsersPresent(false));
   };
 

@@ -35,6 +35,7 @@ import statRouter from "./routes/stats.routes";
 import connectDB from "./db";
 import { Room } from "./types/types";
 import axios from "axios";
+import { saveTestInDB } from "./utils/saveMultiplayerResults";
 
 connectDB()
   .then(() => {
@@ -109,10 +110,6 @@ io.on("connection", (socket: Socket) => {
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     if (userIndex != -1) {
       io.to(roomId).emit("User Left", socket.id);
-      // room.users.splice(userIndex, 1);
-      // if (room.users.length == 0) {
-      //   delete rooms[roomId];
-      // }
     }
   });
 
@@ -121,38 +118,31 @@ io.on("connection", (socket: Socket) => {
     console.log("destroy room ");
     const room = rooms[roomId];
     if (!room) return;
-    delete rooms[roomId];
   });
 
-  socket.on("complete-test", (roomId: string, res: any) => {
-    console.log("complete test");
+  socket.on("complete-test", async(roomId: string, res: any) => {
     const room = rooms[roomId];
     if (!room) return;
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     room.users[userIndex].results = res;
+    if(await saveTestInDB({users:room.users as any, roomId})){
+      io.to(roomId).emit("test-completed");
+      // delete rooms[roomId]
+    }
   });
 
   // get room results based on id
   socket.on("give-results", (roomId: string) => {
-    console.log("give results");
     const room = rooms[roomId];
     if (!room) return;
     io.to(roomId).emit("Results", room.users);
   });
 
-
-  //test
-  socket.on('leave-results',(data:any)=>{
-    io.to(data.roomId).emit("leave-results", data);//{userid ,results ,roomid}
-  })
-
-  socket.on("cleanup", (roomId: string) => {
-    console.log("cleanup");
+  socket.on("cleanup",(roomId:string)=>{
     const room = rooms[roomId];
-    if (room) {
-      delete rooms[roomId];
-    }
-  });
+    if (!room) return;
+    delete rooms[roomId];
+  })
 
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
@@ -171,13 +161,6 @@ io.on("connection", (socket: Socket) => {
       }
 
       io.to(roomId).emit("User Left", socket.id);
-
-      // if (userIndex != -1) {
-      //   // room.users.splice(userIndex, 1);
-      //   if (room.users.length == 0) {
-      //     delete rooms[roomId];
-      //   }
-      // }
     }
   });
 });
@@ -194,7 +177,6 @@ const hitAPi = async () => {
   }
 };
 cron.schedule("* * * * *", async () => {
-  // console.log("Cron job started");
   await hitAPi();
 });
 

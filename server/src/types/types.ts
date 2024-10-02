@@ -22,3 +22,24 @@ export interface Room{
   users:SocketUser[],
   mode:any
 }
+
+export interface ITest {
+  users: IUserResult[];
+  roomId: string;
+}
+
+export interface IUserResult {
+  wpm: string;
+  raw: string;
+  accuracy: string;
+  consistency: string;
+  chars: string;
+  mode: string;
+  opponent: string;
+  userId?: string;
+  multiplayer?: boolean;
+  winner: string|null;
+  roomId?: string;
+  tie?: boolean;
+  results?: any;
+}

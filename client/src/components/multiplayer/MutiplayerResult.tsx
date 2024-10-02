@@ -3,18 +3,17 @@ import MainNav from "../navbars/MainNav";
 import { useDispatch, useSelector } from "react-redux";
 import { socket } from "../../socket/socket";
 import {
-  setAllUsersPresent,
   setMultiplayer,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import apiCall from "../../utils/apiCall";
 import ResultCard from "./ResultCard";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
+  const roomId = useSelector((state: any) => state.multiplayer.roomId);
   const [opponent, setOpponent] = useState<any>(null);
   const winnerRef = useRef<any>();
   let myScore = 0;
@@ -55,9 +54,16 @@ export default function MultiplayerResult() {
           results: opp.results,
           userId: opp.userId,
         });
+        if(opp.results){
+          socket.emit("cleanup",roomId)
+        }
       });
     }
   }, [socketI, socket]);
+
+  useEffect(()=>{
+    dispatch(setMultiplayer(false))
+  },[])
 
   // score calculator
   useEffect(() => {
@@ -90,36 +96,8 @@ export default function MultiplayerResult() {
         toast.info("You Lost!");
         winnerRef.current = opponent;
       }
-      submitResults();
-      dispatch(setMultiplayer(false));
-      dispatch(setAllUsersPresent(true))
     }
   }, [opponent, opponent?.results, userLeft]);
-
-
-
-  const submitResults = async () => {
-    await apiCall({
-      method: "POST",
-      url: `/type/complete-test`,
-      reqData: {
-        wpm: myResult.wpm ? myResult.wpm : 0,
-        raw: myResult.raw,
-        accuracy: myResult.accuracy,
-        consistency: myResult.consistency,
-        chars: myResult.chars,
-        mode: myResult.mode,
-        multiplayer: true,
-        winner:
-          winnerRef.current && winnerRef.current?.userId
-            ? winnerRef.current.userId
-            : null,
-        opponent: opponent.userId,
-        tie: winnerRef ? false : true,
-        roomId: multiplayerinfo.roomId,
-      },
-    });
-  };
 
   return (
     <>
