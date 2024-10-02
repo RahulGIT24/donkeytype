@@ -67,7 +67,7 @@ export default function TypingComponent() {
     }
   }, [socketI]);
 
-  useEffect(() => {
+/*   useEffect(() => {
     let afkinterval: any;
     if (startTimer <= 0) {
       afkinterval = setInterval(() => {
@@ -92,8 +92,16 @@ export default function TypingComponent() {
         clearInterval(afkinterval);
       }
     };
-  }, [startTimer]);
+  }, [startTimer]); */
 
+
+
+  //test timeout
+
+  function timeout(){
+    console.log('timeout')
+    setAfkTimer(-1);
+  }
   const calculateStandardDeviation = (arr: number[]) => {
     if (arr.length === 0) return 0;
 
@@ -197,7 +205,7 @@ export default function TypingComponent() {
     if (countdown === 0) {
       setEndTestTime(new Date());
     }
-    if (afkTimer === 0 && allUsersPresent) {
+    if (afkTimer <= 0 && allUsersPresent) {
       setStartTestTime(new Date());
       setEndTestTime(new Date());
     }
@@ -359,6 +367,7 @@ export default function TypingComponent() {
     countdown,
     afkTimer,
     allUsersPresent,
+    timeout
   ]);
 
   async function printWords(w: any) {
@@ -533,11 +542,12 @@ export default function TypingComponent() {
           {countdown}
         </h1>
       ) : null}
-      {afkTimer && isMultiplayer ? (
+      {/* {afkTimer && isMultiplayer ? (
         <h1 className="text-4xl text-right text-yellow-400 relative">
           Start typing before: {afkTimer}s
         </h1>
-      ) : null}
+      ) : null} */}
+      <AFKTimer startTimer={startTimer} allUsersPresent={allUsersPresent}setParentAfkTimer={setAfkTimer} isTestStarted={testStarted.current} isMultiplayer={isMultiplayer}/>
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
@@ -582,5 +592,44 @@ const MultiplayerTimer = ({ timer }: any) => {
     <h1 className="text-9xl text-left text-yellow-400 relative">
       {timer == 0 ? "GO!!!" : timer}
     </h1>
+  );
+};
+
+
+
+const AFKTimer = ({ startTimer, allUsersPresent, setParentAfkTimer, isTestStarted , isMultiplayer }: any) => {
+  const [afkTimer, setAfkTimer] = useState<any>(10);
+
+  useEffect(() => {
+    let afkinterval=null
+
+    if (startTimer <= 0 && allUsersPresent && !isTestStarted) {
+     
+      afkinterval = setInterval(() => {
+        setAfkTimer((prevCount:any) => {
+          if (prevCount > 1) {
+            return prevCount - 1;
+          } else {
+            clearInterval(afkinterval!);
+           setParentAfkTimer(-1)
+            return null;
+          }
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (afkinterval) {
+        clearInterval(afkinterval);
+      }
+    };
+  }, [startTimer, allUsersPresent, isTestStarted]);
+
+  if (afkTimer === null ||!isMultiplayer ||isTestStarted) return null; 
+
+  return (
+    <div className="text-4xl text-left text-yellow-400 relative countdow">
+      Start typing before: {afkTimer}s
+    </div>
   );
 };
