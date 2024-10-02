@@ -98,6 +98,10 @@ export default function TypingComponent() {
 
   //test timeout
 
+  function timeout(){
+    console.log('timeout')
+    setAfkTimer(-1);
+  }
   const calculateStandardDeviation = (arr: number[]) => {
     if (arr.length === 0) return 0;
 
@@ -362,7 +366,8 @@ export default function TypingComponent() {
     startTestTime,
     countdown,
     afkTimer,
-    allUsersPresent
+    allUsersPresent,
+    timeout
   ]);
 
   async function printWords(w: any) {
