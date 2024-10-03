@@ -67,7 +67,7 @@ export default function TypingComponent() {
     }
   }, [socketI]);
 
-/*   useEffect(() => {
+  /*   useEffect(() => {
     let afkinterval: any;
     if (startTimer <= 0) {
       afkinterval = setInterval(() => {
@@ -94,12 +94,10 @@ export default function TypingComponent() {
     };
   }, [startTimer]); */
 
-
-
   //test timeout
 
-  function timeout(){
-    console.log('timeout')
+  function timeout() {
+    console.log("timeout");
     setAfkTimer(-1);
   }
   const calculateStandardDeviation = (arr: number[]) => {
@@ -231,10 +229,16 @@ export default function TypingComponent() {
         })
       );
       navigate("/pvp-result", { replace: true });
+      setAfkTimer(10);
+    setScroll(0);
+    setStartTestTime(null);
     }
 
-    if ((startTestTime && userLeft) || (startTestTime && !allUsersPresent)) {
-      console.log("leave res");
+    if (
+      (startTestTime && userLeft) ||
+      (startTestTime && !allUsersPresent && isMultiplayer)
+    ) {
+      console.log("leave res", startTestTime, userLeft, allUsersPresent);
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -293,6 +297,10 @@ export default function TypingComponent() {
         })
       );
       navigate("/pvp-result", { replace: true });
+      setAfkTimer(10);
+    setScroll(0);
+    setStartTestTime(null);
+    testFinished.current= false;
     }
 
     if (
@@ -353,7 +361,13 @@ export default function TypingComponent() {
       } else {
         navigate(`/result`, { replace: true });
       }
+      setAfkTimer(10);
+    setScroll(0);
+    setStartTestTime(null);
+    testFinished.current= false;
+
     }
+    
   }, [
     userLeft,
     totalLettersTyped,
@@ -367,7 +381,6 @@ export default function TypingComponent() {
     countdown,
     afkTimer,
     allUsersPresent,
-    timeout
   ]);
 
   async function printWords(w: any) {
@@ -547,7 +560,13 @@ export default function TypingComponent() {
           Start typing before: {afkTimer}s
         </h1>
       ) : null} */}
-      <AFKTimer startTimer={startTimer} allUsersPresent={allUsersPresent}setParentAfkTimer={setAfkTimer} isTestStarted={testStarted.current} isMultiplayer={isMultiplayer}/>
+      <AFKTimer
+        startTimer={startTimer}
+        allUsersPresent={allUsersPresent}
+        setParentAfkTimer={setAfkTimer}
+        isTestStarted={testStarted.current}
+        isMultiplayer={isMultiplayer}
+      />
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
@@ -595,23 +614,26 @@ const MultiplayerTimer = ({ timer }: any) => {
   );
 };
 
-
-
-const AFKTimer = ({ startTimer, allUsersPresent, setParentAfkTimer, isTestStarted , isMultiplayer }: any) => {
+const AFKTimer = ({
+  startTimer,
+  allUsersPresent,
+  setParentAfkTimer,
+  isTestStarted,
+  isMultiplayer,
+}: any) => {
   const [afkTimer, setAfkTimer] = useState<any>(10);
 
   useEffect(() => {
-    let afkinterval=null
+    let afkinterval = null;
 
     if (startTimer <= 0 && allUsersPresent && !isTestStarted) {
-     
       afkinterval = setInterval(() => {
-        setAfkTimer((prevCount:any) => {
+        setAfkTimer((prevCount: any) => {
           if (prevCount > 1) {
             return prevCount - 1;
           } else {
             clearInterval(afkinterval!);
-           setParentAfkTimer(-1)
+            setParentAfkTimer(-1);
             return null;
           }
         });
@@ -625,7 +647,7 @@ const AFKTimer = ({ startTimer, allUsersPresent, setParentAfkTimer, isTestStarte
     };
   }, [startTimer, allUsersPresent, isTestStarted]);
 
-  if (afkTimer === null ||!isMultiplayer ||isTestStarted) return null; 
+  if (afkTimer === null || !isMultiplayer || isTestStarted) return null;
 
   return (
     <div className="text-4xl text-left text-yellow-400 relative countdow">
