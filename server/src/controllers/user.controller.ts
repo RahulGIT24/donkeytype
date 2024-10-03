@@ -257,6 +257,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
 const refresh = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.body.refreshToken || req.cookies.refreshToken;
+  console.log(incomingRefreshToken)
 
   if (!incomingRefreshToken) {
     return res.status(404).json(new ApiResponse(404, "Refresh Token Not Found"));

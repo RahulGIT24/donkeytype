@@ -11,6 +11,7 @@ import {
 import MainNav from "./navbars/MainNav";
 import ResultCard from "./multiplayer/ResultCard";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 ChartJS.register(
   CategoryScale,
@@ -59,22 +60,24 @@ export default function ResultComponent({
     ],
   };
 
-  const [user1Message,setUser1Message] = useState("")
-  const [user2Message,setUser2Message] = useState("")
-  const [tieMessage,setTieMessage] = useState<string | null>(null);
+  const userId = useSelector((state:any)=>state.user.user._id)
+
+  const [user1Message, setUser1Message] = useState("");
+  const [user2Message, setUser2Message] = useState("");
+  const [tieMessage, setTieMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if(stats.winner===true && stats.tie === false){
+    if (stats.winner === userId && stats.tie === false) {
       document.querySelector("#user1")?.classList.add("border-win");
       document.querySelector("#user2")?.classList.add("border-loose");
-      setUser1Message("Winner")
-      setUser2Message("Loser")
-    }else if(stats.winner===false && stats.tie === false){
+      setUser1Message("Winner");
+      setUser2Message("Loser");
+    } else if (stats.winner !== userId && stats.tie === false) {
       document.querySelector("#user2")?.classList.add("border-win");
       document.querySelector("#user1")?.classList.add("border-loose");
-      setUser2Message("Winner")
-      setUser1Message("Loser")
-    }else{  
+      setUser2Message("Winner");
+      setUser1Message("Loser");
+    } else {
       setTieMessage("Match Tied");
     }
   }, [stats]);
@@ -122,21 +125,23 @@ export default function ResultComponent({
         <>
           <MainNav />
           <div className=" flex justify-center items-center w-full h-full absolute text-white overflow-hidden">
-            <div className="flex justify-center items-center h-[100%] w-[50%] flex-col" >
+            <div className="flex justify-center items-center h-[100%] w-[50%] flex-col">
               <ResultCard
                 user={stats.user1}
                 stats={stats.user1Results}
                 id={"user1"}
-                />
-              {
-                !tieMessage  &&
-                <p className="font-semibold text-4xl mt-5 text-yellow-400 shadow-md shadow-yellow-600 p-4 bg-black">{user1Message}</p>
-              }
+              />
+              {!tieMessage && (
+                <p className="font-semibold text-4xl mt-5 text-yellow-400 shadow-md shadow-yellow-600 p-4 bg-black">
+                  {user1Message}
+                </p>
+              )}
             </div>
-            {
-              tieMessage&&
-              <p className="font-semibold text-4xl mt-5 text-yellow-400 shadow-md shadow-yellow-600 p-4 absolute bg-black z-40">{tieMessage}</p>
-            }
+            {tieMessage && (
+              <p className="font-semibold text-4xl mt-5 text-yellow-400 shadow-md shadow-yellow-600 p-4 absolute bg-black z-40">
+                {tieMessage}
+              </p>
+            )}
             <hr className="w-screen fixed  rotate-90 border-none bg-yellow-500 h-[2px]" />
             <div className="flex justify-center items-center h-screen w-[50%] flex-col">
               <ResultCard
@@ -144,10 +149,11 @@ export default function ResultComponent({
                 stats={stats.user2Results}
                 id={"user2"}
               />
-              {
-                !tieMessage  &&
-              <p className="font-semibold text-4xl mt-5 text-yellow-400 shadow-md shadow-yellow-600 p-4 bg-black">{user2Message}</p>
-              }
+              {!tieMessage && (
+                <p className="font-semibold text-4xl mt-5 text-yellow-400 shadow-md shadow-yellow-600 p-4 bg-black">
+                  {user2Message}
+                </p>
+              )}
             </div>
           </div>
         </>

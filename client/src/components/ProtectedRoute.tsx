@@ -3,7 +3,6 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { revertInitial, setAuth, setUser } from "../redux/reducers/userSlice";
 import { getUser } from "../utils/getUser";
-import { refresh } from "../utils/refreshToken";
 import { logout } from "../utils/logout";
 import Loader from "./Loader";
 import { invalidateState } from "../redux/reducers/multiplayerSlice";
@@ -35,14 +34,11 @@ const ProtectedRoute = () => {
         }, 700);
       } else if (status === 401) {
         setIsLoading(false);
-        if (await refresh()) {
-          await checkAuth();
-        } else {
-          if (!isAuthenticated) {
-            await logout()
-            dispatch(revertInitial);
-            dispatch(invalidateState())
-          }
+
+        if (!isAuthenticated) {
+          await logout();
+          dispatch(revertInitial);
+          dispatch(invalidateState());
         }
       }
     };

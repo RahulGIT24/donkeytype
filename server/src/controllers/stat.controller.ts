@@ -223,7 +223,7 @@ const getResultStats = asyncHandler(async (req, res) => {
           chars: opponentHistory.chars,
           multiplayer: opponentHistory.multiplayer,
         },
-        winner: history.winner === opponentId ? false:true,
+        winner: history.winner,
         tie: history.tie,
         multiplayer: true
       };

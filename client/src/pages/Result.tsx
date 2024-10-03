@@ -34,7 +34,6 @@ const Result = () => {
         id: id,
       },
     });
-    console.log(data)
     setMultiplayer(data.multiplayer)
     setLoadingStatus(60);
     if (status == 200) {
