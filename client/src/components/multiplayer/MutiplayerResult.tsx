@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ResultCard from "./ResultCard";
+import { setAfkTimer, setAfkTimerRunning } from "../../redux/reducers/typeSettingSlice";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
@@ -41,6 +42,8 @@ export default function MultiplayerResult() {
         dispatch(setSocketInstance(socket));
       }
     }
+    dispatch(setAfkTimer(10))
+    dispatch(setAfkTimerRunning(true))
   }, [socketI]);
 
   useEffect(() => {

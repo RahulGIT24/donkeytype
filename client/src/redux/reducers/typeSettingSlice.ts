@@ -7,7 +7,9 @@ const initialState: ISetting = {
   time: null,
   currentMode:"Words 10",
   typeOfText:[],
-  mode:""
+  mode:"",
+  afkTimer:10,
+  afkTimerRunning:true
 };
 
 const typeSlice: any = createSlice({
@@ -37,6 +39,12 @@ const typeSlice: any = createSlice({
     filterTypeOfText: (state, action) => {
       state.typeOfText = state.typeOfText.filter((item:string) => item !== action.payload);
     },
+    setAfkTimer: (state, action) => {
+      state.afkTimer = action.payload
+    },
+    setAfkTimerRunning:(state,action)=>{
+      state.afkTimerRunning = action.payload;
+    },
     resetState:(state)=>{
       state.type = null;
       state.type=null,
@@ -47,5 +55,5 @@ const typeSlice: any = createSlice({
     }
   },
 });
-export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText,resetState,setMode } = typeSlice.actions;
+export const { setSetting,setCurrentMode,setTypeOfText,filterTypeOfText,resetState,setMode,setAfkTimer,setAfkTimerRunning } = typeSlice.actions;
 export default typeSlice.reducer;

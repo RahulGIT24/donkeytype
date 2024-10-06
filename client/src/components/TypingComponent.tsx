@@ -13,7 +13,8 @@ import {
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
-import { setMode } from "../redux/reducers/typeSettingSlice";
+import { setAfkTimerRunning, setMode } from "../redux/reducers/typeSettingSlice";
+import AfkTimer from "./multiplayer/AfkTimer";
 
 export default function TypingComponent() {
   const [typeString, setTypeString] = useState<JSX.Element[]>([]);
@@ -40,7 +41,6 @@ export default function TypingComponent() {
   const [scroll, setScroll] = useState(0);
   const [countdown, setCountDown] = useState(setting.time);
   const [startTimer, setStartTimer] = useState(3);
-  const [afkTimer, setAfkTimer] = useState<any>(10);
   const mode = useSelector((state: any) => state.setting.mode);
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
@@ -140,6 +140,7 @@ export default function TypingComponent() {
   }, [testStarted.current]);
 
   const startTest = async () => {
+    dispatch(setAfkTimerRunning(false))
     testFinished.current = false;
     testStarted.current = true;
     removeClass(document.getElementById("typing-area"), "blur-sm");
@@ -157,22 +158,15 @@ export default function TypingComponent() {
     dispatch(revertRecentTestResults());
   }, []);
 
-  useEffect(() => {
-    if (afkTimer <= 0 && !testStarted.current) setEndTestTime(new Date());
-  }, [afkTimer]);
-
   const userLeft = useSelector((state: any) => state.multiplayer.userLeft);
+  const currTimer = useSelector((state: any) => state.setting.afkTimer);
 
   useEffect(() => {
     if (countdown === 0) {
       setEndTestTime(new Date());
     }
-    if (afkTimer <= 0 && allUsersPresent) {
-      setStartTestTime(new Date());
-      setEndTestTime(new Date());
-    }
 
-    if (!startTestTime && !endTestTime && userLeft) {
+    if ((!startTestTime && !endTestTime && userLeft) || currTimer == 0) {
       socket.emit("complete-test", roomId, {
         wpm: 0,
         raw: 0,
@@ -193,14 +187,12 @@ export default function TypingComponent() {
         })
       );
       navigate("/pvp-result", { replace: true });
-      setAfkTimer(10);
-    setScroll(0);
-    setStartTestTime(null);
+      setScroll(0);
+      setStartTestTime(null);
     }
 
     if (
-      (startTestTime && userLeft) ||
-      (startTestTime && !allUsersPresent && isMultiplayer)
+      (startTestTime && userLeft) 
     ) {
       const endTestT = new Date();
       const durationInSeconds =
@@ -260,16 +252,14 @@ export default function TypingComponent() {
         })
       );
       navigate("/pvp-result", { replace: true });
-      setAfkTimer(10);
-    setScroll(0);
-    setStartTestTime(null);
-    testFinished.current= false;
+      setScroll(0);
+      setStartTestTime(null);
+      testFinished.current = false;
     }
 
     if (
       (testFinished.current && endTestTime && startTestTime) ||
       (countdown === 0 && endTestTime && startTestTime) ||
-      (afkTimer <= 0 && endTestTime && startTestTime && allUsersPresent) ||
       (startTestTime && endTestTime && userLeft)
     ) {
       const durationInSeconds =
@@ -324,13 +314,10 @@ export default function TypingComponent() {
       } else {
         navigate(`/result`, { replace: true });
       }
-      setAfkTimer(10);
-    setScroll(0);
-    setStartTestTime(null);
-    testFinished.current= false;
-
+      setScroll(0);
+      setStartTestTime(null);
+      testFinished.current = false;
     }
-    
   }, [
     userLeft,
     totalLettersTyped,
@@ -342,8 +329,8 @@ export default function TypingComponent() {
     endTestTime,
     startTestTime,
     countdown,
-    afkTimer,
     allUsersPresent,
+    currTimer
   ]);
 
   async function printWords(w: any) {
@@ -374,7 +361,7 @@ export default function TypingComponent() {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
-  }, [setting.words, scroll,navigate,setting.wordNumber]);
+  }, [setting.words, scroll, navigate, setting.wordNumber]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
@@ -463,7 +450,6 @@ export default function TypingComponent() {
             : 1;
 
         setWordAccuracies((prev) => [...prev, wordAccuracy]);
-        // console.log(correctLettersInWord, totalLettersInWord, wordAccuracy);
       }
 
       setTotalLettersTyped((prev) => prev + 1);
@@ -513,23 +499,7 @@ export default function TypingComponent() {
     <MultiplayerTimer timer={startTimer} />
   ) : (
     <>
-      {countdown && countdown !== 0 ? (
-        <h1 className="text-4xl text-left text-yellow-400 relative countdown">
-          {countdown}
-        </h1>
-      ) : null}
-      {/* {afkTimer && isMultiplayer ? (
-        <h1 className="text-4xl text-right text-yellow-400 relative">
-          Start typing before: {afkTimer}s
-        </h1>
-      ) : null} */}
-      <AFKTimer
-        startTimer={startTimer}
-        allUsersPresent={allUsersPresent}
-        setParentAfkTimer={setAfkTimer}
-        isTestStarted={testStarted.current}
-        isMultiplayer={isMultiplayer}
-      />
+      {isMultiplayer && <AfkTimer />}
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
@@ -577,44 +547,44 @@ const MultiplayerTimer = ({ timer }: any) => {
   );
 };
 
-const AFKTimer = ({
-  startTimer,
-  allUsersPresent,
-  setParentAfkTimer,
-  isTestStarted,
-  isMultiplayer,
-}: any) => {
-  const [afkTimer, setAfkTimer] = useState<any>(10);
+// const AFKTimer = ({
+//   startTimer,
+//   allUsersPresent,
+//   setParentAfkTimer,
+//   isTestStarted,
+//   isMultiplayer,
+// }: any) => {
+//   const [afkTimer, setAfkTimer] = useState<any>(10);
 
-  useEffect(() => {
-    let afkinterval = null;
+//   useEffect(() => {
+//     let afkinterval = null;
 
-    if (startTimer <= 0 && allUsersPresent && !isTestStarted) {
-      afkinterval = setInterval(() => {
-        setAfkTimer((prevCount: any) => {
-          if (prevCount > 1) {
-            return prevCount - 1;
-          } else {
-            clearInterval(afkinterval!);
-            setParentAfkTimer(-1);
-            return null;
-          }
-        });
-      }, 1000);
-    }
+//     if (startTimer <= 0 && allUsersPresent && !isTestStarted) {
+//       afkinterval = setInterval(() => {
+//         setAfkTimer((prevCount: any) => {
+//           if (prevCount > 1) {
+//             return prevCount - 1;
+//           } else {
+//             clearInterval(afkinterval!);
+//             setParentAfkTimer(-1);
+//             return null;
+//           }
+//         });
+//       }, 1000);
+//     }
 
-    return () => {
-      if (afkinterval) {
-        clearInterval(afkinterval);
-      }
-    };
-  }, [startTimer, allUsersPresent, isTestStarted]);
+//     return () => {
+//       if (afkinterval) {
+//         clearInterval(afkinterval);
+//       }
+//     };
+//   }, [startTimer, allUsersPresent, isTestStarted]);
 
-  if (afkTimer === null || !isMultiplayer || isTestStarted) return null;
+//   if (afkTimer === null || !isMultiplayer || isTestStarted) return null;
 
-  return (
-    <div className="text-4xl text-left text-yellow-400 relative countdow">
-      Start typing before: {afkTimer}s
-    </div>
-  );
-};
+//   return (
+//     <div className="text-4xl text-left text-yellow-400 relative countdow">
+//       Start typing before: {afkTimer}s
+//     </div>
+//   );
+// };

@@ -26,4 +26,6 @@ export interface ISetting{
   currentMode: string | null,
   typeOfText:any
   mode?:string
+  afkTimer?:Number
+  afkTimerRunning?:boolean
 }
