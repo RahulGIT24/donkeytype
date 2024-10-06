@@ -67,39 +67,6 @@ export default function TypingComponent() {
     }
   }, [socketI]);
 
-  /*   useEffect(() => {
-    let afkinterval: any;
-    if (startTimer <= 0) {
-      afkinterval = setInterval(() => {
-        setAfkTimer((prevCount: any) => {
-          if (testStarted.current) {
-            clearInterval(afkinterval!);
-            return null;
-          } else if (!allUsersPresent) {
-            clearInterval(afkinterval!);
-            return;
-          } else if (prevCount <= 1) {
-            clearInterval(afkinterval!);
-
-            return 0;
-          }
-          return prevCount - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (afkinterval) {
-        clearInterval(afkinterval);
-      }
-    };
-  }, [startTimer]); */
-
-  //test timeout
-
-  function timeout() {
-    console.log("timeout");
-    setAfkTimer(-1);
-  }
   const calculateStandardDeviation = (arr: number[]) => {
     if (arr.length === 0) return 0;
 
@@ -131,12 +98,9 @@ export default function TypingComponent() {
   }, [setting.time]);
 
   const getWords = async (value: any) => {
-    let typeOfText = "words";
-    console.log(typeOfText);
     let mode = `Words ${value}`;
     if (setting.time) {
       value = 30;
-      typeOfText = "time";
       mode = `Time ${setting.time} S`;
     }
     const { data } = await apiCall({
@@ -238,7 +202,6 @@ export default function TypingComponent() {
       (startTestTime && userLeft) ||
       (startTestTime && !allUsersPresent && isMultiplayer)
     ) {
-      console.log("leave res", startTestTime, userLeft, allUsersPresent);
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -411,7 +374,7 @@ export default function TypingComponent() {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
-  }, [setting.words, scroll]);
+  }, [setting.words, scroll,navigate,setting.wordNumber]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
