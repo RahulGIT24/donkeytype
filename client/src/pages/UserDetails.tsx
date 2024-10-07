@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import MainNav from "../components/navbars/MainNav";
 import apiCall from "../utils/apiCall";
 import TableHoc from "../components/TableHOC";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { setHistory, setUserAverageStats } from "../redux/reducers/statSlice";
@@ -36,12 +36,16 @@ export function UserCard({
 }) {
   return (
     <>
-      <div className="flex bg-zinc-800 p-4 rounded-md mx-2 group border border-transparent hover:border-yellow-500 duration-300 w-full h-[25vh]">
+      <div className="flex bg-zinc-800 p-4 rounded-md mx-2 border border-transparent   duration-300 w-full h-[25vh]">
+        <Link to={'/pfp-selector'}>
         <img
           src={user.profilePic}
           alt="loading"
-          className=" bg-white w-40 h-40 rounded-full invert border-4 group-hover:border-blue-500 duration-300"
+          className=" bg-white w-40 h-40 rounded-full border-4 "
+          title="Change profile pic"
+          
         />
+        </Link>
         <div className="flex relative top-12 -right-10 flex-col gap-4 group-hover:text-yellow-500 duration-300">
           <p className="text-4xl">{user.username}</p>
           {joinedon && (

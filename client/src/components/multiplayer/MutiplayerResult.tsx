@@ -48,6 +48,7 @@ export default function MultiplayerResult() {
 
   useEffect(() => {
     if (socket) {
+
       socket.emit("give-results", multiplayerinfo.roomId);
       socket.on("Results", (users: any) => {
         const arr = users.filter((u: any) => u.userId !== user._id);
@@ -61,6 +62,9 @@ export default function MultiplayerResult() {
           socket.emit("cleanup",roomId)
         }
       });
+      console.log('this ran')
+      dispatch(setAfkTimer(10))
+      dispatch(setAfkTimerRunning(true))
     }
   }, [socketI, socket]);
 

@@ -23,6 +23,7 @@ import CreateRoom from "./components/multiplayer/CreateRoom";
 import JoinRoom from "./components/multiplayer/JoinRoom";
 import { initializeSocket } from "./redux/reducers/multiplayerSlice";
 import MultiplayerResult from "./components/multiplayer/MutiplayerResult";
+import ProfilePic from "./pages/ProfilePic";
 
 function App() {
   const isAuthenticated = useSelector(
@@ -51,6 +52,7 @@ function App() {
             )
           }
         />
+      
         <Route
           path="/forgotPassword"
           element={
@@ -71,6 +73,7 @@ function App() {
         />
         <Route element={<ProtectedRoute />}>
           <Route path="/:roomId?" element={<Home />} />
+          <Route path="/pfp-selector" element={<ProfilePic />} />
           <Route path="/account" element={<UserDetails />} />
           <Route path="/join-room" element={<JoinRoom />} />
           <Route path="/create-room" element={<CreateRoom />} />
