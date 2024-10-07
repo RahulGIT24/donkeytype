@@ -126,7 +126,8 @@ io.on("connection", (socket: Socket) => {
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     room.users[userIndex].results = res;
     if(await saveTestInDB({users:room.users as any, roomId})){
-      io.to(roomId).emit("test-completed",room.users);
+      io.to(roomId).emit("test-completed");
+      // delete rooms[roomId]
     }
   });
 

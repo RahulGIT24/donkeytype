@@ -48,8 +48,8 @@ export default function MultiplayerResult() {
 
   useEffect(() => {
     if (socket) {
-      // socket.emit("give-results", multiplayerinfo.roomId);
-      socket.on("test-completed", (users: any) => {
+      socket.emit("give-results", multiplayerinfo.roomId);
+      socket.on("Results", (users: any) => {
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];
         setOpponent({

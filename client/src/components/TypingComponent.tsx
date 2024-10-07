@@ -13,7 +13,7 @@ import {
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
-import { setAfkTimer, setAfkTimerRunning, setMode } from "../redux/reducers/typeSettingSlice";
+import { setAfkTimer, setAfkTimerRunning, setMode, setTime } from "../redux/reducers/typeSettingSlice";
 import AfkTimer from "./multiplayer/AfkTimer";
 
 export default function TypingComponent() {
@@ -48,6 +48,11 @@ export default function TypingComponent() {
   const allUsersPresent = useSelector(
     (state: any) => state.multiplayer.allUsersPresent
   );
+
+  useEffect(()=>{
+    dispatch(setTime())
+  },[])
+
   useEffect(() => {
     if (isMultiplayer) {
       if (!socketI) {
@@ -367,7 +372,7 @@ export default function TypingComponent() {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
-  }, [setting.words, scroll, navigate, setting.wordNumber,setting.typeOfText]);
+  }, [setting.words, scroll, navigate, setting.wordNumber,setting.typeOfText,setting.time]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
