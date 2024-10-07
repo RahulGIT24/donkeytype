@@ -46,9 +46,9 @@ export default function Home() {
     };
   }, [socket]);
   
-  useEffect(() => {
+/*   useEffect(() => {
     console.log(allUsersPresent);
-  }, [allUsersPresent]);
+  }, [allUsersPresent]); */
 
   return (
     <>
