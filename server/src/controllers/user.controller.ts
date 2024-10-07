@@ -32,7 +32,9 @@ const generateAccessandRefreshToken = async (userId: string) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, username, password } = req.body;
   if ([name, email, username, password].some((field) => field.trim() === "")) {
-    return res.status(400).json(new ApiResponse(400, "Please send all the data"));
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "Please send all the data"));
   }
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
@@ -161,10 +163,10 @@ const login = asyncHandler(async (req, res) => {
     user.id
   );
 
-  const options:CookieOptions = {
+  const options: CookieOptions = {
     httpOnly: true,
     secure: true,
-    sameSite:'none'
+    sameSite: "none",
   };
 
   return res
@@ -238,7 +240,7 @@ const changePassword = asyncHandler(async (req, res) => {
   }
   const user = await User.findOne({ forgotPasswordToken: token });
   if (!user) {
-    return res.status(401).json(new ApiResponse(401,"Session Expired"));
+    return res.status(401).json(new ApiResponse(401, "Session Expired"));
   }
   const currDate = new Date();
   if (currDate > user.forgotPasswordTokenExpiry) {
@@ -256,9 +258,12 @@ const changePassword = asyncHandler(async (req, res) => {
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.body.refreshToken || req.cookies.refreshToken;
+  const incomingRefreshToken =
+    req.body.refreshToken || req.cookies.refreshToken;
   if (!incomingRefreshToken) {
-    return res.status(404).json(new ApiResponse(404, "Refresh Token Not Found"));
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Refresh Token Not Found"));
   }
 
   const decodedToken = jwt.verify(
@@ -272,7 +277,7 @@ const refresh = asyncHandler(async (req, res) => {
     return res.status(401).json(new ApiResponse(401, "Token Expired"));
   }
 
-  if(incomingRefreshToken != user?.refreshToken){
+  if (incomingRefreshToken != user?.refreshToken) {
     return res.status(404).json(new ApiResponse(404, "Invalid Refresh Token"));
   }
 
@@ -281,44 +286,63 @@ const refresh = asyncHandler(async (req, res) => {
     secure: true,
   };
 
-  const { accessToken, refreshToken } = await generateAccessandRefreshToken(user?.id);
+  const { accessToken, refreshToken } = await generateAccessandRefreshToken(
+    user?.id
+  );
 
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(new ApiResponse(200, "Access token refreshed"));
-
 });
 
-const logoutUser = asyncHandler(async(req, res) => {
+const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
-      req.user._id,
-      {
-          $unset: {
-              refreshToken: 1
-          }
+    req.user._id,
+    {
+      $unset: {
+        refreshToken: 1,
       },
-      {
-          new: true
-      }
-  )
+    },
+    {
+      new: true,
+    }
+  );
 
   const options = {
-      httpOnly: true,
-      secure: true
-  }
+    httpOnly: true,
+    secure: true,
+  };
 
   return res
-  .status(200)
-  .clearCookie("accessToken", options)
-  .clearCookie("refreshToken", options)
-  .json(new ApiResponse(200, "User logged Out"))
-})
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, "User logged Out"));
+});
 
-const getUser = asyncHandler(async(req,res)=>{
-  return res.status(200).send(new ApiResponse(200,req.user))
-})
+const getUser = asyncHandler(async (req, res) => {
+  return res.status(200).send(new ApiResponse(200, req.user));
+});
+
+const profilePic = asyncHandler(async (req, res) => {
+  const { pfp } = req.body;
+  const userid = req.user._id;
+  const user = await User.findByIdAndUpdate(userid, {
+    profilePic: pfp,
+    new: true,
+  }).select(
+    "_id  name username testStarted testCompleted profilePic createdAt"
+  );
+;
+
+if(!user){
+  return res.status(500).send(new ApiResponse(500, "Server error"));
+}
+return res.status(200).send(new ApiResponse(200, user));
+
+});
 
 export {
   registerUser,
@@ -328,5 +352,6 @@ export {
   changePassword,
   refresh,
   logoutUser,
-  getUser
+  getUser,
+  profilePic,
 };

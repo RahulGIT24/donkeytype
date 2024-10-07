@@ -13,7 +13,7 @@ import {
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
-import { setAfkTimerRunning, setMode } from "../redux/reducers/typeSettingSlice";
+import { setAfkTimer, setAfkTimerRunning, setMode } from "../redux/reducers/typeSettingSlice";
 import AfkTimer from "./multiplayer/AfkTimer";
 
 export default function TypingComponent() {
@@ -189,6 +189,8 @@ export default function TypingComponent() {
       navigate("/pvp-result", { replace: true });
       setScroll(0);
       setStartTestTime(null);
+      dispatch(setAfkTimerRunning(true))
+      dispatch(setAfkTimer(10));
     }
 
     if (
@@ -255,6 +257,8 @@ export default function TypingComponent() {
       setScroll(0);
       setStartTestTime(null);
       testFinished.current = false;
+      dispatch(setAfkTimerRunning(true))
+      dispatch(setAfkTimer(10));
     }
 
     if (
@@ -317,6 +321,8 @@ export default function TypingComponent() {
       setScroll(0);
       setStartTestTime(null);
       testFinished.current = false;
+      dispatch(setAfkTimerRunning(true))
+      dispatch(setAfkTimer(10));
     }
   }, [
     userLeft,
