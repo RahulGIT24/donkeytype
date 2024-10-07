@@ -24,6 +24,6 @@ export default function AfkTimer() {
   return afkTimerRunning ? (
     <p className="text-yellow-400 text-lg">Start Typing In: {currTimer}</p>
   ) : (
-    <>{afkTimerRunning?'true':"false"}</>
+    <></>
   );
 }

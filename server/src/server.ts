@@ -39,12 +39,12 @@ import { saveTestInDB } from "./utils/saveMultiplayerResults";
 
 connectDB()
   .then(() => {
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log("Server Listening on port ", PORT);
     });
   })
   .catch((e) => {
-    console.log("Database Error");
+    console.log(e);
   });
 
 app.use("/donkeyapi/v1/users", userRouter);
@@ -126,8 +126,7 @@ io.on("connection", (socket: Socket) => {
     const userIndex = room.users.findIndex((u) => u.id === socket.id);
     room.users[userIndex].results = res;
     if(await saveTestInDB({users:room.users as any, roomId})){
-      io.to(roomId).emit("test-completed");
-      // delete rooms[roomId]
+      io.to(roomId).emit("test-completed",room.users);
     }
   });
 
@@ -180,6 +179,6 @@ cron.schedule("* * * * *", async () => {
   await hitAPi();
 });
 
-httpServer.listen(process.env.SOCKET_PORT, () => {
-  console.log("Socket Port is listening on PORT", process.env.SOCKET_PORT);
-});
+// httpServer.listen(process.env.SOCKET_PORT, () => {
+//   console.log("Socket Port is listening on PORT", process.env.SOCKET_PORT);
+// });

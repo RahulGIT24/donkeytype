@@ -25,6 +25,9 @@ const userSlice: any = createSlice({
     setUser: (state, action) => {
       state.user = action.payload;
     },
+    setpfp: (state, action) => {
+      state.user.profilePic = action.payload;
+    },
     setAuth: (state, action) => {
       state.isAuthenticated = action.payload;
     },
@@ -34,5 +37,5 @@ const userSlice: any = createSlice({
     },
   },
 });
-export const { setUser, setAuth, revertInitial } = userSlice.actions;
+export const { setUser, setAuth, revertInitial,setpfp } = userSlice.actions;
 export default userSlice.reducer;
