@@ -17,7 +17,8 @@ const initialState: IMultiplayer = {
   multiplayer: false,
   allUsersPresent: true,
   userLeft:false,
-  res:null
+  res:null,
+  oppRes:null
 };
 
 const multiplayerSlice = createSlice({
@@ -48,6 +49,9 @@ const multiplayerSlice = createSlice({
     setRes:(state,action)=>{
       state.res = action.payload;
     },
+    setOppRes:(state,action)=>{
+      state.oppRes = action.payload;
+    },
     invalidateState: (state) => {
       state.members = [];
       state.settings = {
@@ -76,7 +80,8 @@ export const {
   setMode,
   setAllUsersPresent,
   setUserLeft,
-  setRes
+  setRes,
+  setOppRes
 } = multiplayerSlice.actions;
 
 export const initializeSocket = () => (dispatch: any) => {
