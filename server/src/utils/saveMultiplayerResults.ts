@@ -34,7 +34,7 @@ const saveHistory = async ({
 
 export const saveTestInDB = async ({ users, roomId }: ITest) => {
   try {
-    if (users.length != 2) return;
+    if (users.length < 2) return;
 
     let winner = null;
     let tie = false;
@@ -48,6 +48,7 @@ export const saveTestInDB = async ({ users, roomId }: ITest) => {
     if(!userResults1 || !userResults2) {
         return;
     };
+    console.log("Hello")
 
     if(userResults1.wpm>userResults2.wpm){
         user1S++;

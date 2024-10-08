@@ -115,7 +115,6 @@ io.on("connection", (socket: Socket) => {
 
   // destroy room when user creates new one
   socket.on("destroy-room", (roomId: string) => {
-    console.log("destroy room ");
     const room = rooms[roomId];
     if (!room) return;
   });
@@ -127,7 +126,6 @@ io.on("connection", (socket: Socket) => {
     room.users[userIndex].results = res;
     if(await saveTestInDB({users:room.users as any, roomId})){
       io.to(roomId).emit("test-completed");
-      // delete rooms[roomId]
     }
   });
 

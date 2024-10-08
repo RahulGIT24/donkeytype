@@ -12,6 +12,7 @@ import {
 } from "../../redux/reducers/multiplayerSlice";
 import { ISetting } from "../../types/user";
 import { socket } from "../../socket/socket";
+import { setAfkTimer, setAfkTimerRunning } from "../../redux/reducers/typeSettingSlice";
 
 const JoinRoom = () => {
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
@@ -43,6 +44,8 @@ const JoinRoom = () => {
 
   useEffect(()=>{
     dispatch(setRoomIdState(""))
+    dispatch(setAfkTimer(10))
+    dispatch(setAfkTimerRunning(true))
   },[])
 
   function handleError(message: string) {
