@@ -310,9 +310,11 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
   );
 
-  const options = {
+  const options:CookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: true, 
+    sameSite: "none", 
+    path: "/", 
   };
 
   return res

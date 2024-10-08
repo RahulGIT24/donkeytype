@@ -17,6 +17,7 @@ const app = express();
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
+  path: "/socket",
   cors: {
     origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
