@@ -36,6 +36,8 @@ export default function MainNav() {
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
   // const res = useSelector((state: any) => state.multiplayer.res);
   const mode = useSelector((state: any) => state.setting.mode);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const disconnectFromRoom = () => {
     dispatch(
@@ -62,7 +64,6 @@ export default function MainNav() {
     dispatch(setAllUsersPresent(false));
   };
 
-  const dispatch = useDispatch();
 
   useEffect(() => {
     if (!socketI) {
@@ -72,7 +73,6 @@ export default function MainNav() {
     }
   }, [socketI]);
 
-  const navigate = useNavigate();
 
   return (
     <>

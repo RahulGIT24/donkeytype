@@ -9,9 +9,11 @@ import {
 } from "../redux/reducers/statSlice";
 import { socket } from "../socket/socket";
 import {
+  setOppRes,
   setRes,
   setSocketId,
   setSocketInstance,
+  setUserLeft,
 } from "../redux/reducers/multiplayerSlice";
 import {
   setAfkTimer,
@@ -166,6 +168,8 @@ export default function TypingComponent() {
 
   useEffect(() => {
     dispatch(revertRecentTestResults());
+    dispatch(setOppRes(null))
+    dispatch(setUserLeft(false))
   }, []);
 
   const userLeft = useSelector((state: any) => state.multiplayer.userLeft);
@@ -176,7 +180,8 @@ export default function TypingComponent() {
       setEndTestTime(new Date());
     }
 
-    if ((!startTestTime && !endTestTime && userLeft) || currTimer == 0) {
+    if ((!startTestTime && !endTestTime && userLeft && isMultiplayer ) || currTimer == 0) {
+      console.log('empty')
       socket.emit("complete-test", roomId, {
         wpm: 0,
         raw: 0,
@@ -203,6 +208,7 @@ export default function TypingComponent() {
     }
 
     if (startTestTime && userLeft && isMultiplayer) {
+      console.log('user left')
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -271,6 +277,7 @@ export default function TypingComponent() {
       (countdown === 0 && endTestTime && startTestTime) ||
       (startTestTime && endTestTime && userLeft)
     ) {
+      console.log('normal res')
       const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;

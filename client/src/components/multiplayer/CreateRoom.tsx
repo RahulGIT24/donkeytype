@@ -16,6 +16,7 @@ import {
   setRoomIdState,
   setSocketId,
   setSocketInstance,
+  setUserLeft,
 } from "../../redux/reducers/multiplayerSlice";
 import { ISetting } from "../../types/user";
 import { socket } from "../../socket/socket";
@@ -50,6 +51,7 @@ const CreateRoom = () => {
 
   useEffect(() => {
     dispatch(setRoomIdState(null));
+    dispatch(setUserLeft(false))
   }, []);
 
   // error

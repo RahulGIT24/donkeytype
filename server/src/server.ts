@@ -140,6 +140,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("give-results", (roomId: string) => {
     const room = rooms[roomId];
     if (!room) return;
+    console.log('res:',room.users)
     io.to(roomId).emit("Results", room.users);
   });
 
