@@ -13,7 +13,12 @@ import {
   setSocketId,
   setSocketInstance,
 } from "../redux/reducers/multiplayerSlice";
-import { setAfkTimer, setAfkTimerRunning, setMode, setTime } from "../redux/reducers/typeSettingSlice";
+import {
+  setAfkTimer,
+  setAfkTimerRunning,
+  setMode,
+  setTime,
+} from "../redux/reducers/typeSettingSlice";
 import AfkTimer from "./multiplayer/AfkTimer";
 
 export default function TypingComponent() {
@@ -49,9 +54,9 @@ export default function TypingComponent() {
     (state: any) => state.multiplayer.allUsersPresent
   );
 
-  useEffect(()=>{
-    dispatch(setTime())
-  },[])
+  useEffect(() => {
+    dispatch(setTime());
+  }, []);
 
   useEffect(() => {
     if (isMultiplayer) {
@@ -145,7 +150,7 @@ export default function TypingComponent() {
   }, [testStarted.current]);
 
   const startTest = async () => {
-    dispatch(setAfkTimerRunning(false))
+    dispatch(setAfkTimerRunning(false));
     testFinished.current = false;
     testStarted.current = true;
     removeClass(document.getElementById("typing-area"), "blur-sm");
@@ -193,14 +198,11 @@ export default function TypingComponent() {
       );
       navigate("/pvp-result", { replace: true });
       setScroll(0);
-      setStartTestTime(null);
-      dispatch(setAfkTimerRunning(true))
+      dispatch(setAfkTimerRunning(true));
       dispatch(setAfkTimer(10));
     }
 
-    if (
-      (startTestTime && userLeft) 
-    ) {
+    if (startTestTime && userLeft && isMultiplayer) {
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -260,12 +262,10 @@ export default function TypingComponent() {
       );
       navigate("/pvp-result", { replace: true });
       setScroll(0);
-      setStartTestTime(null);
-      testFinished.current = false;
-      dispatch(setAfkTimerRunning(true))
+      dispatch(setAfkTimerRunning(true));
       dispatch(setAfkTimer(10));
     }
-
+   
     if (
       (testFinished.current && endTestTime && startTestTime) ||
       (countdown === 0 && endTestTime && startTestTime) ||
@@ -318,15 +318,11 @@ export default function TypingComponent() {
       );
       if (isMultiplayer && roomId) {
         navigate("/pvp-result", { replace: true });
-      } else if (!allUsersPresent) {
-        navigate(`/`, { replace: true });
       } else {
         navigate(`/result`, { replace: true });
       }
       setScroll(0);
-      setStartTestTime(null);
-      testFinished.current = false;
-      dispatch(setAfkTimerRunning(true))
+      dispatch(setAfkTimerRunning(true));
       dispatch(setAfkTimer(10));
     }
   }, [
@@ -341,7 +337,7 @@ export default function TypingComponent() {
     startTestTime,
     countdown,
     allUsersPresent,
-    currTimer
+    currTimer,
   ]);
 
   async function printWords(w: any) {
@@ -372,7 +368,14 @@ export default function TypingComponent() {
       setTypeString(typeString);
       getWords(setting.wordNumber).then((r) => printWords(r));
     }
-  }, [setting.words, scroll, navigate, setting.wordNumber,setting.typeOfText,setting.time]);
+  }, [
+    setting.words,
+    scroll,
+    navigate,
+    setting.wordNumber,
+    setting.typeOfText,
+    setting.time,
+  ]);
 
   useEffect(() => {
     document.addEventListener("keyup", handleKeyPress);
@@ -515,9 +518,11 @@ export default function TypingComponent() {
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
       >
-        {countdown&&
-        <div className="text-3xl text-yellow-400 text-center w-full ">{countdown}</div>
-        }
+        {countdown && (
+          <div className="text-3xl text-yellow-400 text-center w-full ">
+            {countdown}
+          </div>
+        )}
         {wordLoader && (
           <div className="flex justify-center items-center w-full">
             <Oval

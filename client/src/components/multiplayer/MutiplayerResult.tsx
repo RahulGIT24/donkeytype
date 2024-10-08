@@ -68,7 +68,7 @@ export default function MultiplayerResult() {
 
   useEffect(()=>{
     dispatch(setMultiplayer(false))
-  },[])
+  },[navigate])
 
   // score calculator
   useEffect(() => {
