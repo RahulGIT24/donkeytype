@@ -14,7 +14,6 @@ export interface IMultiplayer {
   socketId: null | string;
   socketInstance:unknown,
   multiplayer:boolean,
-  allUsersPresent:boolean,
   userLeft:boolean,
   res:any,
   oppRes: any 

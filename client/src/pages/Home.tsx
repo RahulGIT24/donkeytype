@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  setAllUsersPresent,
   setOppRes,
   setUserLeft,
 } from "../redux/reducers/multiplayerSlice";
@@ -35,7 +34,6 @@ export default function Home() {
           toast.warning("User Left");
         }
         dispatch(setUserLeft(true));
-        dispatch(setAllUsersPresent(false));
       });
     } else {
       navigate("/");
@@ -44,7 +42,6 @@ export default function Home() {
     //connecting via the home component
 
     socket.on("Results", (users: any) => {
-     // console.log('results')
       const arr = users.filter((u: any) => u.userId !== user._id);
       const opp = arr[0];
       dispatch(
@@ -54,7 +51,6 @@ export default function Home() {
           userId: opp.userId,
         })
       );
-     // console.log('opp res: ',opp)
     });
 
     return () => {
@@ -62,10 +58,6 @@ export default function Home() {
     };
   }, [socket]);
 
-
-/*   useEffect(()=>{
-    console.log()
-  }) */
   return (
     <>
       <MainNav />

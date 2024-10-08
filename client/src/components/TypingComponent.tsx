@@ -52,9 +52,7 @@ export default function TypingComponent() {
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
-  const allUsersPresent = useSelector(
-    (state: any) => state.multiplayer.allUsersPresent
-  );
+
 
   useEffect(() => {
     dispatch(setTime());
@@ -181,7 +179,6 @@ export default function TypingComponent() {
     }
 
     if ((!startTestTime && !endTestTime && userLeft && isMultiplayer ) || currTimer == 0) {
-      console.log('empty')
       socket.emit("complete-test", roomId, {
         wpm: 0,
         raw: 0,
@@ -208,7 +205,6 @@ export default function TypingComponent() {
     }
 
     if (startTestTime && userLeft && isMultiplayer) {
-      console.log('user left')
       const endTestT = new Date();
       const durationInSeconds =
         (endTestT.getTime() - startTestTime.getTime()) / 1000;
@@ -277,7 +273,6 @@ export default function TypingComponent() {
       (countdown === 0 && endTestTime && startTestTime) ||
       (startTestTime && endTestTime && userLeft)
     ) {
-      console.log('normal res')
       const durationInSeconds =
         (endTestTime.getTime() - startTestTime.getTime()) / 1000;
       const durationInMinutes = durationInSeconds / 60;
@@ -290,7 +285,7 @@ export default function TypingComponent() {
       removeClass(document.getElementById("typing-area"), "remove-blur");
       addClass(document.getElementById("typing-area"), "blur-sm");
       document.removeEventListener("keyup", handleKeyPress);
-      if (isMultiplayer && roomId && allUsersPresent) {
+      if (isMultiplayer && roomId ) {
         socket.emit("complete-test", roomId, {
           wpm: Math.round(wpm) ? Math.round(wpm) : 0,
           raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
@@ -343,7 +338,6 @@ export default function TypingComponent() {
     endTestTime,
     startTestTime,
     countdown,
-    allUsersPresent,
     currTimer,
   ]);
 

@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { socket } from "../../socket/socket";
 import {
-  setAllUsersPresent,
   // setRes,
   setSocketId,
   setSocketInstance,
@@ -51,6 +50,7 @@ export default function MainNav() {
         multiplayer: isMultiplayer,
       })
     );
+    
     socketI.emit("complete-test", roomId, {
       wpm: 0,
       raw: 0,
@@ -61,7 +61,6 @@ export default function MainNav() {
     });
     socketI.emit("leave-room", roomId);
     navigate("/pvp-result", { replace: true });
-    dispatch(setAllUsersPresent(false));
   };
 
 
