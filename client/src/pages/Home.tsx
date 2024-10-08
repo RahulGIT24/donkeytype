@@ -6,18 +6,18 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setAllUsersPresent,
+  setOppRes,
   setUserLeft,
 } from "../redux/reducers/multiplayerSlice";
 
 export default function Home() {
   const dispatch = useDispatch();
   const socket = useSelector((state: any) => state.multiplayer.socketInstance);
+  const user = useSelector((state: any) => state.user.user);
   const navigate = useNavigate();
   const { roomId } = useParams();
 
   const mySocketId = useSelector((state: any) => state.multiplayer.socketId);
-  //test
-  const allUsersPresent = useSelector((state: any) => state.multiplayer.allUsersPresent);
   useEffect(() => {
     if (roomId) {
       socket.on("connect", () => {
@@ -41,14 +41,24 @@ export default function Home() {
       navigate("/");
     }
 
+    //connecting via the home component
+
+    socket.on("Results", (users: any) => {
+      const arr = users.filter((u: any) => u.userId !== user._id);
+      const opp = arr[0];
+      dispatch(
+        setOppRes({
+          username: opp.username,
+          results: opp.results,
+          userId: opp.userId,
+        })
+      );
+    });
+
     return () => {
       // socket.disconnect()
     };
   }, [socket]);
-  
-/*   useEffect(() => {
-    console.log(allUsersPresent);
-  }, [allUsersPresent]); */
 
   return (
     <>

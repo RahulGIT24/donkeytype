@@ -16,7 +16,8 @@ export interface IMultiplayer {
   multiplayer:boolean,
   allUsersPresent:boolean,
   userLeft:boolean,
-  res:any
+  res:any,
+  oppRes: any 
 }
 
 export interface ISetting{

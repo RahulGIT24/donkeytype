@@ -10,12 +10,16 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ResultCard from "./ResultCard";
-import { setAfkTimer, setAfkTimerRunning } from "../../redux/reducers/typeSettingSlice";
+import {
+  setAfkTimer,
+  setAfkTimerRunning,
+} from "../../redux/reducers/typeSettingSlice";
 
 export default function MultiplayerResult() {
   const myResult = useSelector((state: any) => state.stats.recentTestResults);
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
-  const [opponent, setOpponent] = useState<any>(null);
+  //const [opponent, setOpponent] = useState<any>(null);
+  const opponent = useSelector((state: any) => state.multiplayer.oppRes);
   const winnerRef = useRef<any>();
   let myScore = 0;
   let opponentScore = 0;
@@ -42,11 +46,11 @@ export default function MultiplayerResult() {
         dispatch(setSocketInstance(socket));
       }
     }
-    dispatch(setAfkTimer(10))
-    dispatch(setAfkTimerRunning(true))
+    dispatch(setAfkTimer(10));
+    dispatch(setAfkTimerRunning(true));
   }, [socketI]);
 
-  useEffect(() => {
+  /*  useEffect(() => {
     if (socket) {
       socket.emit("give-results", multiplayerinfo.roomId);
       socket.on("Results", (users: any) => {
@@ -64,11 +68,33 @@ export default function MultiplayerResult() {
       dispatch(setAfkTimer(10))
       dispatch(setAfkTimerRunning(true))
     }
+  }, [socketI, socket]); */
+  useEffect(() => {
+    if (socket) {
+      socket.emit("give-results", multiplayerinfo.roomId);
+      if (opponent && opponent.results && myResult) {
+        socket.emit("cleanup", roomId);
+      }
+      /*   socket.on("Results", (users: any) => {
+        const arr = users.filter((u: any) => u.userId !== user._id);
+        const opp = arr[0];
+        setOpponent({
+          username: opp.username,
+          results: opp.results,
+          userId: opp.userId,
+        });
+        if(opp.results){
+          socket.emit("cleanup",roomId)
+        }
+      }); */
+      dispatch(setAfkTimer(10));
+      dispatch(setAfkTimerRunning(true));
+    }
   }, [socketI, socket]);
 
-  useEffect(()=>{
-    dispatch(setMultiplayer(false))
-  },[navigate])
+  useEffect(() => {
+    dispatch(setMultiplayer(false));
+  }, [navigate]);
 
   // score calculator
   useEffect(() => {
