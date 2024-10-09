@@ -88,6 +88,7 @@ io.on("connection", (socket: Socket) => {
         return;
       }
       room.users.push({ id: socket.id, username, userId });
+      room.isSaved = false;
       socket.join(roomId);
       io.to(roomId).emit("User Joined", roomId, room.mode);
     } else if (!room) {
@@ -126,15 +127,30 @@ io.on("connection", (socket: Socket) => {
   socket.on("complete-test", async (roomId: string, res: any) => {
     const room = rooms[roomId];
     if (!room) return;
+  
     let userIndex = -1;
     if (room.users) {
       userIndex = room.users.findIndex((u) => u.id === socket.id);
     }
-    room.users[userIndex].results = res;
-    if (await saveTestInDB({ users: room.users as any, roomId })) {
-      io.to(roomId).emit("test-completed");
+  
+    const user = room.users[userIndex];
+    if (room.isSaved) {
+      return;
+    }
+  
+    user.results = res;
+  
+    
+    const allResultsAvailable = room.users.every(u => u.results);
+    if (allResultsAvailable) {
+      const saveSuccess = await saveTestInDB({ users: room.users as any, roomId });
+      if (saveSuccess) {
+        room.isSaved = true;
+        io.to(roomId).emit("test-completed");
+      }
     }
   });
+  
 
   // get room results based on id
   socket.on("give-results", (roomId: string) => {

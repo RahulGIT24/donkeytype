@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { socket } from "../../socket/socket";
 import {
   setMultiplayer,
-  setOppRes,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";

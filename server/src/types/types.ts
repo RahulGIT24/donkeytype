@@ -21,6 +21,7 @@ export interface Room{
   roomId:string,
   users:SocketUser[],
   mode:any
+  isSaved?:boolean
 }
 
 export interface ITest {
