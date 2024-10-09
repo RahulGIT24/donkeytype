@@ -13,7 +13,6 @@ import {
   setRes,
   setSocketId,
   setSocketInstance,
-  setUserLeft,
 } from "../redux/reducers/multiplayerSlice";
 import {
   setAfkTimer,
