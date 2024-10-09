@@ -49,10 +49,11 @@ export default function TypingComponent() {
   const [countdown, setCountDown] = useState(setting.time);
   const [startTimer, setStartTimer] = useState(3);
   const mode = useSelector((state: any) => state.setting.mode);
+  //const [isResult,setIsResult] =useState<boolean>(false)
+  const isResult = useRef(false);
   const [wordAccuracies, setWordAccuracies] = useState<number[]>([]);
   const socketI = useSelector((state: any) => state.multiplayer.socketInstance);
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
-
 
   useEffect(() => {
     dispatch(setTime());
@@ -166,166 +167,172 @@ export default function TypingComponent() {
 
   useEffect(() => {
     dispatch(revertRecentTestResults());
-    dispatch(setOppRes(null))
-    dispatch(setUserLeft(false))
+    dispatch(setOppRes(null));
+    // dispatch(setUserLeft(false))
   }, []);
 
   const userLeft = useSelector((state: any) => state.multiplayer.userLeft);
   const currTimer = useSelector((state: any) => state.setting.afkTimer);
 
   useEffect(() => {
-    if (countdown === 0) {
-      setEndTestTime(new Date());
-    }
+    if (!isResult.current) {
+      if (countdown === 0) {
+        setEndTestTime(new Date());
+      }
 
-    if ((!startTestTime && !endTestTime && userLeft && isMultiplayer ) || currTimer == 0) {
-      socket.emit("complete-test", roomId, {
-        wpm: 0,
-        raw: 0,
-        accuracy: 0,
-        consistency: 0,
-        chars: `${0}/${0}/${0}/${0}`,
-        mode: mode,
-      });
-      dispatch(
-        setRecentTestResults({
+      if (
+        (!startTestTime && !endTestTime && userLeft && isMultiplayer) ||
+        currTimer == 0
+      ) {
+        socket.emit("complete-test", roomId, {
           wpm: 0,
           raw: 0,
           accuracy: 0,
           consistency: 0,
           chars: `${0}/${0}/${0}/${0}`,
           mode: mode,
-          multiplayer: isMultiplayer,
-        })
-      );
-      navigate("/pvp-result", { replace: true });
-      setScroll(0);
-      dispatch(setAfkTimerRunning(true));
-      dispatch(setAfkTimer(10));
-    }
-
-    if (startTestTime && userLeft && isMultiplayer) {
-      const endTestT = new Date();
-      const durationInSeconds =
-        (endTestT.getTime() - startTestTime.getTime()) / 1000;
-      const durationInMinutes = durationInSeconds / 60;
-      const rawWPM =
-        (totalLettersTyped / avgWordLength) * (1 / durationInMinutes);
-      const accuracy = (
-        Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) / 100
-      ).toFixed(2);
-      const wpm = rawWPM * (Number(accuracy) / 100);
-      let consistency = Math.round(
-        Number(calculateStandardDeviation(wordAccuracies))
-      );
-      socket.emit("complete-test", roomId, {
-        wpm: Math.round(wpm) ? Math.round(wpm) : 0,
-        raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
-        accuracy: Math.round(Number(accuracy))
-          ? Math.round(Number(accuracy))
-          : 0,
-        consistency: consistency ? consistency : 0,
-        chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
-        mode: mode,
-      });
-      dispatch(
-        setRecentTestResults({
-          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
-          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
-          accuracy: Math.round(Number(accuracy))
-            ? Math.round(Number(accuracy))
-            : 0,
-          consistency: Math.round(
-            Number(calculateStandardDeviation(wordAccuracies))
-          )
-            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
-            : 0,
-          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
-          mode: mode,
-          multiplayer: isMultiplayer,
-        })
-      );
-      dispatch(
-        setRes({
-          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
-          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
-          accuracy: Math.round(Number(accuracy))
-            ? Math.round(Number(accuracy))
-            : 0,
-          consistency: Math.round(
-            Number(calculateStandardDeviation(wordAccuracies))
-          )
-            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
-            : 0,
-          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
-          mode: mode,
-          multiplayer: isMultiplayer,
-        })
-      );
-      navigate("/pvp-result", { replace: true });
-      setScroll(0);
-      dispatch(setAfkTimerRunning(true));
-      dispatch(setAfkTimer(10));
-    }
-   
-    if (
-      (testFinished.current && endTestTime && startTestTime) ||
-      (countdown === 0 && endTestTime && startTestTime) ||
-      (startTestTime && endTestTime && userLeft)
-    ) {
-      const durationInSeconds =
-        (endTestTime.getTime() - startTestTime.getTime()) / 1000;
-      const durationInMinutes = durationInSeconds / 60;
-      const rawWPM =
-        (totalLettersTyped / avgWordLength) * (1 / durationInMinutes);
-      const accuracy = (
-        Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) / 100
-      ).toFixed(2);
-      const wpm = rawWPM * (Number(accuracy) / 100);
-      removeClass(document.getElementById("typing-area"), "remove-blur");
-      addClass(document.getElementById("typing-area"), "blur-sm");
-      document.removeEventListener("keyup", handleKeyPress);
-      if (isMultiplayer && roomId ) {
+        });
+        dispatch(
+          setRecentTestResults({
+            wpm: 0,
+            raw: 0,
+            accuracy: 0,
+            consistency: 0,
+            chars: `${0}/${0}/${0}/${0}`,
+            mode: mode,
+            multiplayer: isMultiplayer,
+          })
+        );
+        navigate("/pvp-result", { replace: true });
+        setScroll(0);
+        dispatch(setAfkTimerRunning(true));
+        dispatch(setAfkTimer(10));
+        isResult.current = true;
+      } else if (startTestTime && userLeft && isMultiplayer) {
+        const endTestT = new Date();
+        const durationInSeconds =
+          (endTestT.getTime() - startTestTime.getTime()) / 1000;
+        const durationInMinutes = durationInSeconds / 60;
+        const rawWPM =
+          (totalLettersTyped / avgWordLength) * (1 / durationInMinutes);
+        const accuracy = (
+          Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) /
+          100
+        ).toFixed(2);
+        const wpm = rawWPM * (Number(accuracy) / 100);
+        let consistency = Math.round(
+          Number(calculateStandardDeviation(wordAccuracies))
+        );
         socket.emit("complete-test", roomId, {
           wpm: Math.round(wpm) ? Math.round(wpm) : 0,
           raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
           accuracy: Math.round(Number(accuracy))
             ? Math.round(Number(accuracy))
             : 0,
-          consistency: Math.round(
-            Number(calculateStandardDeviation(wordAccuracies))
-          )
-            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
-            : 0,
+          consistency: consistency ? consistency : 0,
           chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
           mode: mode,
         });
-      }
-      dispatch(
-        setRecentTestResults({
-          wpm: Math.round(wpm) ? Math.round(wpm) : 0,
-          raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
-          accuracy: Math.round(Number(accuracy))
-            ? Math.round(Number(accuracy))
-            : 0,
-          consistency: Math.round(
-            Number(calculateStandardDeviation(wordAccuracies))
-          )
-            ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
-            : 0,
-          chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
-          mode: mode,
-          multiplayer: isMultiplayer,
-        })
-      );
-      if (isMultiplayer && roomId) {
+        dispatch(
+          setRecentTestResults({
+            wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+            raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+            accuracy: Math.round(Number(accuracy))
+              ? Math.round(Number(accuracy))
+              : 0,
+            consistency: Math.round(
+              Number(calculateStandardDeviation(wordAccuracies))
+            )
+              ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+              : 0,
+            chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+            mode: mode,
+            multiplayer: isMultiplayer,
+          })
+        );
+        dispatch(
+          setRes({
+            wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+            raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+            accuracy: Math.round(Number(accuracy))
+              ? Math.round(Number(accuracy))
+              : 0,
+            consistency: Math.round(
+              Number(calculateStandardDeviation(wordAccuracies))
+            )
+              ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+              : 0,
+            chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+            mode: mode,
+            multiplayer: isMultiplayer,
+          })
+        );
         navigate("/pvp-result", { replace: true });
-      } else {
-        navigate(`/result`, { replace: true });
+        setScroll(0);
+        dispatch(setAfkTimerRunning(true));
+        dispatch(setAfkTimer(10));
+        isResult.current = true;
+      } else if (
+        (testFinished.current && endTestTime && startTestTime) ||
+        (countdown === 0 && endTestTime && startTestTime) ||
+        (startTestTime && endTestTime && userLeft)
+      ) {
+        const durationInSeconds =
+          (endTestTime.getTime() - startTestTime.getTime()) / 1000;
+        const durationInMinutes = durationInSeconds / 60;
+        const rawWPM =
+          (totalLettersTyped / avgWordLength) * (1 / durationInMinutes);
+        const accuracy = (
+          Math.round((correctLettersTyped / totalLettersTyped) * 100 * 100) /
+          100
+        ).toFixed(2);
+        const wpm = rawWPM * (Number(accuracy) / 100);
+        removeClass(document.getElementById("typing-area"), "remove-blur");
+        addClass(document.getElementById("typing-area"), "blur-sm");
+        document.removeEventListener("keyup", handleKeyPress);
+        if (isMultiplayer && roomId) {
+          socket.emit("complete-test", roomId, {
+            wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+            raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+            accuracy: Math.round(Number(accuracy))
+              ? Math.round(Number(accuracy))
+              : 0,
+            consistency: Math.round(
+              Number(calculateStandardDeviation(wordAccuracies))
+            )
+              ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+              : 0,
+            chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+            mode: mode,
+          });
+        }
+        dispatch(
+          setRecentTestResults({
+            wpm: Math.round(wpm) ? Math.round(wpm) : 0,
+            raw: Math.round(rawWPM) ? Math.round(rawWPM) : 0,
+            accuracy: Math.round(Number(accuracy))
+              ? Math.round(Number(accuracy))
+              : 0,
+            consistency: Math.round(
+              Number(calculateStandardDeviation(wordAccuracies))
+            )
+              ? Math.round(Number(calculateStandardDeviation(wordAccuracies)))
+              : 0,
+            chars: `${correctLettersTyped}/${wrongLettersTyped}/${extraLetters}/${missedLetters}`,
+            mode: mode,
+            multiplayer: isMultiplayer,
+          })
+        );
+        if (isMultiplayer && roomId) {
+          navigate("/pvp-result", { replace: true });
+        } else {
+          navigate(`/result`, { replace: true });
+        }
+        setScroll(0);
+        dispatch(setAfkTimerRunning(true));
+        dispatch(setAfkTimer(10));
+        isResult.current = true;
       }
-      setScroll(0);
-      dispatch(setAfkTimerRunning(true));
-      dispatch(setAfkTimer(10));
     }
   }, [
     userLeft,
@@ -608,3 +615,4 @@ const MultiplayerTimer = ({ timer }: any) => {
 //     </div>
 //   );
 // };
+

@@ -127,30 +127,30 @@ io.on("connection", (socket: Socket) => {
   socket.on("complete-test", async (roomId: string, res: any) => {
     const room = rooms[roomId];
     if (!room) return;
-  
     let userIndex = -1;
     if (room.users) {
       userIndex = room.users.findIndex((u) => u.id === socket.id);
     }
-  
+
     const user = room.users[userIndex];
     if (room.isSaved) {
       return;
     }
-  
+
     user.results = res;
-  
-    
-    const allResultsAvailable = room.users.every(u => u.results);
+
+    const allResultsAvailable = room.users.every((u) => u.results);
     if (allResultsAvailable) {
-      const saveSuccess = await saveTestInDB({ users: room.users as any, roomId });
+      const saveSuccess = await saveTestInDB({
+        users: room.users as any,
+        roomId,
+      });
       if (saveSuccess) {
         room.isSaved = true;
         io.to(roomId).emit("test-completed");
       }
     }
   });
-  
 
   // get room results based on id
   socket.on("give-results", (roomId: string) => {
@@ -207,3 +207,4 @@ cron.schedule("* * * * *", async () => {
 // httpServer.listen(process.env.SOCKET_PORT, () => {
 //   console.log("Socket Port is listening on PORT", process.env.SOCKET_PORT);
 // });
+
