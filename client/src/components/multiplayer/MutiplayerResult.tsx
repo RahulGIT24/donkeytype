@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { socket } from "../../socket/socket";
 import {
   setMultiplayer,
+  setOppRes,
   setSocketId,
   setSocketInstance,
 } from "../../redux/reducers/multiplayerSlice";
@@ -72,9 +73,11 @@ export default function MultiplayerResult() {
   useEffect(() => {
     if (socket) {
       socket.emit("give-results", multiplayerinfo.roomId);
-      if (opponent && opponent.results && myResult) {
-        socket.emit("cleanup", roomId);
-      }
+    //  setTimeout(() => {
+        if ((opponent && myResult)||userLeft&&myResult) {
+          socket.emit("cleanup", roomId);
+        }
+   ///   }, 700);
       /*   socket.on("Results", (users: any) => {
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];

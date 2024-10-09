@@ -9,6 +9,7 @@ import {
   setRoomIdState,
   setSocketId,
   setSocketInstance,
+  setUserLeft,
 } from "../../redux/reducers/multiplayerSlice";
 import { ISetting } from "../../types/user";
 import { socket } from "../../socket/socket";
@@ -43,6 +44,7 @@ const JoinRoom = () => {
   },[socketI]);
 
   useEffect(()=>{
+    dispatch(setUserLeft(false));
     dispatch(setRoomIdState(""))
     dispatch(setAfkTimer(10))
     dispatch(setAfkTimerRunning(true))

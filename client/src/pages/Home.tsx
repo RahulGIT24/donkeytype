@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  setAllUsersPresent,
   setOppRes,
   setUserLeft,
 } from "../redux/reducers/multiplayerSlice";
@@ -35,7 +34,6 @@ export default function Home() {
           toast.warning("User Left");
         }
         dispatch(setUserLeft(true));
-        dispatch(setAllUsersPresent(false));
       });
     } else {
       navigate("/");

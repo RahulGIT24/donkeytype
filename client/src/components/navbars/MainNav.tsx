@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { socket } from "../../socket/socket";
 import {
-  setAllUsersPresent,
   // setRes,
   setSocketId,
   setSocketInstance,
@@ -36,6 +35,8 @@ export default function MainNav() {
   const roomId = useSelector((state: any) => state.multiplayer.roomId);
   // const res = useSelector((state: any) => state.multiplayer.res);
   const mode = useSelector((state: any) => state.setting.mode);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const disconnectFromRoom = () => {
     dispatch(
@@ -49,6 +50,7 @@ export default function MainNav() {
         multiplayer: isMultiplayer,
       })
     );
+    
     socketI.emit("complete-test", roomId, {
       wpm: 0,
       raw: 0,
@@ -59,10 +61,8 @@ export default function MainNav() {
     });
     socketI.emit("leave-room", roomId);
     navigate("/pvp-result", { replace: true });
-    dispatch(setAllUsersPresent(false));
   };
 
-  const dispatch = useDispatch();
 
   useEffect(() => {
     if (!socketI) {
@@ -72,7 +72,6 @@ export default function MainNav() {
     }
   }, [socketI]);
 
-  const navigate = useNavigate();
 
   return (
     <>

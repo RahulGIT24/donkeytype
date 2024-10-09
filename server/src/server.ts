@@ -109,7 +109,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("leave-room", (roomId: string) => {
     const room = rooms[roomId];
     let userIndex = -1;
-    if(room && room.users){
+    if (room && room.users) {
       userIndex = room.users.findIndex((u) => u.id === socket.id);
     }
     if (userIndex != -1) {
@@ -123,15 +123,15 @@ io.on("connection", (socket: Socket) => {
     if (!room) return;
   });
 
-  socket.on("complete-test", async(roomId: string, res: any) => {
+  socket.on("complete-test", async (roomId: string, res: any) => {
     const room = rooms[roomId];
     if (!room) return;
     let userIndex = -1;
-    if(room.users){
+    if (room.users) {
       userIndex = room.users.findIndex((u) => u.id === socket.id);
     }
     room.users[userIndex].results = res;
-    if(await saveTestInDB({users:room.users as any, roomId})){
+    if (await saveTestInDB({ users: room.users as any, roomId })) {
       io.to(roomId).emit("test-completed");
     }
   });
@@ -143,21 +143,21 @@ io.on("connection", (socket: Socket) => {
     io.to(roomId).emit("Results", room.users);
   });
 
-  socket.on("cleanup",(roomId:string)=>{
+  socket.on("cleanup", (roomId: string) => {
     const room = rooms[roomId];
     if (!room) return;
     delete rooms[roomId];
-  })
+  });
 
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
       const room = rooms[roomId];
-      let userIndex = -1
-      if(room && room.users){
+      let userIndex = -1;
+      if (room && room.users) {
         userIndex = room.users.findIndex((u) => u.id === socket.id);
       }
 
-      if (userIndex!=-1) {
+      if (userIndex != -1) {
         room.users[userIndex].results = {
           wpm: 0,
           raw: 0,
