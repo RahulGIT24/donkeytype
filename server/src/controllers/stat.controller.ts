@@ -197,9 +197,9 @@ const getResultStats = asyncHandler(async (req, res) => {
     });
     if (opponentHistory) {
       const stats = {
-        user1:{
-          username:user?.username,
-          profilePic:user?.profilePic
+        user1: {
+          username: user?.username,
+          profilePic: user?.profilePic,
         },
         user1Results: {
           wpm: Math.round(history.wpm),
@@ -210,9 +210,9 @@ const getResultStats = asyncHandler(async (req, res) => {
           chars: history.chars,
           multiplayer: history.multiplayer,
         },
-        user2:{
-          username:opponent?.username,
-          profilePic:opponent?.profilePic,
+        user2: {
+          username: opponent?.username,
+          profilePic: opponent?.profilePic,
         },
         user2Results: {
           wpm: Math.round(opponentHistory.wpm),
@@ -225,7 +225,7 @@ const getResultStats = asyncHandler(async (req, res) => {
         },
         winner: history.winner,
         tie: history.tie,
-        multiplayer: true
+        multiplayer: true,
       };
       return res.status(200).json(new ApiResponse(200, stats));
     }
@@ -243,4 +243,93 @@ const getResultStats = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, stats));
 });
 
-export { getHistory, getAverageStats, getResultStats };
+const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
+  console.log(req.params.mode);
+
+  //this will put one user in the ARRAY again and again
+  /* const result =  await History.find({mode:req.params.mode,opponent:null}).sort({ wpm: -1 }).limit(Number(req.params.limit)).populate('user','username email testCompleted profilePic name testStarted'); */
+
+  const mode = req.params.mode; // Mode filter
+  const page = parseInt(req.params.page) || 1; // Page number (default is 1)
+  const limit = 10; // Limit documents per page
+  const skip = (page - 1) * limit; // Number of documents to skip
+  const result = await History.aggregate([
+    // Match documents based on mode
+    { $match: { mode: mode,opponent:null } },
+
+    // Sort by 'wpm' in descending order
+    { $sort: { wpm: -1 } },
+
+    // Group by 'userId' to ensure unique users
+    {
+      $group: {
+        _id: "$userId", // Group by 'userId'
+        doc: { $first: "$$ROOT" }, // Keep the first document for each user
+      },
+    },
+
+    // Replace the root document with the result of the grouping
+    { $replaceRoot: { newRoot: "$doc" } },
+
+    // Populate the 'userId' field and fetch only specific fields from 'user'
+    {
+      $lookup: {
+        from: "users", // Collection to join with (User collection)
+        localField: "user", // Field in History collection (e.g., 'userId')
+        foreignField: "_id", // Field in User collection (usually '_id')
+        as: "user", // Alias to store populated user information
+      },
+    },
+
+    // Unwind the 'user' array to flatten it
+    { $unwind: "$user" },
+
+    // Project (include only specific fields from both 'History' and 'user')
+    {
+      $project: {
+        wpm: 1,
+        accuracy: 1,
+        raw:1,
+        chars:1,
+        consistency:1,
+        date: 1,
+        "user._id": 1,
+        "user.username": 1,
+        "user.email": 1,
+        "user.testStarted": 1,
+        "user.testCompleted": 1,
+        "user.profilePic": 1,
+      },
+    },
+
+    // Pagination: Skip and limit the number of results
+    { $skip: skip }, // Skip documents based on page
+    { $limit: limit }, // Limit results to 10 per page
+  ]);
+  if (!result) {
+    return res.status(401).json(new ApiResponse(404, "Not found"));
+  }
+  console.log(result);
+  return res.status(200).json(new ApiResponse(200, result));
+});
+
+//to be made ^-^
+const multiplayerPlayerLeaderBoard = asyncHandler(async (req, res) => {
+  console.log(req.params.mode);
+
+  const result = await History.find({ mode: req.params.mode, opponent: null })
+    .sort({ wpm: -1 })
+    .limit(Number(req.params.limit))
+    .populate(
+      "user",
+      "username email testCompleted profilePic name testStarted"
+    );
+  if (!result) {
+    return res.status(401).json(new ApiResponse(404, "Not found"));
+  }
+  console.log(result);
+  return res.status(200).json(new ApiResponse(200, result));
+});
+
+export { getHistory, getAverageStats, getResultStats, singlePlayerLeaderBoard };
+
