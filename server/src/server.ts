@@ -200,7 +200,7 @@ const hitAPi = async () => {
     console.log(error);
   }
 };
-cron.schedule("* * * * *", async () => {
+cron.schedule("*/5 * * * *", async () => {
   await hitAPi();
 });
 
