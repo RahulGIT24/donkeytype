@@ -1,9 +1,20 @@
-import { ObjectId } from "mongodb";
 import { History } from "../models/history.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { PipelineStage } from "mongoose";
 import { User } from "../models/user.model";
+import {
+  FiftyWordsBest,
+  HunderedTwentySecBest,
+  HunderedWordsBest,
+  SixtySecondsBest,
+  TenSecBest,
+  TenWordsBest,
+  ThritySecondsBest,
+  TwentyFiveWordsBest,
+} from "../models/alltimebest.model";
+import { ObjectId } from "mongodb";
+import { ObjectId as BsonObjectId } from "bson";
 
 interface DocumentType {
   user: ObjectId;
@@ -170,19 +181,9 @@ const getAverageStats = asyncHandler(async (req, res) => {
 const getResultStats = asyncHandler(async (req, res) => {
   const { id } = req.body;
   const user = req.user;
-  if (!user || !user.id) {
-    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
-  }
-  if (!ObjectId.isValid(id)) {
-    return res.status(404).json(new ApiResponse(404, "Test Not found"));
-  }
   const history = await History.findById(new ObjectId(id));
   if (!history) {
     return res.status(404).json(new ApiResponse(404, "Test Not found"));
-  }
-  const userId = user.id;
-  if (history.user != userId) {
-    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
   }
 
   const isMultiplayer = history.multiplayer;
@@ -244,73 +245,96 @@ const getResultStats = asyncHandler(async (req, res) => {
 });
 
 const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
-  console.log(req.params.mode);
+  const mode = req.params.mode;
+  console.log(mode)
+  const limit = req.params.limit || 10; 
+  console.log(limit)
+  let results;
+  let historyIds: Array<BsonObjectId> = [];
 
-  //this will put one user in the ARRAY again and again
-  /* const result =  await History.find({mode:req.params.mode,opponent:null}).sort({ wpm: -1 }).limit(Number(req.params.limit)).populate('user','username email testCompleted profilePic name testStarted'); */
-
-  const mode = req.params.mode; // Mode filter
-  const page = parseInt(req.params.page) || 1; // Page number (default is 1)
-  const limit = 10; // Limit documents per page
-  const skip = (page - 1) * limit; // Number of documents to skip
-  const result = await History.aggregate([
-    // Match documents based on mode
-    { $match: { mode: mode,opponent:null } },
-
-    // Sort by 'wpm' in descending order
-    { $sort: { wpm: -1 } },
-
-    // Group by 'userId' to ensure unique users
-    {
-      $group: {
-        _id: "$userId", // Group by 'userId'
-        doc: { $first: "$$ROOT" }, // Keep the first document for each user
-      },
-    },
-
-    // Replace the root document with the result of the grouping
-    { $replaceRoot: { newRoot: "$doc" } },
-
-    // Populate the 'userId' field and fetch only specific fields from 'user'
-    {
-      $lookup: {
-        from: "users", // Collection to join with (User collection)
-        localField: "user", // Field in History collection (e.g., 'userId')
-        foreignField: "_id", // Field in User collection (usually '_id')
-        as: "user", // Alias to store populated user information
-      },
-    },
-
-    // Unwind the 'user' array to flatten it
-    { $unwind: "$user" },
-
-    // Project (include only specific fields from both 'History' and 'user')
-    {
-      $project: {
-        wpm: 1,
-        accuracy: 1,
-        raw:1,
-        chars:1,
-        consistency:1,
-        date: 1,
-        "user._id": 1,
-        "user.username": 1,
-        "user.email": 1,
-        "user.testStarted": 1,
-        "user.testCompleted": 1,
-        "user.profilePic": 1,
-      },
-    },
-
-    // Pagination: Skip and limit the number of results
-    { $skip: skip }, // Skip documents based on page
-    { $limit: limit }, // Limit results to 10 per page
-  ]);
-  if (!result) {
-    return res.status(401).json(new ApiResponse(404, "Not found"));
+  if (mode === "Words 10") {
+    const tenWordsBest = await TenWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = tenWordsBest.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
   }
-  console.log(result);
-  return res.status(200).json(new ApiResponse(200, result));
+
+  if (mode === "Words 25") {
+    const twentyFiveWords = await TwentyFiveWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = twentyFiveWords.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Words 50") {
+    const fiftyWords = await FiftyWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = fiftyWords.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Words 100") {
+    const hunderedWords = await HunderedWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = hunderedWords.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Time 10") {
+    const tenSec = await TenSecBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = tenSec.map((doc) => new BsonObjectId(doc.history.toString()));
+  }
+  if (mode === "Time 30") {
+    const twentyFiveSec = await ThritySecondsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = twentyFiveSec.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Time 60") {
+    const fiftySec = await SixtySecondsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = fiftySec.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Time 120") {
+    const hunderedSec = await HunderedTwentySecBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = hunderedSec.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+
+  const queryFilter = {
+    _id: { $in: historyIds },
+    opponent: null,
+    multiplayer: false,
+  };
+
+  if (historyIds.length != 0) {
+    const count = await History.countDocuments(queryFilter);
+    const history = await History.find(queryFilter)
+      .select("profilePic wpm chars consistency accuracy")
+      .populate("user", "username profilePic")
+      .limit(limit as number);
+    results = { data: history, count };
+    return res.status(200).json(new ApiResponse(200, results ?? {}));
+  } else {
+    return res
+      .status(404)
+      .json(new ApiResponse(200, "No Results for this mode"));
+  }
 });
 
 //to be made ^-^
@@ -332,4 +356,3 @@ const multiplayerPlayerLeaderBoard = asyncHandler(async (req, res) => {
 });
 
 export { getHistory, getAverageStats, getResultStats, singlePlayerLeaderBoard };
-

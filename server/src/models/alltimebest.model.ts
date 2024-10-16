@@ -55,7 +55,7 @@ const TenSBest = new Schema<Words>({
     ref: "User",
   }
 });
-const TwentyFiveSBest = new Schema<Words>({
+const ThritySBest = new Schema<Words>({
   history: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "History",
@@ -65,7 +65,7 @@ const TwentyFiveSBest = new Schema<Words>({
     ref: "User",
   }
 });
-const FiftySBest = new Schema<Words>({
+const SixtySBest = new Schema<Words>({
   history: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "History",
@@ -75,7 +75,7 @@ const FiftySBest = new Schema<Words>({
     ref: "User",
   }
 });
-const HunderedSBest = new Schema<Words>({
+const HunderedTwentySBest = new Schema<Words>({
   history: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "History",
@@ -91,7 +91,7 @@ export const TwentyFiveWordsBest = mongoose.model<Words>("twentyfivewords",twent
 export const FiftyWordsBest = mongoose.model<Words>("fiftywords",fiftyWordsSchema)
 export const HunderedWordsBest = mongoose.model<Words>("hunderedwords",hunderedWordsSchema)
 export const TenSecBest = mongoose.model<Words>("tenseconds",TenSBest)
-export const TwentyFiveSecBest = mongoose.model<Words>("twentyfiveseconds",TwentyFiveSBest)
-export const FiftySecBest = mongoose.model<Words>("fiftyseconds",FiftySBest)
-export const HunderedSecBest = mongoose.model<Words>("hunderedseconds",HunderedSBest)
+export const ThritySecondsBest = mongoose.model<Words>("thirtyseconds",ThritySBest)
+export const SixtySecondsBest = mongoose.model<Words>("sixtyseconds",SixtySBest)
+export const HunderedTwentySecBest = mongoose.model<Words>("hunderedtwentyseconds",HunderedTwentySBest)
 

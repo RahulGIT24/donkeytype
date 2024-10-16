@@ -335,7 +335,7 @@ const History = () => {
           onClick={loadMore}
           disabled={disabled}
         >
-          Load More
+          Show More
         </button>
       </div>
     </>
