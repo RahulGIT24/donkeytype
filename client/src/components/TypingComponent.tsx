@@ -520,16 +520,16 @@ export default function TypingComponent() {
     <MultiplayerTimer timer={startTimer} />
   ) : (
     <>
+      {countdown && (
+        <div className="text-3xl text-yellow-400 text-center w-full   ">
+          {countdown}
+        </div>
+      )}
       {isMultiplayer && <AfkTimer />}
       <div
         className={`flex min-h-40 h-[200px] w-[85%] overflow-hidden flex-wrap  text-4xl`}
         id="typing-area"
       >
-        {countdown && (
-          <div className="text-3xl text-yellow-400 text-center w-full ">
-            {countdown}
-          </div>
-        )}
         {wordLoader && (
           <div className="flex justify-center items-center w-full">
             <Oval
@@ -614,4 +614,3 @@ const MultiplayerTimer = ({ timer }: any) => {
 //     </div>
 //   );
 // };
-

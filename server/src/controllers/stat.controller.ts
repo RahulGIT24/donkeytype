@@ -246,74 +246,79 @@ const getResultStats = asyncHandler(async (req, res) => {
 
 const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   const mode = req.params.mode;
-  console.log(mode)
-  const limit = req.params.limit || 10; 
-  console.log(limit)
+  console.log(mode);
+  const limit = req.params.limit || 10;
+  console.log(limit);
   let results;
   let historyIds: Array<BsonObjectId> = [];
 
-  if (mode === "Words 10") {
-    const tenWordsBest = await TenWordsBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = tenWordsBest.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
-  }
+  switch (mode) {
+    case "Words 10":
+      const tenWordsBest = await TenWordsBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = tenWordsBest.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+      break;
 
-  if (mode === "Words 25") {
-    const twentyFiveWords = await TwentyFiveWordsBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = twentyFiveWords.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
-  }
-  if (mode === "Words 50") {
-    const fiftyWords = await FiftyWordsBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = fiftyWords.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
-  }
-  if (mode === "Words 100") {
-    const hunderedWords = await HunderedWordsBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = hunderedWords.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
-  }
-  if (mode === "Time 10") {
-    const tenSec = await TenSecBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = tenSec.map((doc) => new BsonObjectId(doc.history.toString()));
-  }
-  if (mode === "Time 30") {
-    const twentyFiveSec = await ThritySecondsBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = twentyFiveSec.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
-  }
-  if (mode === "Time 60") {
-    const fiftySec = await SixtySecondsBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = fiftySec.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
-  }
-  if (mode === "Time 120") {
-    const hunderedSec = await HunderedTwentySecBest.find({})
-      .select("history -_id")
-      .limit(limit as number);
-    historyIds = hunderedSec.map(
-      (doc) => new BsonObjectId(doc.history.toString())
-    );
+    case "Words 25":
+      const twentyFiveWords = await TwentyFiveWordsBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = twentyFiveWords.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+      break;
+    case "Words 50":
+      const fiftyWords = await FiftyWordsBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = fiftyWords.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+
+    case "Words 100":
+      const hunderedWords = await HunderedWordsBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = hunderedWords.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+      break;
+    case "Time 10":
+      const tenSec = await TenSecBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = tenSec.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+
+      break;
+    case "Time 30":
+      const twentyFiveSec = await ThritySecondsBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = twentyFiveSec.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+      break;
+    case "Time 60":
+      const fiftySec = await SixtySecondsBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = fiftySec.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+      break;
+    case "Time 120":
+      const hunderedSec = await HunderedTwentySecBest.find({})
+        .select("history -_id")
+        .limit(limit as number);
+      historyIds = hunderedSec.map(
+        (doc) => new BsonObjectId(doc.history.toString())
+      );
+      break;
   }
 
   const queryFilter = {
