@@ -246,9 +246,7 @@ const getResultStats = asyncHandler(async (req, res) => {
 
 const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   const mode = req.params.mode;
-  console.log(mode);
-  const limit = req.params.limit || 10;
-  console.log(limit);
+  const limit = req.params.limit || 10; 
   let results;
   let historyIds: Array<BsonObjectId> = [];
   let isMultiplayer = req.query.multiplayer==='true';
@@ -333,7 +331,8 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
       const history = await History.find(queryFilter)
         .select("profilePic wpm chars consistency accuracy")
         .populate("user", "username profilePic")
-        .limit(limit as number);
+        .limit(limit as number)
+      .sort({wpm:-1});
       results = { data: history, count };
     }
 else{
