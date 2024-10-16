@@ -251,7 +251,7 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   console.log(limit);
   let results;
   let historyIds: Array<BsonObjectId> = [];
-
+  let isMultiplayer = req.query.multiplayer==='true';
   switch (mode) {
     case "Words 10":
       const tenWordsBest = await TenWordsBest.find({})
@@ -328,12 +328,18 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   };
 
   if (historyIds.length != 0) {
-    const count = await History.countDocuments(queryFilter);
-    const history = await History.find(queryFilter)
-      .select("profilePic wpm chars consistency accuracy")
-      .populate("user", "username profilePic")
-      .limit(limit as number);
-    results = { data: history, count };
+    if (!isMultiplayer) {
+      const count = await History.countDocuments(queryFilter);
+      const history = await History.find(queryFilter)
+        .select("profilePic wpm chars consistency accuracy")
+        .populate("user", "username profilePic")
+        .limit(limit as number);
+      results = { data: history, count };
+    }
+else{
+ const{result,count} = await  mutliplayerLeaderBoard(mode,limit,historyIds)
+ results={data:result,count,}
+}
     return res.status(200).json(new ApiResponse(200, results ?? {}));
   } else {
     return res
@@ -343,152 +349,73 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
 });
 
 //to be made ^-^
-const multiplayerPlayerLeaderBoard = asyncHandler(async (req, res) => {
-  const mode = req.params.mode;
-  console.log(mode);
-  const limit = req.params.limit || 10;
-  console.log(limit);
-  let results;
-  let historyIds: Array<BsonObjectId> = [];
 
-  switch (mode) {
-    case "Words 10":
-      const tenWordsBest = await TenWordsBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = tenWordsBest.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-      break;
 
-    case "Words 25":
-      const twentyFiveWords = await TwentyFiveWordsBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = twentyFiveWords.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-      break;
-    case "Words 50":
-      const fiftyWords = await FiftyWordsBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = fiftyWords.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-
-    case "Words 100":
-      const hunderedWords = await HunderedWordsBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = hunderedWords.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-      break;
-    case "Time 10":
-      const tenSec = await TenSecBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = tenSec.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-
-      break;
-    case "Time 30":
-      const twentyFiveSec = await ThritySecondsBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = twentyFiveSec.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-      break;
-    case "Time 60":
-      const fiftySec = await SixtySecondsBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = fiftySec.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-      break;
-    case "Time 120":
-      const hunderedSec = await HunderedTwentySecBest.find({})
-        .select("history -_id")
-        .limit(limit as number);
-      historyIds = hunderedSec.map(
-        (doc) => new BsonObjectId(doc.history.toString())
-      );
-      break;
-  }
-
-  /*   const queryFilter = {
+const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,historyIds:any) => {
+  const result = await History.aggregate([
+    {
+      $match: {
+        mode: mode,
+        multiplayer: true,
+        roomId: { $ne: null },
+        winner: { $ne: null },
+      },
+    },
+    {
+      $group: {
+        _id: { winner: "$winner", roomId: "$roomId" },
+        doc: { $first: "$$ROOT" },
+      },
+    },
+    {
+      $group: {
+        _id: "$_id.winner",
+        wins: { $sum: 1 },
+        wpm: { $sum: "$doc.wpm" },
+        accuracy: { $sum: "$doc.accuracy" },
+        consistency: { $sum: "$doc.consistency" },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $project: {
+        _id: 1,
+        wins: 1,
+        wpm: 1,
+        accuracy: 1,
+        consistency: 1,
+        "user.username": 1,
+        "user.email": 1,
+      },
+    },
+    {
+      $sort: { wins: -1 },
+    },
+    { $limit: Number(limit) },
+  ]);
+  const queryFilter = {
     _id: { $in: historyIds },
-    opponent: { $ne: null },
-    //multiplayer: true,
-  }; */
-
-  if (historyIds.length != 0) {
-    const result = await History.aggregate([
-      {
-        $match: {
-          mode: mode,
-          multiplayer: true,
-          roomId: { $ne: null },
-          winner: { $ne: null },
-        },
-      },
-      {
-        $group: {
-          _id: { winner: "$winner", roomId: "$roomId" },
-          doc: { $first: "$$ROOT" },
-        },
-      },
-
-      {
-        $group: {
-          _id: "$_id.winner",
-          wins: { $sum: 1 },
-          wpm: { $sum: "$doc.wpm" },
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "user",
-        },
-      },
-      {
-        $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
-      },
-      {
-        $project: {
-          _id: 1,
-          wins: 1,
-          wpm: 1,
-          "user.username": 1,
-          "user.email": 1,
-          "user._id": 1,
-        },
-      },
-      {
-        $sort: { wins: -1 },
-      },
-    ]);
-    return res
-      .status(200)
-      .json(new ApiResponse(200, { data: result, count: result.length }));
-  } else {
-    return res
-      .status(404)
-      .json(new ApiResponse(200, "No Results for this mode"));
-  }
-});
+    opponent: null,
+    multiplayer: false,
+  };
+  const count = await History.countDocuments(queryFilter);
+  return {result,count};
+};
 
 export {
   getHistory,
   getAverageStats,
   getResultStats,
   singlePlayerLeaderBoard,
-  multiplayerPlayerLeaderBoard,
+ // multiplayerPlayerLeaderBoard,
 };
