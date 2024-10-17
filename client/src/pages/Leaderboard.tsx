@@ -191,7 +191,7 @@ const Leaderboard = () => {
           accuracy: Math.round(entry.accuracy),
           username: entry.user.username,
           profilePic: entry.user.profilePic,
-          view: `http://localhost:5173/result/?id=${entry._id}`,
+          view: `http://${import.meta.env.VITE_FRONTEND_URl}/result/?id=${entry._id}`,
         }));
         console.log(data);
         setData(formattedHistory);
