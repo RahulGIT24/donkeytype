@@ -45,10 +45,10 @@ const TableHoc = ({
                 <tr {...row.getRowProps()} className={`${index % 2 == 0 ? "bg-zinc-700":"bg-transparent"} border rounded-full border-zinc-800`}>
                   {row.cells.map((cell:any) => (
                     <td
-                      className="p-3 text-center py-5 text-lg"
+                      className={`p-3 text-center py-5 text-lg ${cell.column.id === "profilePic" && "flex justify-center"}`}
                       {...cell.getCellProps()}
                     >
-                      {cell.column.id === 'createdAt' ? (
+                      {cell.column.id === 'createdAt'? (
                       <p>{convertToCustomFormat(String(row.original.createdAt))}</p>
                     ) : (
                       cell.render("Cell")

@@ -7,7 +7,6 @@ export async function logout() {
       { withCredentials: true }
     );
     const { success } = res.data;
-    console.log("Choot")
     return success;
   } catch (error: any) {
     console.log(error)

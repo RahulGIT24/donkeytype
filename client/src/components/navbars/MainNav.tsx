@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowAltCircleLeft,
+  faCrown,
   // faCrown,
   // faGear,
   // faInfo,
@@ -96,11 +97,11 @@ export default function MainNav() {
                         />
                       </Link>
                     </li>
-                    {/* <li title="Leaderboard">
+                    <li title="Leaderboard">
                       <Link to="/leaderboard">
                         <FontAwesomeIcon icon={faCrown} className="h-5 px-4" />
                       </Link>
-                    </li> */}
+                    </li>
                     {/* <li title="Info">
                       <Link to="/info">
                         <FontAwesomeIcon icon={faInfo} className="h-5 px-4" />

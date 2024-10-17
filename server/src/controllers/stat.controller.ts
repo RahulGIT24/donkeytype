@@ -1,9 +1,20 @@
-import { ObjectId } from "mongodb";
 import { History } from "../models/history.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { PipelineStage } from "mongoose";
 import { User } from "../models/user.model";
+import {
+  FiftyWordsBest,
+  HunderedTwentySecBest,
+  HunderedWordsBest,
+  SixtySecondsBest,
+  TenSecBest,
+  TenWordsBest,
+  ThritySecondsBest,
+  TwentyFiveWordsBest,
+} from "../models/alltimebest.model";
+import { ObjectId } from "mongodb";
+import { ObjectId as BsonObjectId } from "bson";
 
 interface DocumentType {
   user: ObjectId;
@@ -170,19 +181,9 @@ const getAverageStats = asyncHandler(async (req, res) => {
 const getResultStats = asyncHandler(async (req, res) => {
   const { id } = req.body;
   const user = req.user;
-  if (!user || !user.id) {
-    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
-  }
-  if (!ObjectId.isValid(id)) {
-    return res.status(404).json(new ApiResponse(404, "Test Not found"));
-  }
   const history = await History.findById(new ObjectId(id));
   if (!history) {
     return res.status(404).json(new ApiResponse(404, "Test Not found"));
-  }
-  const userId = user.id;
-  if (history.user != userId) {
-    return res.status(401).json(new ApiResponse(401, "Unauthorized Access"));
   }
 
   const isMultiplayer = history.multiplayer;
@@ -197,9 +198,9 @@ const getResultStats = asyncHandler(async (req, res) => {
     });
     if (opponentHistory) {
       const stats = {
-        user1:{
-          username:user?.username,
-          profilePic:user?.profilePic
+        user1: {
+          username: user?.username,
+          profilePic: user?.profilePic,
         },
         user1Results: {
           wpm: Math.round(history.wpm),
@@ -210,9 +211,9 @@ const getResultStats = asyncHandler(async (req, res) => {
           chars: history.chars,
           multiplayer: history.multiplayer,
         },
-        user2:{
-          username:opponent?.username,
-          profilePic:opponent?.profilePic,
+        user2: {
+          username: opponent?.username,
+          profilePic: opponent?.profilePic,
         },
         user2Results: {
           wpm: Math.round(opponentHistory.wpm),
@@ -225,7 +226,7 @@ const getResultStats = asyncHandler(async (req, res) => {
         },
         winner: history.winner,
         tie: history.tie,
-        multiplayer: true
+        multiplayer: true,
       };
       return res.status(200).json(new ApiResponse(200, stats));
     }
@@ -243,4 +244,114 @@ const getResultStats = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, stats));
 });
 
-export { getHistory, getAverageStats, getResultStats };
+const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
+  const mode = req.params.mode;
+  const limit = req.params.limit || 10; 
+  let results;
+  let historyIds: Array<BsonObjectId> = [];
+
+  if (mode === "Words 10") {
+    const tenWordsBest = await TenWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = tenWordsBest.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+
+  if (mode === "Words 25") {
+    const twentyFiveWords = await TwentyFiveWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = twentyFiveWords.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Words 50") {
+    const fiftyWords = await FiftyWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = fiftyWords.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Words 100") {
+    const hunderedWords = await HunderedWordsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = hunderedWords.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Time 10") {
+    const tenSec = await TenSecBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = tenSec.map((doc) => new BsonObjectId(doc.history.toString()));
+  }
+  if (mode === "Time 30") {
+    const twentyFiveSec = await ThritySecondsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = twentyFiveSec.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Time 60") {
+    const fiftySec = await SixtySecondsBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = fiftySec.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+  if (mode === "Time 120") {
+    const hunderedSec = await HunderedTwentySecBest.find({})
+      .select("history -_id")
+      .limit(limit as number);
+    historyIds = hunderedSec.map(
+      (doc) => new BsonObjectId(doc.history.toString())
+    );
+  }
+
+  const queryFilter = {
+    _id: { $in: historyIds },
+    opponent: null,
+    multiplayer: false,
+  };
+
+  if (historyIds.length != 0) {
+    const count = await History.countDocuments(queryFilter);
+    const history = await History.find(queryFilter)
+      .select("profilePic wpm chars consistency accuracy")
+      .populate("user", "username profilePic")
+      .limit(limit as number)
+      .sort({wpm:-1});
+    results = { data: history, count };
+    return res.status(200).json(new ApiResponse(200, results ?? {}));
+  } else {
+    return res
+      .status(404)
+      .json(new ApiResponse(200, "No Results for this mode"));
+  }
+});
+
+//to be made ^-^
+const multiplayerPlayerLeaderBoard = asyncHandler(async (req, res) => {
+  console.log(req.params.mode);
+
+  const result = await History.find({ mode: req.params.mode, opponent: null })
+    .sort({ wpm: -1 })
+    .limit(Number(req.params.limit))
+    .populate(
+      "user",
+      "username email testCompleted profilePic name testStarted"
+    );
+  if (!result) {
+    return res.status(401).json(new ApiResponse(404, "Not found"));
+  }
+  console.log(result);
+  return res.status(200).json(new ApiResponse(200, result));
+});
+
+export { getHistory, getAverageStats, getResultStats, singlePlayerLeaderBoard };

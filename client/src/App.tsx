@@ -24,6 +24,7 @@ import JoinRoom from "./components/multiplayer/JoinRoom";
 import { initializeSocket } from "./redux/reducers/multiplayerSlice";
 import MultiplayerResult from "./components/multiplayer/MutiplayerResult";
 import ProfilePic from "./pages/ProfilePic";
+import Leaderboard from "./pages/Leaderboard";
 
 function App() {
   const isAuthenticated = useSelector(
@@ -52,7 +53,7 @@ function App() {
             )
           }
         />
-      
+
         <Route
           path="/forgotPassword"
           element={
@@ -80,6 +81,7 @@ function App() {
           <Route path="/result" element={<Result />} />
           <Route path="/pvp-result" element={<MultiplayerResult />} />
           <Route path="/multiplayer" element={<Main />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

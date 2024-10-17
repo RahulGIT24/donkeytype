@@ -1,11 +1,11 @@
 import {
-  FiftySecBest,
   FiftyWordsBest,
-  HunderedSecBest,
+  HunderedTwentySecBest,
   HunderedWordsBest,
+  SixtySecondsBest,
   TenSecBest,
   TenWordsBest,
-  TwentyFiveSecBest,
+  ThritySecondsBest,
   TwentyFiveWordsBest,
 } from "../models/alltimebest.model";
 import { History } from "../models/history.model";
@@ -162,12 +162,12 @@ const completeTest = asyncHandler(async (req, res) => {
     modelName = HunderedWordsBest;
   } else if (mode == "Time 10 S") {
     modelName = TenSecBest
-  } else if (mode == "Time 25 S") {
-    modelName = TwentyFiveSecBest
-  } else if (mode == "Time 50 S") {
-    modelName = FiftySecBest
-  } else if (mode == "Time 100 S") {
-    modelName = HunderedSecBest
+  } else if (mode == "Time 30 S") {
+    modelName = ThritySecondsBest
+  } else if (mode == "Time 60 S") {
+    modelName = SixtySecondsBest
+  } else if (mode == "Time 120 S") {
+    modelName = HunderedTwentySecBest
   }
 
   const bestExist = await modelName.findOne({ user: userId });
