@@ -355,7 +355,7 @@ const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,histor
         mode: mode,
         multiplayer: true,
         roomId: { $ne: null },
-        winner: { $ne: null },
+        opponent: { $ne: null },
       },
     },
     {
@@ -402,6 +402,8 @@ const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,histor
     },
     { $limit: Number(limit) },
   ]);
+ 
+  
  
  // const toatalMatches = await History.countDocuments(queryFilter);
   return {result};
