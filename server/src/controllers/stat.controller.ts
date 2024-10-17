@@ -249,7 +249,7 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   const limit = req.params.limit || 10;
   let results;
   let historyIds: Array<BsonObjectId> = [];
-  let isMultiplayer = req.query.multiplayer === "true";
+
   switch (mode) {
     case "Words 10":
       const tenWordsBest = await TenWordsBest.find({})
@@ -346,9 +346,7 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
 const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
   const mode = req.params.mode;
   const limit = req.params.limit || 10;
-  let results;
-  let historyIds: Array<BsonObjectId> = [];
-  let isMultiplayer = req.query.multiplayer === "true";
+
   const result = await History.aggregate([
     {
       $match: {
@@ -356,6 +354,7 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
         multiplayer: true,
         roomId: { $ne: null },
         opponent: { $ne: null },
+        winner:{$ne:null}
       },
     },
     {
@@ -368,9 +367,9 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
       $group: {
         _id: "$_id.winner",
         wins: { $sum: 1 },
-        wpm: { $sum: "$doc.wpm" },
-        accuracy: { $sum: "$doc.accuracy" },
-        consistency: { $sum: "$doc.consistency" },
+        wpm: { $avg: "$doc.wpm" },
+        accuracy: { $avg: "$doc.accuracy" },
+        consistency: { $avg: "$doc.consistency" },
       },
     },
     {
@@ -386,15 +385,15 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        _id: 1,
-        wins: 1,
-        wpm: 1,
-        accuracy: 1,
-        consistency: 1,
-        "user.username": 1,
-        "user.email": 1,
-        "user.testCompleted": 1,
-        "user.testStarted": 1,
+       wins: 1,
+       wpm: 1,
+       accuracy: 1,
+       consistency: 1,
+       "user.username":1,
+       "user.email":1,
+       "user.profilePic":1,
+       "user._id":1,
+
       },
     },
     {
@@ -407,67 +406,6 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, { data: result }));
 });
-/* const mutliplayerLeaderBoard = async (mode: String, limit: String |Number) => {
 
-
-  const result = await History.aggregate([
-    {
-      $match: {
-        mode: mode,
-        multiplayer: true,
-        roomId: { $ne: null },
-        opponent: { $ne: null },
-      },
-    },
-    {
-      $group: {
-        _id: { winner: "$winner", roomId: "$roomId" },
-        doc: { $first: "$$ROOT" },
-      },
-    },
-    {
-      $group: {
-        _id: "$_id.winner",
-        wins: { $sum: 1 },
-        wpm: { $sum: "$doc.wpm" },
-        accuracy: { $sum: "$doc.accuracy" },
-        consistency: { $sum: "$doc.consistency" },
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "_id",
-        foreignField: "_id",
-        as: "user",
-      },
-    },
-    {
-      $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
-    },
-    {
-      $project: {
-        _id: 1,
-        wins: 1,
-        wpm: 1,
-        accuracy: 1,
-        consistency: 1,
-        "user.username": 1,
-        "user.email": 1,
-        "user.testCompleted": 1,
-        "user.testStarted": 1,
-      },
-    },
-    {
-      $sort: { wins: -1 },
-    },
-    { $limit: Number(limit) },
-  ]);
- 
-  
- 
- // const toatalMatches = await History.countDocuments(queryFilter);
-  return {result};
-}; */
 
 export { getHistory, getAverageStats, getResultStats, singlePlayerLeaderBoard,mutliplayerLeaderBoard };
