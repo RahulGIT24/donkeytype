@@ -80,7 +80,6 @@ export const {
 
 export const initializeSocket = () => (dispatch: any) => {
   socket.on("connect", () => {
-    console.log("socket connected", socket.id);
     dispatch(setSocketId(socket.id));
     dispatch(setSocketInstance(socket));
   });

@@ -40,7 +40,6 @@ const TableHoc = ({
           </thead>
           <tbody {...getTableBodyProps()}>
             {page.map((row:any,index:number) => {
-              console.log(row)
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} className={`${index % 2 == 0 ? "bg-zinc-700":"bg-transparent"} border rounded-full border-zinc-800`}>

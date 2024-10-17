@@ -44,8 +44,6 @@ export const saveTestInDB = async ({ users, roomId }: ITest) => {
     // extracting user results  
     const userResults1 = users[0].results;
     const userResults2 = users[1].results;
-    console.log(userResults1)
-    console.log(userResults2)
 
     if(!userResults1 || !userResults2) {
         return;

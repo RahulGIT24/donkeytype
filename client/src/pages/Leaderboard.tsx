@@ -168,12 +168,20 @@ const Leaderboard = () => {
         Header: "Consistency",
         accessor: "consistency",
       },
+      // {
+      //   Header: "View Profile",
+      //   accessor: "view",
+      //   Cell: ({ value }: { value: string }) => (
+      //     <a href={value}>
+      //       <FontAwesomeIcon icon={faEye} />
+      //     </a>
+      //   ),
+      // },
     ],
     []
   );
 
   const fetchLeaderBoard = async () => {
-    console.log("adoifughaghaijdgiush");
     try {
       const { data, status } = await apiCall({
         url:
@@ -191,9 +199,14 @@ const Leaderboard = () => {
           accuracy: Math.round(entry.accuracy),
           username: entry.user.username,
           profilePic: entry.user.profilePic,
-          view: `http://${import.meta.env.VITE_FRONTEND_URl}/result/?id=${entry._id}`,
+          view: `${
+            firstMode !== "Multiplayer"
+              ? `${import.meta.env.VITE_FRONTEND_URl}/result/?id=${entry._id}`
+              : `${import.meta.env.VITE_FRONTEND_URl}/profile/?id=${
+                  entry.user._id
+                }`
+          }`,
         }));
-        console.log(data);
         setData(formattedHistory);
         if (data.count <= limit) {
           setDisabled(true);
