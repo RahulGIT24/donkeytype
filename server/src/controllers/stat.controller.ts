@@ -246,10 +246,10 @@ const getResultStats = asyncHandler(async (req, res) => {
 
 const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   const mode = req.params.mode;
-  const limit = req.params.limit || 10; 
+  const limit = req.params.limit || 10;
   let results;
   let historyIds: Array<BsonObjectId> = [];
-  let isMultiplayer = req.query.multiplayer==='true';
+  let isMultiplayer = req.query.multiplayer === "true";
   switch (mode) {
     case "Words 10":
       const tenWordsBest = await TenWordsBest.find({})
@@ -326,19 +326,14 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   };
 
   if (historyIds.length != 0) {
-    if (!isMultiplayer) {
-      const count = await History.countDocuments(queryFilter);
-      const history = await History.find(queryFilter)
-        .select("profilePic wpm chars consistency accuracy")
-        .populate("user", "username profilePic")
-        .limit(limit as number)
-      .sort({wpm:-1});
-      results = { data: history, count };
-    }
-else{
- const{result} = await  mutliplayerLeaderBoard(mode,limit,historyIds)
- results={data:result,count:result.length}//avg stats = stat/(testStarted) win percentage = wins/(tests started)
-}
+    const count = await History.countDocuments(queryFilter);
+    const history = await History.find(queryFilter)
+      .select("profilePic wpm chars consistency accuracy")
+      .populate("user", "username profilePic")
+      .limit(limit as number)
+      .sort({ wpm: -1 });
+    results = { data: history, count };
+
     return res.status(200).json(new ApiResponse(200, results ?? {}));
   } else {
     return res
@@ -348,7 +343,73 @@ else{
 });
 
 //to be made ^-^
-const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,historyIds:any) => {
+const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
+  const mode = req.params.mode;
+  const limit = req.params.limit || 10;
+  let results;
+  let historyIds: Array<BsonObjectId> = [];
+  let isMultiplayer = req.query.multiplayer === "true";
+  const result = await History.aggregate([
+    {
+      $match: {
+        mode: mode,
+        multiplayer: true,
+        roomId: { $ne: null },
+        opponent: { $ne: null },
+      },
+    },
+    {
+      $group: {
+        _id: { winner: "$winner", roomId: "$roomId" },
+        doc: { $first: "$$ROOT" },
+      },
+    },
+    {
+      $group: {
+        _id: "$_id.winner",
+        wins: { $sum: 1 },
+        wpm: { $sum: "$doc.wpm" },
+        accuracy: { $sum: "$doc.accuracy" },
+        consistency: { $sum: "$doc.consistency" },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $project: {
+        _id: 1,
+        wins: 1,
+        wpm: 1,
+        accuracy: 1,
+        consistency: 1,
+        "user.username": 1,
+        "user.email": 1,
+        "user.testCompleted": 1,
+        "user.testStarted": 1,
+      },
+    },
+    {
+      $sort: { wins: -1 },
+    },
+    { $limit: Number(limit) },
+  ]);
+  if (result.length == 0)
+    return res.status(404).json(new ApiResponse(404, "Users not found"));
+
+  return res.status(200).json(new ApiResponse(200, { data: result }));
+});
+/* const mutliplayerLeaderBoard = async (mode: String, limit: String |Number) => {
+
+
   const result = await History.aggregate([
     {
       $match: {
@@ -407,11 +468,6 @@ const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,histor
  
  // const toatalMatches = await History.countDocuments(queryFilter);
   return {result};
-};
+}; */
 
-export {
-  getHistory,
-  getAverageStats,
-  getResultStats,
-  singlePlayerLeaderBoard,
-};
+export { getHistory, getAverageStats, getResultStats, singlePlayerLeaderBoard,mutliplayerLeaderBoard };

@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { getAverageStats, getHistory, getResultStats, singlePlayerLeaderBoard } from '../controllers/stat.controller'
+import { getAverageStats, getHistory, getResultStats, mutliplayerLeaderBoard, singlePlayerLeaderBoard } from '../controllers/stat.controller'
 import { verifyJWT } from '../middleware/auth.middleware'
 
 const router = Router()
@@ -8,5 +8,5 @@ router.route("/get-history").get(verifyJWT,getHistory)
 router.route("/get-average-stats").get(verifyJWT,getAverageStats)
 router.route("/get-result").post(verifyJWT,getResultStats)
 router.route("/single-player-leaderboard/:mode/:limit").get(verifyJWT,singlePlayerLeaderBoard)
-//router.route("/multi-player-leaderboard/:mode/:limit").get(verifyJWT,multiplayerPlayerLeaderBoard)
+router.route("/multi-player-leaderboard/:mode/:limit").get(verifyJWT,mutliplayerLeaderBoard)
 export default  router
