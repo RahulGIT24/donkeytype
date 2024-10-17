@@ -247,6 +247,7 @@ const getResultStats = asyncHandler(async (req, res) => {
 const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
   const mode = req.params.mode;
   const limit = req.params.limit || 10;
+
   let results;
   let historyIds: Array<BsonObjectId> = [];
 
@@ -354,7 +355,7 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
         multiplayer: true,
         roomId: { $ne: null },
         opponent: { $ne: null },
-        winner:{$ne:null}
+        winner: { $ne: null },
       },
     },
     {
@@ -385,15 +386,14 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-       wins: 1,
-       wpm: 1,
-       accuracy: 1,
-       consistency: 1,
-       "user.username":1,
-       "user.email":1,
-       "user.profilePic":1,
-       "user._id":1,
-
+        wins: 1,
+        wpm: 1,
+        accuracy: 1,
+        consistency: 1,
+        "user.username": 1,
+        "user.email": 1,
+        "user.profilePic": 1,
+        "user._id": 1,
       },
     },
     {
@@ -407,5 +407,10 @@ const mutliplayerLeaderBoard = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { data: result }));
 });
 
-
-export { getHistory, getAverageStats, getResultStats, singlePlayerLeaderBoard,mutliplayerLeaderBoard };
+export {
+  getHistory,
+  getAverageStats,
+  getResultStats,
+  singlePlayerLeaderBoard,
+  mutliplayerLeaderBoard,
+};
