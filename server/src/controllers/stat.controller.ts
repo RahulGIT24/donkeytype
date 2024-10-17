@@ -336,8 +336,8 @@ const singlePlayerLeaderBoard = asyncHandler(async (req, res) => {
       results = { data: history, count };
     }
 else{
- const{result,count} = await  mutliplayerLeaderBoard(mode,limit,historyIds)
- results={data:result,count,}
+ const{result} = await  mutliplayerLeaderBoard(mode,limit,historyIds)
+ results={data:result,count:result.length}//avg stats = stat/(testStarted) win percentage = wins/(tests started)
 }
     return res.status(200).json(new ApiResponse(200, results ?? {}));
   } else {
@@ -348,8 +348,6 @@ else{
 });
 
 //to be made ^-^
-
-
 const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,historyIds:any) => {
   const result = await History.aggregate([
     {
@@ -395,6 +393,8 @@ const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,histor
         consistency: 1,
         "user.username": 1,
         "user.email": 1,
+        "user.testCompleted": 1,
+        "user.testStarted": 1,
       },
     },
     {
@@ -402,13 +402,9 @@ const mutliplayerLeaderBoard = async (mode: String, limit: String |Number,histor
     },
     { $limit: Number(limit) },
   ]);
-  const queryFilter = {
-    _id: { $in: historyIds },
-    opponent: null,
-    multiplayer: false,
-  };
-  const count = await History.countDocuments(queryFilter);
-  return {result,count};
+ 
+ // const toatalMatches = await History.countDocuments(queryFilter);
+  return {result};
 };
 
 export {
@@ -416,5 +412,4 @@ export {
   getAverageStats,
   getResultStats,
   singlePlayerLeaderBoard,
- // multiplayerPlayerLeaderBoard,
 };
