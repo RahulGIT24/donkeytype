@@ -60,6 +60,7 @@ const rooms: { [key: string]: Room } = {};
 
 // socket connection
 io.on("connection", (socket: Socket) => {
+  //console.log("connected");
   socket.on(
     "create-room",
     (roomId: string, mode: any, creator: string, userId: string) => {
@@ -183,9 +184,9 @@ io.on("connection", (socket: Socket) => {
           mode: "",
         };
       }
-
       io.to(roomId).emit("User Left", socket.id);
     }
+   // console.log("disconnected: ", socket.id);
   });
 });
 
@@ -207,4 +208,3 @@ cron.schedule("*/5 * * * *", async () => {
 // httpServer.listen(process.env.SOCKET_PORT, () => {
 //   console.log("Socket Port is listening on PORT", process.env.SOCKET_PORT);
 // });
-

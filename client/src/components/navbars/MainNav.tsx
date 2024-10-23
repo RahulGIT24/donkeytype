@@ -51,7 +51,7 @@ export default function MainNav() {
         multiplayer: isMultiplayer,
       })
     );
-    
+
     socketI.emit("complete-test", roomId, {
       wpm: 0,
       raw: 0,
@@ -64,15 +64,15 @@ export default function MainNav() {
     navigate("/pvp-result", { replace: true });
   };
 
-
   useEffect(() => {
-    if (!socketI) {
+    if (!socketI && isMultiplayer) {
       socket.connect();
       dispatch(setSocketId(socket.id));
       dispatch(setSocketInstance(socket));
+    } else if (!isMultiplayer && !socketI) {
+      socket.disconnect();
     }
   }, [socketI]);
-
 
   return (
     <>
