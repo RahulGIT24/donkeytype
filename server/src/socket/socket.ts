@@ -20,13 +20,13 @@ class SocketService {
     this._io = new Server({
       path: "/socket",
       cors: {
-        origin: process.env.FRONTEND_URL,
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true,
       },
     });
     this.subscribeToRoomEvents();
-    this._io.adapter(createAdapter(pubClient,subClient));
+    this._io.adapter(createAdapter(pubClient, subClient));
   }
 
   private subscribeToRoomEvents() {
@@ -120,7 +120,9 @@ class SocketService {
       });
 
       socket.on("leave-room", (roomId: string) => {
+        //console.log('leave romom::::::::::::::::')
         const room = this.rooms[roomId];
+        //console.log("leave room",room)
         if (room) {
           room.users = room.users.filter((user) => user.id !== socket.id);
           this.publishRoomEvent("leave-room", roomId, { userId: socket.id });
@@ -130,10 +132,11 @@ class SocketService {
 
       // destroy room when user creates new one
       socket.on("destroy-room", (roomId: string) => {
+        //console.log('destroy room::::::::')
         const room = this.rooms[roomId];
         if (!room) return;
         delete this.rooms[roomId];
-        this.publishRoomEvent("destroy-room",roomId,{});
+        this.publishRoomEvent("destroy-room", roomId, {});
       });
 
       socket.on("complete-test", async (roomId: string, res: any) => {
@@ -150,12 +153,15 @@ class SocketService {
         }
 
         user.results = res;
-        console.log(socket.id);
-        console.log(user);
+        ////console.log(socket.id);
+       console.log("room::::",room);
 
         const allResultsAvailable = room.users.every((u) => u.results);
-        console.log(allResultsAvailable)
+        console.log("allResultsAvailable::::::",allResultsAvailable);
         if (allResultsAvailable) {
+          console.log(
+            "saving the multiplayer ressss:::::::::::::::::::::::::::::::::::::::::::::::::::"
+          );
           const saveSuccess = await saveTestInDB({
             users: room.users as any,
             roomId,
@@ -171,7 +177,7 @@ class SocketService {
       socket.on("give-results", (roomId: string) => {
         const room = this.rooms[roomId];
         if (!room) return;
-        console.log(room.users)
+        //console.log(room.users)
         io.to(roomId).emit("Results", room.users);
       });
 
@@ -182,6 +188,7 @@ class SocketService {
       });
 
       socket.on("disconnect", () => {
+        //console.log('disconnect')
         for (const roomId in this.rooms) {
           const room = this.rooms[roomId];
           let userIndex = -1;

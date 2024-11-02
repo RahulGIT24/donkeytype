@@ -8,7 +8,7 @@
     "build": "tsc && cp -r src/controllers/data dist/controllers/data",
     "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npm run build && node dist/server.js"
+    "dev": "npm run build && nodemon dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -41,6 +41,7 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14",
+    "nodemon": "^3.1.7",
     "socket.io": "^4.7.5"
   }
 }
