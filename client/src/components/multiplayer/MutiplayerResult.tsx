@@ -50,45 +50,14 @@ export default function MultiplayerResult() {
     dispatch(setAfkTimerRunning(true));
   }, [socketI]);
 
-  /*  useEffect(() => {
-    if (socket) {
-      socket.emit("give-results", multiplayerinfo.roomId);
-      socket.on("Results", (users: any) => {
-        const arr = users.filter((u: any) => u.userId !== user._id);
-        const opp = arr[0];
-        setOpponent({
-          username: opp.username,
-          results: opp.results,
-          userId: opp.userId,
-        });
-        if(opp.results){
-          socket.emit("cleanup",roomId)
-        }
-      });
-      dispatch(setAfkTimer(10))
-      dispatch(setAfkTimerRunning(true))
-    }
-  }, [socketI, socket]); */
   useEffect(() => {
     if (socket) {
       socket.emit("give-results", multiplayerinfo.roomId);
-    //  setTimeout(() => {
-        if ((opponent && myResult)||userLeft&&myResult) {
-          socket.emit("cleanup", roomId);
-        }
-   ///   }, 700);
-      /*   socket.on("Results", (users: any) => {
-        const arr = users.filter((u: any) => u.userId !== user._id);
-        const opp = arr[0];
-        setOpponent({
-          username: opp.username,
-          results: opp.results,
-          userId: opp.userId,
-        });
-        if(opp.results){
-          socket.emit("cleanup",roomId)
-        }
-      }); */
+      //  setTimeout(() => {
+      if ((opponent && myResult) || (userLeft && myResult)) {
+        socket.emit("cleanup", roomId);
+      }
+
       dispatch(setAfkTimer(10));
       dispatch(setAfkTimerRunning(true));
     }

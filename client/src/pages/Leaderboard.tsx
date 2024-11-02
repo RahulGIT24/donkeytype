@@ -173,7 +173,6 @@ const Leaderboard = () => {
   );
 
   const fetchLeaderBoard = async () => {
-    console.log("adoifughaghaijdgiush");
     try {
       const { data, status } = await apiCall({
         url:
