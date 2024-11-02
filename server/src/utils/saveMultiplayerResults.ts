@@ -35,7 +35,6 @@ const saveHistory = async ({
 export const saveTestInDB = async ({ users, roomId }: ITest) => {
   try {
     if (users.length < 2) return;
-
     let winner = null;
     let tie = false;
 
