@@ -53,8 +53,8 @@ export default function MultiplayerResult() {
   useEffect(() => {
     if (socket) {
       socket.emit("give-results", multiplayerinfo.roomId);
-      //  setTimeout(() => {
       if ((opponent && myResult) || (userLeft && myResult)) {
+        console.log("Results ,",opponent,myResult)
         socket.emit("cleanup", roomId);
       }
 
