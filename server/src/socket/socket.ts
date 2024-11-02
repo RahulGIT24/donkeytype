@@ -122,7 +122,7 @@ class SocketService {
       socket.on("leave-room", (roomId: string) => {
         //console.log('leave romom::::::::::::::::')
         const room = this.rooms[roomId];
-        //console.log("leave room",room)
+        console.log("leave room",room)
         if (room) {
           room.users = room.users.filter((user) => user.id !== socket.id);
           this.publishRoomEvent("leave-room", roomId, { userId: socket.id });
@@ -160,7 +160,7 @@ class SocketService {
         console.log("allResultsAvailable::::::",allResultsAvailable);
         if (allResultsAvailable) {
           console.log(
-            "saving the multiplayer ressss:::::::::::::::::::::::::::::::::::::::::::::::::::"
+            "saving the multiplayer ressss::::"
           );
           const saveSuccess = await saveTestInDB({
             users: room.users as any,
