@@ -60,6 +60,7 @@ export default function MainNav() {
       chars: `${0}/${0}/${0}/${0}`,
       mode: mode,
     });
+    socketI.emit("give-results", roomId);
     socketI.emit("leave-room", roomId);
     navigate("/pvp-result", { replace: true });
   };

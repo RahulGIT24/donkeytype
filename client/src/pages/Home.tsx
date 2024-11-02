@@ -18,9 +18,10 @@ export default function Home() {
 const isMultiplayer = useSelector((state: any) => state.multiplayer.multiplayer);
   const mySocketId = useSelector((state: any) => state.multiplayer.socketId);
   useEffect(() => {
-    if (roomId&&socket) {
-      console.log('yes')
+    if (roomId&&socket.connected) {
+      console.log(socket) 
       socket.on("connect", () => {
+        console.log('connect')
         socket.emit("verify-room", roomId);
       });
       socket.on("Verified", () => {
@@ -37,6 +38,7 @@ const isMultiplayer = useSelector((state: any) => state.multiplayer.multiplayer)
         dispatch(setUserLeft(true));
       });
       socket.on("Results", (users: any) => {
+        console.log('res',users)
         const arr = users.filter((u: any) => u.userId !== user._id);
         const opp = arr[0];
         dispatch(
@@ -47,8 +49,11 @@ const isMultiplayer = useSelector((state: any) => state.multiplayer.multiplayer)
           })
         );
       });
-    }else if((!isMultiplayer&&!roomId&&socket)){
-      socket.disconnect();
+    }
+    //disconnection removed
+    else if((!isMultiplayer&&!roomId&&socket)){
+      console.log('disconnect')
+      //socket.disconnect();
     } else {
       navigate("/");
     }
