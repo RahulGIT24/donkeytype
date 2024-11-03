@@ -121,6 +121,7 @@ class SocketService {
 
       socket.on("leave-room", (roomId: string) => {
         const room = this.rooms[roomId];
+     
         if (room) {
           // room.users = room.users.filter((user) => user.id !== socket.id);
           this.publishRoomEvent("leave-room", roomId, { userId: socket.id });
@@ -153,6 +154,7 @@ class SocketService {
         const allResultsAvailable = room.users.every((u) => u.results);
         console.log(allResultsAvailable);
         if (allResultsAvailable) {
+        
           const saveSuccess = await saveTestInDB({
             users: room.users as any,
             roomId,
